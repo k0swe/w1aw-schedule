@@ -1,0 +1,18 @@
+$avatar-size: 40px;
+
+:host {
+  height: $avatar-size;
+  width: $avatar-size;
+}
+
+button.avatar {
+  height: $avatar-size;
+  width: $avatar-size;
+  padding: 0;
+}
+
+img.avatar {
+  border-radius: $avatar-size / 2;
+  height: $avatar-size;
+  width: $avatar-size;
+}
