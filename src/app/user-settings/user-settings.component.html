@@ -1,5 +1,11 @@
 <div class="container">
   <mat-card appearance="outlined">
+    <mat-icon
+      matCardImage
+      aria-hidden="false"
+      aria-label="Account icon"
+      fontIcon="account-circle"
+    ></mat-icon>
     <mat-card-header>
       <mat-card-title>User Settings</mat-card-title>
       <mat-card-subtitle>
@@ -9,28 +15,43 @@
     <mat-card-content>
       <mat-form-field>
         <mat-label>Email</mat-label>
-        <input matInput value="{{ (user$ | async)?.email }}" disabled />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Callsign</mat-label>
-        <input matInput placeholder="T3ST" />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Name</mat-label>
         <input
           matInput
-          placeholder="T3ST"
-          value="{{ (user$ | async)?.displayName }}"
+          placeholder="me@example.com"
+          [value]="email | async"
+          [disabled]="true"
         />
       </mat-form-field>
       <mat-form-field>
+        <mat-label>Personal Callsign</mat-label>
+        <input matInput placeholder="T3ST" [formControl]="callsign" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Name</mat-label>
+        <input matInput placeholder="John Doe" [formControl]="name" />
+      </mat-form-field>
+      <mat-form-field>
         <mat-label>Phone number</mat-label>
-        <input matInput placeholder="303-867-5309" />
+        <input matInput placeholder="303-867-5309" [formControl]="phone" />
       </mat-form-field>
       <mat-form-field>
         <mat-label>Grid Square</mat-label>
-        <input matInput placeholder="DM79lw" />
+        <input matInput placeholder="DM79lw" [formControl]="gridSquare" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Status</mat-label>
+        <input
+          matInput
+          value="Provisional"
+          [value]="status | async"
+          [disabled]="true"
+        />
       </mat-form-field>
     </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-raised-button color="accent" #saveButton (click)="save()">
+        Save
+      </button>
+    </mat-card-actions>
   </mat-card>
 </div>
