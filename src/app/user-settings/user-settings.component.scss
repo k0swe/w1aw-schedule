@@ -9,6 +9,10 @@ mat-card {
   max-width: 800px;
 }
 
+p {
+  display: block;
+}
+
 mat-card-content {
   display: flex;
   flex-direction: column;
