@@ -7,3 +7,20 @@ mat-card {
   flex: 1 1 0;
   margin: 8px;
 }
+
+mat-card-header {
+  display: flex;
+  flex-direction: column;
+}
+
+mat-card-title {
+  flex: 1 1 0;
+}
+
+div.top-actions {
+  flex: 1 1 0;
+}
+
+mat-form-field {
+  margin: 0 8px;
+}
