@@ -1,11 +1,12 @@
-import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Observable} from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
 import firebase from 'firebase/compat';
-import {take} from 'rxjs/operators';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {AuthenticationService} from "../authentication/authentication.service";
-import {environment} from "../../environment/environment";
+import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
+
+import { environment } from '../../environment/environment';
+import { AuthenticationService } from '../authentication/authentication.service';
 
 @Component({
   selector: 'kel-login',
@@ -20,8 +21,7 @@ export class LoginComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private snackBarService: MatSnackBar
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.authService.user$.subscribe((user) => {
@@ -50,7 +50,7 @@ export class LoginComponent implements OnInit {
             this.snackBarService.open(
               'There was a problem logging in, see the JavaScript console for details.',
               undefined,
-              {duration: 10000}
+              { duration: 10000 }
             );
         }
       },
@@ -58,6 +58,6 @@ export class LoginComponent implements OnInit {
   }
 
   private redirectAfterLogin(): void {
-    this.router.navigate(["/user"]);
+    this.router.navigate(['/user']);
   }
 }

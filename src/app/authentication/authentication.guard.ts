@@ -1,3 +1,4 @@
+import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivate,
@@ -5,17 +6,19 @@ import {
   RouterStateSnapshot,
   UrlTree,
 } from '@angular/router';
-import {Injectable} from '@angular/core';
-import {Observable, of} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
-import {AuthenticationService} from "./authentication.service";
+import { Observable, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+
+import { AuthenticationService } from './authentication.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationGuard implements CanActivate {
-  constructor(private router: Router, private authService: AuthenticationService) {
-  }
+  constructor(
+    private router: Router,
+    private authService: AuthenticationService
+  ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -32,7 +35,7 @@ export class AuthenticationGuard implements CanActivate {
         }
         return of(
           this.router.createUrlTree(['/login'], {
-            queryParams: {continue: state.url},
+            queryParams: { continue: state.url },
           })
         );
       })

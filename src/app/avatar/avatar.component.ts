@@ -1,10 +1,11 @@
+import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import firebase from 'firebase/compat/app';
-import {AuthenticationService} from '../authentication/authentication.service';
-import {Component} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
-import {Observable} from 'rxjs';
-import {Router} from '@angular/router';
-import {take} from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
+
+import { AuthenticationService } from '../authentication/authentication.service';
 
 @Component({
   selector: 'kel-avatar',
@@ -17,15 +18,15 @@ export class AvatarComponent {
   constructor(
     public authService: AuthenticationService,
     private dialog: MatDialog,
-    private router: Router,
+    private router: Router
   ) {
     this.user$ = this.authService.user$;
   }
 
   logout(): void {
     this.authService
-    .logout()
-    .pipe(take(1))
-    .subscribe(() => this.router.navigate(['/']));
+      .logout()
+      .pipe(take(1))
+      .subscribe(() => this.router.navigate(['/']));
   }
 }

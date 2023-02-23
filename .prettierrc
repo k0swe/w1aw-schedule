@@ -1,4 +1,5 @@
 {
+  "singleQuote": true,
   "importOrder": [
     "^@core/(.*)$",
     "^@server/(.*)$",
@@ -6,5 +7,9 @@
     "^[./]"
   ],
   "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true
+  "importOrderSortSpecifiers": true,
+  "importOrderParserPlugins": [
+    "typescript",
+    "decorators-legacy"
+  ]
 }

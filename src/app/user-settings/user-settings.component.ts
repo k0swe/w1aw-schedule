@@ -1,11 +1,12 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
-import {FormControl} from '@angular/forms';
-import {MatButton} from '@angular/material/button';
-import {UserSettings, UserSettingsService} from './user-settings.service';
-import {take} from 'rxjs/operators';
-import {AuthenticationService} from "../authentication/authentication.service";
-import {BehaviorSubject} from "rxjs";
-import firebase from "firebase/compat/app";
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
+import firebase from 'firebase/compat/app';
+import { BehaviorSubject } from 'rxjs';
+import { take } from 'rxjs/operators';
+
+import { AuthenticationService } from '../authentication/authentication.service';
+import { UserSettings, UserSettingsService } from './user-settings.service';
 
 @Component({
   selector: 'kel-user-settings',
@@ -17,7 +18,7 @@ export class UserSettingsComponent implements OnInit {
 
   // email and status are read-only
   email: BehaviorSubject<string>;
-  status: BehaviorSubject<string>
+  status: BehaviorSubject<string>;
 
   callsign = new FormControl('');
   gridSquare = new FormControl('');
@@ -31,16 +32,20 @@ export class UserSettingsComponent implements OnInit {
     public settingsService: UserSettingsService
   ) {
     this.user$ = this.authService.user$;
-    this.email = new BehaviorSubject<string>(this.user$.getValue()?.email || '');
+    this.email = new BehaviorSubject<string>(
+      this.user$.getValue()?.email || ''
+    );
     this.status = new BehaviorSubject<string>('Provisional');
     this.settingsService.settings$.subscribe((settings) => {
       // when settings are loaded (or changed), re-bind values
-      this.name.setValue(settings.name || this.user$.getValue()?.displayName || '');
+      this.name.setValue(
+        settings.name || this.user$.getValue()?.displayName || ''
+      );
       this.gridSquare.setValue(settings.gridSquare || '');
       this.phone.setValue(settings.phone || '');
       this.callsign.setValue(settings.callsign || '');
-      this.status.next(settings.status || '')
-    })
+      this.status.next(settings.status || '');
+    });
   }
 
   ngOnInit(): void {
