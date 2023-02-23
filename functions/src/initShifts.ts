@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { Timestamp } from 'firebase/firestore';
 
 import {
   BANDS,
@@ -29,10 +30,11 @@ export const initShifts = functions.https.onRequest((request, response) => {
     BANDS.forEach((band) =>
       MODES.forEach((mode) =>
         shifts.push({
-          time: timeslot,
+          time: Timestamp.fromDate(timeslot),
           band: band,
           mode: mode,
           reservedBy: null,
+          reservedDetails: null,
         })
       )
     )

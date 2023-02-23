@@ -1,36 +1,29 @@
 // This file is copy-pasta'd in the app
+import { Timestamp } from 'firebase/firestore';
+
 export const TWO_HOURS_IN_MS: number = 2 * 60 * 60 * 1000;
 export const TIME_SLOTS_START = new Date('2023-05-24T00:00:00Z');
 export const TIME_SLOTS_END = new Date('2023-05-30T23:59:59Z');
 export const MODES = ['phone', 'cw', 'digital'];
-export const BANDS = [
-  '160',
-  '80',
-  '40',
-  '20',
-  '15',
-  '10',
-  '6',
-  '2',
-  '1.25',
-  '0.7',
-  '0.33',
-  '0.23',
-  '0.13',
-  '0.05',
-  '0.03',
-];
+export const HF_BANDS = ['160', '80', '40', '20', '15', '10'];
+export const VHF_BANDS = ['6', '2', '1.25'];
+export const UHF_BANDS = ['0.7', '0.33', '0.23', '0.13'];
+export const SHF_BANDS = ['0.05', '0.03'];
+export const BANDS = [...HF_BANDS, ...VHF_BANDS, ...UHF_BANDS, ...SHF_BANDS];
 export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
 
 export interface Shift {
-  time: Date;
+  time: Timestamp;
   band: string;
   mode: string;
-  reservedBy: object | null;
+  // Firebase User ID
+  reservedBy: string | null;
+  reservedDetails: object | null;
 }
 
-export const shiftId = (shift: Shift): string => {
-  const hashInput = shift.time.getTime() + '-' + shift.band + '-' + shift.mode;
+export const shiftId = (shift: Partial<Shift>): string => {
+  const hashInput =
+    shift.time?.toMillis() + '-' + shift.band + '-' + shift.mode;
   return djb2Hash(hashInput);
 };
 
