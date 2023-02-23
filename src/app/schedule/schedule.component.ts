@@ -1,7 +1,4 @@
 import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
-
-import { ScheduleService, Shift } from './schedule.service';
 
 @Component({
   selector: 'kel-schedule',
@@ -14,7 +11,7 @@ export class ScheduleComponent {
   viewDay = new Date('2023-05-24T00:00:00Z');
   timeSlots: Date[] = [];
 
-  constructor(private scheduleService: ScheduleService) {
+  constructor() {
     const nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
     for (
       let timeSlot = this.viewDay;
@@ -23,13 +20,5 @@ export class ScheduleComponent {
     ) {
       this.timeSlots.push(timeSlot);
     }
-  }
-
-  findShift(
-    timeslot: Date,
-    band: string,
-    mode: string
-  ): Observable<Shift | undefined> {
-    return this.scheduleService.findShift(timeslot, band, mode);
   }
 }

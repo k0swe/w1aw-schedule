@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { UserSettings } from '../user-settings/user-settings.service';
+import { shiftId } from './shared-constants';
 
 const coloradoDocId = 'jZbFyscc23zjkEGRuPAI';
 
@@ -25,14 +26,14 @@ export class ScheduleService {
     band: string,
     mode: string
   ): Observable<Shift | undefined> {
-    return this.firestore
+    const sid = shiftId({ time, band, mode, reservedBy: null });
+    let obs = this.firestore
       .collection('sections')
       .doc(coloradoDocId)
-      .collection<Shift>('shifts', (ref) => ref.where('time', '==', time))
-      .valueChanges()
-      .pipe(
-        map((shifts) => shifts.find((s) => s.band == band && s.mode == mode))
-      );
+      .collection<Shift>('shifts')
+      .doc(sid)
+      .valueChanges();
+    return obs;
   }
 }
 

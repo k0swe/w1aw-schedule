@@ -19,22 +19,25 @@
           <th>{{ timeslot | date : 'HH:mm' : 'UTC' }}</th>
           <td>{{ timeslot | date : 'MMM d, HH:mm' }}</td>
           <td>
-            {{
-              (findShift(timeslot, '80m', 'phone') | async)?.reservedBy ||
-                'open'
-            }}
+            <kel-schedule-cell
+              [timeslot]="timeslot"
+              [band]="'80'"
+              [mode]="'phone'"
+            />
           </td>
           <td>
-            {{
-              (findShift(timeslot, '40m', 'phone') | async)?.reservedBy ||
-                'open'
-            }}
+            <kel-schedule-cell
+              [timeslot]="timeslot"
+              [band]="'40'"
+              [mode]="'phone'"
+            />
           </td>
           <td>
-            {{
-              (findShift(timeslot, '20m', 'phone') | async)?.reservedBy ||
-                'open'
-            }}
+            <kel-schedule-cell
+              [timeslot]="timeslot"
+              [band]="'20'"
+              [mode]="'phone'"
+            />
           </td>
         </tr>
       </table>
