@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Params, Router } from '@angular/router';
 import firebase from 'firebase/compat';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -13,25 +12,13 @@ import { AuthenticationService } from '../authentication/authentication.service'
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   appName = environment.appName;
 
   constructor(
     private authService: AuthenticationService,
-    private route: ActivatedRoute,
-    private router: Router,
     private snackBarService: MatSnackBar
   ) {}
-
-  ngOnInit() {
-    this.route.queryParams.subscribe((params: Params) => {
-      let continueUrl = params['continue'];
-      if (continueUrl) {
-        // TODO: why isn't this working?
-        this.router.navigate([continueUrl]);
-      }
-    });
-  }
 
   loginGoogle(): void {
     const loginObs = this.authService.loginGoogle();

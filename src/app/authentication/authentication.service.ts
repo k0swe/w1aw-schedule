@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { ActivatedRoute, Router } from '@angular/router';
 import firebase from 'firebase/compat/app';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 
@@ -9,9 +10,16 @@ import { BehaviorSubject, Observable, from } from 'rxjs';
 export class AuthenticationService {
   user$ = new BehaviorSubject<firebase.User | null>(null);
 
-  constructor(public afa: AngularFireAuth) {
+  constructor(
+    public afa: AngularFireAuth,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     this.afa.user.subscribe((u) => {
       this.user$.next(u);
+      if (!!u && route.snapshot.queryParams['continue']) {
+        router.navigateByUrl(route.snapshot.queryParams['continue']);
+      }
     });
   }
 
