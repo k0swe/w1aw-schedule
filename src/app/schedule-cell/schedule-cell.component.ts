@@ -1,7 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-import { ScheduleService, Shift } from '../schedule/schedule.service';
+import { ScheduleService } from '../schedule/schedule.service';
+import { Shift } from '../schedule/shared-constants';
+import { UserSettingsService } from '../user-settings/user-settings.service';
 
 @Component({
   selector: 'kel-schedule-cell',
@@ -14,11 +16,28 @@ export class ScheduleCellComponent implements OnInit {
   @Input() mode!: string;
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
 
-  constructor(private scheduleService: ScheduleService) {}
+  constructor(
+    private scheduleService: ScheduleService,
+    private userSettingsService: UserSettingsService
+  ) {}
 
   ngOnInit(): void {
+    this.userSettingsService.init();
     this.scheduleService
       .findShift(this.timeslot, this.band, this.mode)
       .subscribe((sh) => this.shift$.next(sh));
+  }
+
+  toggleShift() {
+    const thisShift = this.shift$.getValue()!;
+    const thisUser = this.userSettingsService.settings$.getValue()!;
+
+    if (!thisShift?.reservedBy) {
+      // If it's open and we want to reserve
+      this.scheduleService.reserveShift(thisShift, thisUser).subscribe();
+    } else if (thisShift.reservedBy?.callsign == thisUser.callsign) {
+      // If it's ours and we want to cancel
+      this.scheduleService.cancelShift(thisShift, thisUser).subscribe();
+    }
   }
 }

@@ -1,1 +1,3 @@
-{{ (shift$ | async)?.reservedBy?.callsign || 'open' }}
+<div (click)="toggleShift()">
+  {{ (shift$ | async)?.reservedBy?.callsign || 'open' }}
+</div>

@@ -1,4 +1,6 @@
 // This file is copy-pasta'd in functions
+import { Timestamp } from 'firebase/firestore';
+
 import { UserSettings } from '../user-settings/user-settings.service';
 
 export const TWO_HOURS_IN_MS: number = 2 * 60 * 60 * 1000;
@@ -25,14 +27,14 @@ export const BANDS = [
 export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
 
 export interface Shift {
-  time: Date;
+  time: Timestamp;
   band: string;
   mode: string;
   reservedBy: UserSettings | null;
 }
 
 export const shiftId = (shift: Shift): string => {
-  const hashInput = shift.time.getTime() + '-' + shift.band + '-' + shift.mode;
+  const hashInput = shift.time.toMillis() + '-' + shift.band + '-' + shift.mode;
   return djb2Hash(hashInput);
 };
 
