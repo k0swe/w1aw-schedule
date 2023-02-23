@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import firebase from 'firebase/compat';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -24,9 +24,11 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.authService.user$.subscribe((user) => {
-      if (user != null) {
-        this.redirectAfterLogin();
+    this.route.queryParams.subscribe((params: Params) => {
+      let continueUrl = params['continue'];
+      if (continueUrl) {
+        // TODO: why isn't this working?
+        this.router.navigate([continueUrl]);
       }
     });
   }
@@ -55,9 +57,5 @@ export class LoginComponent implements OnInit {
         }
       },
     });
-  }
-
-  private redirectAfterLogin(): void {
-    this.router.navigate(['/user']);
   }
 }
