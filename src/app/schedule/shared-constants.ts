@@ -30,11 +30,14 @@ export interface Shift {
   time: Timestamp;
   band: string;
   mode: string;
-  reservedBy: UserSettings | null;
+  // Firebase User ID
+  reservedBy: string | null;
+  reservedDetails: UserSettings | null;
 }
 
-export const shiftId = (shift: Shift): string => {
-  const hashInput = shift.time.toMillis() + '-' + shift.band + '-' + shift.mode;
+export const shiftId = (shift: Partial<Shift>): string => {
+  const hashInput =
+    shift.time?.toMillis() + '-' + shift.band + '-' + shift.mode;
   return djb2Hash(hashInput);
 };
 

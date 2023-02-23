@@ -13,14 +13,6 @@ import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
 export class ScheduleService {
   constructor(private firestore: AngularFirestore) {}
 
-  public get(): Observable<Shift[]> {
-    return this.firestore
-      .collection('sections')
-      .doc(COLORADO_DOC_ID)
-      .collection<Shift>('shifts')
-      .valueChanges();
-  }
-
   public findShift(
     time: Date,
     band: string,
@@ -37,39 +29,20 @@ export class ScheduleService {
     return obs;
   }
 
-  cancelShift(thisShift: Shift, thisUser: UserSettings): Observable<void> {
-    if (thisShift.reservedBy?.callsign != thisUser.callsign) {
-      // trying to cancel someone else's shift?
-      // TODO: client side security
-      return of(undefined);
-    }
-    const sid = shiftId({
-      time: thisShift.time,
-      band: thisShift.band,
-      mode: thisShift.mode,
-      reservedBy: null,
-    });
-    return fromPromise(
-      this.firestore
-        .collection('sections')
-        .doc(COLORADO_DOC_ID)
-        .collection<Shift>('shifts')
-        .doc(sid)
-        .update({ reservedBy: null })
-    );
-  }
-
-  reserveShift(thisShift: Shift, thisUser: UserSettings) {
-    if (!!thisShift.reservedBy) {
+  reserveShift(
+    shiftToUpdate: Shift,
+    userId: string,
+    userDetails: UserSettings
+  ): Observable<void> {
+    if (!!shiftToUpdate.reservedBy) {
       // trying to take someone else's shift?
       // TODO: client side security
       return of(undefined);
     }
     const sid = shiftId({
-      time: thisShift.time,
-      band: thisShift.band,
-      mode: thisShift.mode,
-      reservedBy: null,
+      time: shiftToUpdate.time,
+      band: shiftToUpdate.band,
+      mode: shiftToUpdate.mode,
     });
     return fromPromise(
       this.firestore
@@ -77,7 +50,28 @@ export class ScheduleService {
         .doc(COLORADO_DOC_ID)
         .collection<Shift>('shifts')
         .doc(sid)
-        .update({ reservedBy: thisUser })
+        .update({ reservedBy: userId, reservedDetails: userDetails })
+    );
+  }
+
+  cancelShift(shiftToUpdate: Shift, userId: string): Observable<void> {
+    if (shiftToUpdate.reservedBy != userId) {
+      // trying to cancel someone else's shift?
+      // TODO: client side security
+      return of(undefined);
+    }
+    const sid = shiftId({
+      time: shiftToUpdate.time,
+      band: shiftToUpdate.band,
+      mode: shiftToUpdate.mode,
+    });
+    return fromPromise(
+      this.firestore
+        .collection('sections')
+        .doc(COLORADO_DOC_ID)
+        .collection<Shift>('shifts')
+        .doc(sid)
+        .update({ reservedBy: null, reservedDetails: null })
     );
   }
 }

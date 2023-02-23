@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from '../schedule/schedule.service';
 import { Shift } from '../schedule/shared-constants';
 import { UserSettingsService } from '../user-settings/user-settings.service';
@@ -18,6 +19,7 @@ export class ScheduleCellComponent implements OnInit {
 
   constructor(
     private scheduleService: ScheduleService,
+    private authenticationService: AuthenticationService,
     private userSettingsService: UserSettingsService
   ) {}
 
@@ -29,15 +31,16 @@ export class ScheduleCellComponent implements OnInit {
   }
 
   toggleShift() {
-    const thisShift = this.shift$.getValue()!;
-    const thisUser = this.userSettingsService.settings$.getValue()!;
+    const shift = this.shift$.getValue()!;
+    const userId = this.authenticationService.user$.getValue()?.uid!;
+    const userDetails = this.userSettingsService.settings$.getValue()!;
 
-    if (!thisShift?.reservedBy) {
+    if (!shift?.reservedBy) {
       // If it's open and we want to reserve
-      this.scheduleService.reserveShift(thisShift, thisUser).subscribe();
-    } else if (thisShift.reservedBy?.callsign == thisUser.callsign) {
+      this.scheduleService.reserveShift(shift, userId, userDetails).subscribe();
+    } else if (shift.reservedBy == userId) {
       // If it's ours and we want to cancel
-      this.scheduleService.cancelShift(thisShift, thisUser).subscribe();
+      this.scheduleService.cancelShift(shift, userId).subscribe();
     }
   }
 }
