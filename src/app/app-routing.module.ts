@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthenticationGuard } from './authentication/authentication.guard';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
+import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
 
 const routes: Routes = [
@@ -14,6 +15,11 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
+  },
+  {
+    path: 'schedule',
+    component: ScheduleComponent,
+    canActivate: [AuthenticationGuard],
   },
   {
     path: 'user',

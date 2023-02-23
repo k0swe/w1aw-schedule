@@ -12,6 +12,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -22,14 +23,16 @@ import { AppComponent } from './app.component';
 import { AvatarComponent } from './avatar/avatar.component';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
+import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
     AvatarComponent,
     HomeComponent,
+    LoginComponent,
+    ScheduleComponent,
     UserSettingsComponent,
   ],
   imports: [
@@ -39,18 +42,19 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     AppRoutingModule,
     BrowserAnimationsModule,
     BrowserModule,
+    FormsModule,
+    MatButtonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatDialogModule,
     MatIconModule,
+    MatInputModule,
+    MatListModule,
     MatMenuModule,
     MatSidenavModule,
-    MatToolbarModule,
-    MatListModule,
-    MatDialogModule,
-    MatCardModule,
-    MatButtonModule,
     MatSnackBarModule,
-    MatInputModule,
-    MatButtonModule,
-    FormsModule,
+    MatTableModule,
+    MatToolbarModule,
     ReactiveFormsModule,
   ],
   providers: [],
