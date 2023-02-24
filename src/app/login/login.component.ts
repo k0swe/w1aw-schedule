@@ -42,6 +42,14 @@ export class LoginComponent {
     this.handleLogin(loginObs);
   }
 
+  forgotPassword() {
+    this.authService.forgotPassword(this.email).subscribe(() => {
+      this.snackBarService.open('Sent password reset email', undefined, {
+        duration: 10000,
+      });
+    });
+  }
+
   private handleLogin(
     loginObs: Observable<firebase.auth.UserCredential>
   ): void {

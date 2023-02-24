@@ -43,6 +43,10 @@ export class AuthenticationService {
     return from(this.afa.createUserWithEmailAndPassword(email, password));
   }
 
+  public forgotPassword(email: string): Observable<void> {
+    return from(this.afa.sendPasswordResetEmail(email));
+  }
+
   public logout(): Observable<void> {
     return from(this.afa.signOut());
   }
