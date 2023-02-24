@@ -6,7 +6,10 @@ import { BehaviorSubject } from 'rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from '../schedule/schedule.service';
 import { Shift } from '../schedule/shared-constants';
-import { UserSettingsService } from '../user-settings/user-settings.service';
+import {
+  UserSettings,
+  UserSettingsService,
+} from '../user-settings/user-settings.service';
 
 @Component({
   selector: 'kel-schedule-cell',
@@ -19,6 +22,7 @@ export class ScheduleCellComponent implements OnInit {
   @Input() mode!: string;
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
   user$ = new BehaviorSubject<firebase.User | null>(null);
+  userSettings$ = new BehaviorSubject<UserSettings>({});
 
   constructor(
     private scheduleService: ScheduleService,
@@ -32,12 +36,13 @@ export class ScheduleCellComponent implements OnInit {
       .findShift(this.timeslot, this.band, this.mode)
       .subscribe((sh) => this.shift$.next(sh));
     this.user$ = this.authenticationService.user$;
+    this.userSettings$ = this.userSettingsService.settings$;
   }
 
   toggleShift() {
     const shift = this.shift$.getValue()!;
     const userId = this.user$.getValue()?.uid!;
-    const userDetails = this.userSettingsService.settings$.getValue()!;
+    const userDetails = this.userSettings$.getValue()!;
 
     if (!shift?.reservedBy) {
       // If it's open and we want to reserve
@@ -56,6 +61,10 @@ export class ScheduleCellComponent implements OnInit {
   }
 
   buttonDisabled(): boolean {
+    if (this.userSettings$.getValue()?.status != 'Approved') {
+      // TODO: client side security
+      return true;
+    }
     return (
       !!this.shift$.getValue()?.reservedBy &&
       this.shift$.getValue()?.reservedBy != this.user$.getValue()?.uid
