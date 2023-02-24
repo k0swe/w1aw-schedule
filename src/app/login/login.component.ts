@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import firebase from 'firebase/compat';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -14,9 +15,12 @@ import { AuthenticationService } from '../authentication/authentication.service'
 })
 export class LoginComponent {
   appName = environment.appName;
+  email: string = '';
+  password: string = '';
 
   constructor(
     private authService: AuthenticationService,
+    private router: Router,
     private snackBarService: MatSnackBar
   ) {}
 
@@ -25,14 +29,52 @@ export class LoginComponent {
     this.handleLogin(loginObs);
   }
 
+  loginEmailPass() {
+    const loginObs = this.authService.loginEmailPass(this.email, this.password);
+    this.handleLogin(loginObs);
+  }
+
+  createEmailPass() {
+    const loginObs = this.authService.createEmailPass(
+      this.email,
+      this.password
+    );
+    this.handleLogin(loginObs);
+  }
+
   private handleLogin(
     loginObs: Observable<firebase.auth.UserCredential>
   ): void {
     loginObs.pipe(take(1)).subscribe({
+      next: (_) => {
+        this.router.navigateByUrl('/user');
+      },
       error: (err) => {
         switch (err.code) {
           case 'auth/popup-closed-by-user':
           case 'auth/cancelled-popup-request':
+            break;
+          case 'auth/wrong-password':
+            this.snackBarService.open('Incorrect password', undefined, {
+              duration: 10000,
+            });
+            this.password = '';
+            break;
+          case 'auth/user-not-found':
+            this.snackBarService.open('User not found', undefined, {
+              duration: 10000,
+            });
+            this.password = '';
+            break;
+          case 'auth/email-already-in-use':
+            this.snackBarService.open(
+              "Can't create account, it already exists",
+              undefined,
+              {
+                duration: 10000,
+              }
+            );
+            this.password = '';
             break;
           default:
             console.warn('Problem logging in', err);

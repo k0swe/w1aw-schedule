@@ -10,6 +10,20 @@
           <span>Continue with Google</span>
         </div>
       </button>
+      <mat-form-field>
+        <mat-label>Email</mat-label>
+        <input matInput placeholder="you@example.com" [(ngModel)]="email" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input matInput type="password" [(ngModel)]="password" />
+      </mat-form-field>
+      <button mat-stroked-button (click)="loginEmailPass()">
+        <span>Log In</span>
+      </button>
+      <button mat-stroked-button (click)="createEmailPass()">
+        <span>Create Account</span>
+      </button>
     </mat-card-content>
   </mat-card>
 </div>

@@ -29,6 +29,20 @@ export class AuthenticationService {
     );
   }
 
+  public loginEmailPass(
+    email: string,
+    password: string
+  ): Observable<firebase.auth.UserCredential> {
+    return from(this.afa.signInWithEmailAndPassword(email, password));
+  }
+
+  public createEmailPass(
+    email: string,
+    password: string
+  ): Observable<firebase.auth.UserCredential> {
+    return from(this.afa.createUserWithEmailAndPassword(email, password));
+  }
+
   public logout(): Observable<void> {
     return from(this.afa.signOut());
   }
