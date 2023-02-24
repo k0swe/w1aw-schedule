@@ -1,4 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { ThemePalette } from '@angular/material/core';
+import firebase from 'firebase/compat/app';
 import { BehaviorSubject } from 'rxjs';
 
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -16,6 +18,7 @@ export class ScheduleCellComponent implements OnInit {
   @Input() band!: string;
   @Input() mode!: string;
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
+  user$ = new BehaviorSubject<firebase.User | null>(null);
 
   constructor(
     private scheduleService: ScheduleService,
@@ -28,11 +31,12 @@ export class ScheduleCellComponent implements OnInit {
     this.scheduleService
       .findShift(this.timeslot, this.band, this.mode)
       .subscribe((sh) => this.shift$.next(sh));
+    this.user$ = this.authenticationService.user$;
   }
 
   toggleShift() {
     const shift = this.shift$.getValue()!;
-    const userId = this.authenticationService.user$.getValue()?.uid!;
+    const userId = this.user$.getValue()?.uid!;
     const userDetails = this.userSettingsService.settings$.getValue()!;
 
     if (!shift?.reservedBy) {
@@ -42,5 +46,19 @@ export class ScheduleCellComponent implements OnInit {
       // If it's ours and we want to cancel
       this.scheduleService.cancelShift(shift, userId).subscribe();
     }
+  }
+
+  buttonColor(): ThemePalette {
+    if (this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid) {
+      return 'accent';
+    }
+    return undefined;
+  }
+
+  buttonDisabled(): boolean {
+    return (
+      !!this.shift$.getValue()?.reservedBy &&
+      this.shift$.getValue()?.reservedBy != this.user$.getValue()?.uid
+    );
   }
 }
