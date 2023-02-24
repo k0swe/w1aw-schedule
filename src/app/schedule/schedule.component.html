@@ -6,7 +6,16 @@
         {{ viewDay | date : 'fullDate' : 'UTC' }} (UTC)
       </mat-card-title>
       <div class="top-actions">
-        <mat-form-field appearance="fill">
+        <button
+          mat-flat-button
+          color="primary"
+          aria-label="Previous Day"
+          (click)="goToPrevDay()"
+          [disabled]="prevDay < TIME_SLOTS_START"
+        >
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <mat-form-field appearance="fill" color="primary">
           <mat-label>Band Group</mat-label>
           <mat-select [(value)]="viewBandGroup" (valueChange)="changeParams()">
             <mat-option
@@ -17,7 +26,7 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="fill" color="primary">
           <mat-label>Mode</mat-label>
           <mat-select [(value)]="viewMode" (valueChange)="changeParams()">
             <mat-option *ngFor="let mode of MODES" [value]="mode">
@@ -25,6 +34,15 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
+        <button
+          mat-flat-button
+          color="primary"
+          aria-label="Next Day"
+          (click)="goToNextDay()"
+          [disabled]="nextDay >= TIME_SLOTS_END"
+        >
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
       </div>
     </mat-card-header>
     <mat-card-content>
@@ -32,32 +50,18 @@
         <tr>
           <th>UTC</th>
           <th>Local</th>
-          <th>80m phone</th>
-          <th>40m phone</th>
-          <th>20m phone</th>
+          <th *ngFor="let band of bandGroups.get(viewBandGroup)">
+            {{ band }}m {{ viewMode }}
+          </th>
         </tr>
         <tr *ngFor="let timeslot of timeSlots">
           <th>{{ timeslot | date : 'HH:mm' : 'UTC' }}</th>
           <td>{{ timeslot | date : 'MMM d, HH:mm' }}</td>
-          <td>
+          <td *ngFor="let band of bandGroups.get(viewBandGroup)">
             <kel-schedule-cell
               [timeslot]="timeslot"
-              [band]="'80'"
-              [mode]="'phone'"
-            />
-          </td>
-          <td>
-            <kel-schedule-cell
-              [timeslot]="timeslot"
-              [band]="'40'"
-              [mode]="'phone'"
-            />
-          </td>
-          <td>
-            <kel-schedule-cell
-              [timeslot]="timeslot"
-              [band]="'20'"
-              [mode]="'phone'"
+              [band]="band"
+              [mode]="viewMode"
             />
           </td>
         </tr>

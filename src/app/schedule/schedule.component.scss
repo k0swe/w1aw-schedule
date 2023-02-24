@@ -6,6 +6,7 @@
 mat-card {
   flex: 1 1 0;
   margin: 8px;
+  max-width: 800px;
 }
 
 mat-card-header {
@@ -19,6 +20,9 @@ mat-card-title {
 
 div.top-actions {
   flex: 1 1 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
 }
 
 mat-form-field {

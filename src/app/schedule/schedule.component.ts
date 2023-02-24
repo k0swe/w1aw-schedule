@@ -5,6 +5,8 @@ import {
   HF_BANDS,
   MODES,
   SHF_BANDS,
+  TIME_SLOTS_END,
+  TIME_SLOTS_START,
   TWO_HOURS_IN_MS,
   UHF_BANDS,
   VHF_BANDS,
@@ -18,6 +20,8 @@ import {
 export class ScheduleComponent {
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
+  TIME_SLOTS_START = TIME_SLOTS_START;
+  TIME_SLOTS_END = TIME_SLOTS_END;
   timeSlots: Date[] = [];
   bandGroups: Map<string, string[]> = new Map([
     ['HF', HF_BANDS],
@@ -29,20 +33,26 @@ export class ScheduleComponent {
   viewDay: Date;
   viewBandGroup: string;
   viewMode: string;
+  prevDay: Date;
+  nextDay: Date;
 
   constructor(private route: ActivatedRoute, private router: Router) {
     this.viewDay = new Date(route.snapshot.queryParams['day'] || '2023-05-24');
     this.viewBandGroup = route.snapshot.queryParams['bandGroup'] || 'HF';
     this.viewMode = route.snapshot.queryParams['mode'] || 'phone';
+    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
+    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+    this.changeParams();
+  }
 
-    const nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
-    for (
-      let timeSlot = this.viewDay;
-      timeSlot < nextDay;
-      timeSlot = new Date(timeSlot.getTime() + TWO_HOURS_IN_MS)
-    ) {
-      this.timeSlots.push(timeSlot);
-    }
+  goToPrevDay() {
+    this.viewDay = this.prevDay;
+    this.changeParams();
+  }
+
+  goToNextDay() {
+    this.viewDay = this.nextDay;
+    this.changeParams();
   }
 
   changeParams() {
@@ -55,5 +65,15 @@ export class ScheduleComponent {
         mode: this.viewMode,
       },
     });
+    this.timeSlots = [];
+    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
+    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+    for (
+      let timeSlot = this.viewDay;
+      timeSlot < this.nextDay;
+      timeSlot = new Date(timeSlot.getTime() + TWO_HOURS_IN_MS)
+    ) {
+      this.timeSlots.push(timeSlot);
+    }
   }
 }
