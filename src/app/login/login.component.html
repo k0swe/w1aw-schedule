@@ -4,29 +4,59 @@
       <mat-card-title>Log In to {{ appName }}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <button mat-stroked-button (click)="loginGoogle()">
-        <div class="button-content">
-          <img class="logo" src="/assets/google-logo.svg" alt="Google Logo" />
-          <span>Continue with Google</span>
-        </div>
-      </button>
-      <mat-form-field>
-        <mat-label>Email</mat-label>
-        <input matInput placeholder="you@example.com" [(ngModel)]="email" />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Password</mat-label>
-        <input matInput type="password" [(ngModel)]="password" />
-      </mat-form-field>
-      <button mat-stroked-button (click)="loginEmailPass()">
-        <span>Log In</span>
-      </button>
-      <button mat-stroked-button (click)="forgotPassword()">
-        <span>Forgot Password?</span>
-      </button>
-      <button mat-stroked-button (click)="createEmailPass()">
-        <span>Create Account</span>
-      </button>
+      <mat-accordion>
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Social Login</mat-panel-title>
+            <mat-panel-description>
+              Use an existing account to sign into this site
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <div class="login-container">
+            <button mat-stroked-button (click)="loginGoogle()">
+              <div class="button-content">
+                <img
+                  class="logo"
+                  src="/assets/google-logo.svg"
+                  alt="Google Logo"
+                />
+                <span>Continue with Google</span>
+              </div>
+            </button>
+          </div>
+        </mat-expansion-panel>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Email/Password</mat-panel-title>
+            <mat-panel-description>
+              Use a unique password just for this site
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <div class="login-container">
+            <mat-form-field>
+              <mat-label>Email</mat-label>
+              <input
+                matInput
+                placeholder="you@example.com"
+                [(ngModel)]="email"
+              />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Password</mat-label>
+              <input matInput type="password" [(ngModel)]="password" />
+            </mat-form-field>
+            <button mat-stroked-button (click)="loginEmailPass()">
+              <span>Log In</span>
+            </button>
+            <button mat-stroked-button (click)="createEmailPass()">
+              <span>Create Account</span>
+            </button>
+            <button mat-stroked-button (click)="forgotPassword()">
+              <span>Forgot Password?</span>
+            </button>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
     </mat-card-content>
   </mat-card>
 </div>

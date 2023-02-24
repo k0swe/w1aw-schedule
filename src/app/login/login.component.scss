@@ -6,10 +6,10 @@
 mat-card {
   flex: 1 1 0;
   margin: 8px;
-  max-width: 400px;
+  max-width: 600px;
 }
 
-mat-card-content {
+.login-container {
   display: flex;
   flex-direction: column;
 }
