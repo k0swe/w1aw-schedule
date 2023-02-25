@@ -1,0 +1,48 @@
+name: Deploy
+on: workflow_dispatch
+
+jobs:
+  test:
+    uses: k0swe/w1aw-schedule/.github/workflows/test-shared.yml@main
+
+  firebase-deploy:
+    name: Deploy to Firebase Hosting
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Read cached build artifacts
+        id: read-cache
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build-artifacts
+        with:
+          path: dist/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_W1AW_SCHEDULE }}'
+          channelId: live
+          projectId: w1aw-schedule
+
+      - name: Tag as deployed
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          git tag deployed --force
+          git push --tags --force
+
+      - name: Google Chat Notification
+        uses: Co-qn/google-chat-notification@v1
+        with:
+          name: W1AW Schedule Deploy
+          url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          status: ${{ job.status }}
+        if: always()

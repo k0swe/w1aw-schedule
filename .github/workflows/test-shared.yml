@@ -1,0 +1,49 @@
+name: (Reusable) Test and Compile
+on: workflow_call
+
+jobs:
+  test:
+    name: Test and Compile
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Cache node deps
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-deps
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Cache emulator
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-firebase-emulator
+        with:
+          path: /home/runner/.cache/firebase/emulators
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build-artifacts
+        with:
+          path: dist/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+
+      - name: Install npm deps
+        run: npm install
+
+      # - name: Test
+      #   run: npm run test-ci
+
+      - name: Compile
+        run: npm run build-prod
