@@ -1,13 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import firebase from 'firebase/compat/app';
 import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings, UserSettingsService } from './user-settings.service';
-import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'kel-user-settings',
@@ -52,6 +52,19 @@ export class UserSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.settingsService.init();
+
+    let acccountCreatedInPastMinute =
+      new Date(this.user$.getValue()?.metadata.creationTime!).getTime() <
+      new Date().getTime() + 60000;
+    if (acccountCreatedInPastMinute) {
+      this.snackBarService.open(
+        'Account created; please fill in your station details',
+        undefined,
+        {
+          duration: 10000,
+        }
+      );
+    }
   }
 
   save(): void {
@@ -63,10 +76,13 @@ export class UserSettingsComponent implements OnInit {
       name: this.name.value || '',
       phone: this.phone.value || '',
     };
-    this.settingsService.set(formValue).pipe(take(1)).subscribe(() =>{
-      this.snackBarService.open('Saved', undefined, {
-        duration: 5000,
+    this.settingsService
+      .set(formValue)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.snackBarService.open('Saved', undefined, {
+          duration: 5000,
+        });
       });
-    });
   }
 }
