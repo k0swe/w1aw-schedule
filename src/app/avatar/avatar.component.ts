@@ -14,6 +14,7 @@ import { AuthenticationService } from '../authentication/authentication.service'
 })
 export class AvatarComponent {
   user$: Observable<firebase.User | null>;
+  photoUrl: string = '';
 
   constructor(
     public authService: AuthenticationService,
@@ -21,6 +22,12 @@ export class AvatarComponent {
     private router: Router
   ) {
     this.user$ = this.authService.user$;
+    this.user$.subscribe((u) => {
+      if (!u) {
+        return;
+      }
+      this.photoUrl = u?.photoURL || '/assets/blank_profile.svg';
+    });
   }
 
   logout(): void {
