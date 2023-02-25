@@ -26,7 +26,10 @@ export class AvatarComponent {
       if (!u) {
         return;
       }
-      this.photoUrl = u?.photoURL || '/assets/blank_profile.svg';
+      const firstLetter = u.email?.at(0);
+      this.photoUrl =
+        u?.photoURL ||
+        `https://ui-avatars.com/api/?name=${firstLetter}&background=c62828&color=fff`;
     });
   }
 
