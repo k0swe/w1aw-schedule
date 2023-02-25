@@ -5,7 +5,7 @@
     [matMenuTriggerFor]="accountMenu"
     aria-label="User Menu"
   >
-    <img class="avatar" [src]="user.photoURL" [alt]="user.displayName" />
+    <img class="avatar" [src]="photoUrl" [alt]="user.displayName" />
   </button>
   <mat-menu #accountMenu="matMenu">
     <button mat-menu-item disabled>{{ user.email }}</button>
