@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import firebase from 'firebase/compat/app';
@@ -21,10 +21,22 @@ export class UserSettingsComponent implements OnInit {
   email: BehaviorSubject<string>;
   status: BehaviorSubject<string>;
 
-  callsign = new FormControl('');
-  gridSquare = new FormControl('');
-  name = new FormControl('');
-  phone = new FormControl('');
+  callsign = new FormControl('', [Validators.required]);
+  gridSquare = new FormControl('', [
+    Validators.required,
+    Validators.pattern(/^[A-Z]{2}[0-9]{2}[a-z]{2}$/i),
+  ]);
+  name = new FormControl('', [Validators.required]);
+  phone = new FormControl('', [
+    Validators.required,
+    Validators.pattern(/^\(?[0-9]{3}\)? ?-?[0-9]{3}-?[0-9]{4}$/i),
+  ]);
+  settingsForm = new FormGroup([
+    this.callsign,
+    this.gridSquare,
+    this.name,
+    this.phone,
+  ]);
 
   @ViewChild('saveButton') saveButton: MatButton | undefined;
 
