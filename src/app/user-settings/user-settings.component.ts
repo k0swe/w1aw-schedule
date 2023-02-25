@@ -7,6 +7,7 @@ import { take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings, UserSettingsService } from './user-settings.service';
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'kel-user-settings',
@@ -29,6 +30,7 @@ export class UserSettingsComponent implements OnInit {
 
   constructor(
     private authService: AuthenticationService,
+    private snackBarService: MatSnackBar,
     public settingsService: UserSettingsService
   ) {
     this.user$ = this.authService.user$;
@@ -61,6 +63,10 @@ export class UserSettingsComponent implements OnInit {
       name: this.name.value || '',
       phone: this.phone.value || '',
     };
-    this.settingsService.set(formValue).pipe(take(1)).subscribe();
+    this.settingsService.set(formValue).pipe(take(1)).subscribe(() =>{
+      this.snackBarService.open('Saved', undefined, {
+        duration: 5000,
+      });
+    });
   }
 }

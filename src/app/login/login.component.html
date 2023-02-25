@@ -39,11 +39,18 @@
                 matInput
                 placeholder="you@example.com"
                 [(ngModel)]="email"
+                (keydown.enter)="passwordField.focus()"
               />
             </mat-form-field>
             <mat-form-field>
               <mat-label>Password</mat-label>
-              <input matInput type="password" [(ngModel)]="password" />
+              <input
+                matInput
+                type="password"
+                [(ngModel)]="password"
+                (keydown.enter)="loginEmailPass()"
+                #passwordField
+              />
             </mat-form-field>
             <button mat-stroked-button (click)="loginEmailPass()">
               <span>Log In</span>
