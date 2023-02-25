@@ -17,17 +17,21 @@
 <mat-sidenav-container class="page">
   <mat-sidenav #sidenav [opened]="true" mode="side">
     <mat-nav-list>
-      <a mat-list-item routerLink="/schedule">
-        <mat-icon>schedule</mat-icon>
+      <mat-list-item routerLink="/schedule">
+        <mat-icon matListItemIcon>schedule</mat-icon>
         Schedule
-      </a>
-      <a mat-list-item routerLink="/user">
-        <mat-icon>person</mat-icon>
+      </mat-list-item>
+      <mat-list-item routerLink="/user">
+        <mat-icon matListItemIcon>person</mat-icon>
         My Settings
-      </a>
+      </mat-list-item>
       <mat-divider></mat-divider>
-      <a mat-list-item href="https://github.com/k0swe/w1aw-schedule/issues" target="_blank">
-        <mat-icon>bug_report</mat-icon>
+      <a
+        mat-list-item
+        href="https://github.com/k0swe/w1aw-schedule/issues"
+        target="_blank"
+      >
+        <mat-icon matListItemIcon>bug_report</mat-icon>
         Bugs Reports and <br />
         Feature Requests
       </a>
