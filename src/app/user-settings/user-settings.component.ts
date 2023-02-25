@@ -54,8 +54,8 @@ export class UserSettingsComponent implements OnInit {
     this.settingsService.init();
 
     let acccountCreatedInPastMinute =
-      new Date(this.user$.getValue()?.metadata.creationTime!).getTime() <
-      new Date().getTime() + 60000;
+      new Date(this.user$.getValue()?.metadata.creationTime!).getTime() >
+      new Date().getTime() - 60000;
     if (acccountCreatedInPastMinute) {
       this.snackBarService.open(
         'Account created; please fill in your station details',
