@@ -35,11 +35,17 @@ export class LoginComponent {
   }
 
   loginEmailPass() {
+    if (!this.password) {
+      return;
+    }
     const loginObs = this.authService.loginEmailPass(this.email, this.password);
     this.handleLogin(loginObs);
   }
 
   createEmailPass() {
+    if (!this.password) {
+      return;
+    }
     const loginObs = this.authService.createEmailPass(
       this.email,
       this.password
