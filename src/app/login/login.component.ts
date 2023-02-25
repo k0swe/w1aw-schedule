@@ -29,6 +29,11 @@ export class LoginComponent {
     this.handleLogin(loginObs);
   }
 
+  loginFacebook(): void {
+    const loginObs = this.authService.loginFacebook();
+    this.handleLogin(loginObs);
+  }
+
   loginEmailPass() {
     const loginObs = this.authService.loginEmailPass(this.email, this.password);
     this.handleLogin(loginObs);
@@ -77,6 +82,16 @@ export class LoginComponent {
           case 'auth/email-already-in-use':
             this.snackBarService.open(
               "Can't create account, it already exists",
+              undefined,
+              {
+                duration: 10000,
+              }
+            );
+            this.password = '';
+            break;
+          case 'auth/account-exists-with-different-credential':
+            this.snackBarService.open(
+              "Can't create account, it's already created with a different login provider",
               undefined,
               {
                 duration: 10000,

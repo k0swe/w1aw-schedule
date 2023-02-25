@@ -29,6 +29,12 @@ export class AuthenticationService {
     );
   }
 
+  public loginFacebook(): Observable<firebase.auth.UserCredential> {
+    return from(
+      this.afa.signInWithPopup(new firebase.auth.FacebookAuthProvider())
+    );
+  }
+
   public loginEmailPass(
     email: string,
     password: string
