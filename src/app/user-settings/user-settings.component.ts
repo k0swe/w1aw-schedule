@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 import firebase from 'firebase/compat/app';
 import { BehaviorSubject } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -42,8 +43,9 @@ export class UserSettingsComponent implements OnInit {
 
   constructor(
     private authService: AuthenticationService,
-    private snackBarService: MatSnackBar,
-    public settingsService: UserSettingsService
+    private route: ActivatedRoute,
+    private settingsService: UserSettingsService,
+    private snackBarService: MatSnackBar
   ) {
     this.user$ = this.authService.user$;
     this.email = new BehaviorSubject<string>(
@@ -60,15 +62,27 @@ export class UserSettingsComponent implements OnInit {
       this.callsign.setValue(settings.callsign || '');
       this.status.next(settings.status || '');
     });
+
+    this.route.queryParams.subscribe((qp) => {
+      if (qp['needToComplete']) {
+        this.snackBarService.open(
+          'Please fill in your station details before continuing',
+          undefined,
+          {
+            duration: 10000,
+          }
+        );
+      }
+    });
   }
 
   ngOnInit(): void {
     this.settingsService.init();
 
-    let acccountCreatedInPastMinute =
+    const accountCreatedInPastMinute =
       new Date(this.user$.getValue()?.metadata.creationTime!).getTime() >
       new Date().getTime() - 60000;
-    if (acccountCreatedInPastMinute) {
+    if (accountCreatedInPastMinute) {
       this.snackBarService.open(
         'Account created; please fill in your station details',
         undefined,
