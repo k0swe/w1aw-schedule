@@ -61,13 +61,22 @@ export class ScheduleCellComponent implements OnInit {
   }
 
   buttonDisabled(): boolean {
-    if (this.userSettings$.getValue()?.status != 'Approved') {
-      // TODO: client side security
+    // TODO: client side security
+    if (!this.userSettings$.getValue()?.callsign) {
+      // The user hasn't filled out their user profile
       return true;
     }
-    return (
+    if (this.userSettings$.getValue()?.status != 'Approved') {
+      // The user is not yet approved by the VOTA coordinators
+      return true;
+    }
+    if (
       !!this.shift$.getValue()?.reservedBy &&
       this.shift$.getValue()?.reservedBy != this.user$.getValue()?.uid
-    );
+    ) {
+      // This shift is already reserved by someone else
+      return true;
+    }
+    return false;
   }
 }
