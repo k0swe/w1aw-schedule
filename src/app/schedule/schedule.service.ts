@@ -20,13 +20,12 @@ export class ScheduleService {
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
-    let obs = this.firestore
+    return this.firestore
       .collection('sections')
       .doc(COLORADO_DOC_ID)
       .collection<Shift>('shifts')
       .doc(sid)
       .valueChanges();
-    return obs;
   }
 
   reserveShift(
@@ -73,5 +72,13 @@ export class ScheduleService {
         .doc(sid)
         .update({ reservedBy: null, reservedDetails: null })
     );
+  }
+
+  findUserShifts(uid: string): Observable<Shift[]> {
+    return this.firestore
+      .collection('sections')
+      .doc(COLORADO_DOC_ID)
+      .collection<Shift>('shifts', (ref) => ref.where('reservedBy', '==', uid))
+      .valueChanges();
   }
 }

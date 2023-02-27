@@ -1,1 +1,15 @@
-<p>agenda works!</p>
+<div class="container">
+  <mat-card *ngFor="let shift of userShifts$ | async">
+    <mat-card-header>
+      <mat-card-title>
+        {{ shift.time.toDate() | date : 'fullDate' }}
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      {{ shift.time.toDate() | date : 'HH:mm' : 'America/Denver' }}
+      MDT for two hours:
+      {{ shift.band }}m
+      {{ shift.mode }}
+    </mat-card-content>
+  </mat-card>
+</div>
