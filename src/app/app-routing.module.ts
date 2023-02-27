@@ -7,7 +7,6 @@ import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
-import { UserSettingsGuard } from './user-settings/user-settings.guard';
 
 const routes: Routes = [
   {
@@ -26,7 +25,7 @@ const routes: Routes = [
   {
     path: 'schedule',
     component: ScheduleComponent,
-    canActivate: [AuthenticationGuard, UserSettingsGuard],
+    canActivate: [AuthenticationGuard],
   },
   {
     path: 'agenda',
