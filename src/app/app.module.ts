@@ -28,6 +28,7 @@ import { LoginComponent } from './login/login.component';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { AgendaComponent } from './agenda/agenda.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     ScheduleCellComponent,
     ScheduleComponent,
     UserSettingsComponent,
+    AgendaComponent,
   ],
   imports: [
     AngularFireAuthModule,
