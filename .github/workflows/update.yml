@@ -26,6 +26,8 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
 
+      - run: cd web
+
       - name: npm update
         run: |
           npm install

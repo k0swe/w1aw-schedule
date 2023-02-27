@@ -36,8 +36,10 @@ jobs:
         env:
           cache-name: cache-build-artifacts
         with:
-          path: dist/
+          path: web/dist/
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+
+      - run: cd web
 
       - name: Install npm deps
         run: npm install

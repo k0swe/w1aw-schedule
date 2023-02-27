@@ -1,18 +1,19 @@
 import * as admin from 'firebase-admin';
+import { firestore } from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { Timestamp } from 'firebase/firestore';
 
 import {
   BANDS,
   COLORADO_DOC_ID,
   MODES,
   Shift,
+  shiftId,
   TIME_SLOTS_END,
   TIME_SLOTS_START,
   TWO_HOURS_IN_MS,
-  shiftId,
 } from './shared-constants';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
+import Timestamp = firestore.Timestamp;
 
 admin.initializeApp();
 
