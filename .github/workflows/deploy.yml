@@ -20,7 +20,7 @@ jobs:
         env:
           cache-name: cache-build-artifacts
         with:
-          path: dist/
+          path: web/dist/
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0

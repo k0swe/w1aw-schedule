@@ -1,11 +1,10 @@
 {
   "hosting": {
-    "public": "dist/w1aw-schedule",
+    "public": "web/dist/w1aw-schedule",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "functions/**"
+      "**/node_modules/**"
     ],
     "headers": [
       {
@@ -26,8 +25,8 @@
     ]
   },
   "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "rules": "firestore/firestore.rules",
+    "indexes": "firestore/firestore.indexes.json"
   },
   "functions": [
     {
@@ -40,6 +39,7 @@
         "firebase-debug.*.log"
       ],
       "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" ci",
         "npm --prefix \"$RESOURCE_DIR\" run lint",
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
