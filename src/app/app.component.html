@@ -17,13 +17,17 @@
 <mat-sidenav-container class="page">
   <mat-sidenav #sidenav [opened]="true" mode="side">
     <mat-nav-list>
-      <mat-list-item routerLink="/schedule">
-        <mat-icon matListItemIcon>schedule</mat-icon>
-        Schedule
-      </mat-list-item>
       <mat-list-item routerLink="/user">
         <mat-icon matListItemIcon>person</mat-icon>
         My Settings
+      </mat-list-item>
+      <mat-list-item routerLink="/schedule">
+        <mat-icon matListItemIcon>calendar_month</mat-icon>
+        Full Schedule
+      </mat-list-item>
+      <mat-list-item routerLink="/agenda">
+        <mat-icon matListItemIcon>event_available</mat-icon>
+        My Agenda
       </mat-list-item>
       <mat-divider></mat-divider>
       <a
