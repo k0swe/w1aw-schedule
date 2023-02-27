@@ -39,13 +39,14 @@ jobs:
           path: web/dist/
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - run: cd web
-
       - name: Install npm deps
+        working-directory: web
         run: npm install
 
       # - name: Test
+      #   working-directory: web
       #   run: npm run test-ci
 
       - name: Compile
+        working-directory: web
         run: npm run build
