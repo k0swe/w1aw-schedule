@@ -20,7 +20,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { environment } from '../environment/environment';
-import { AgendaComponent } from './agenda/agenda.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AvatarComponent } from './avatar/avatar.component';
@@ -29,6 +28,8 @@ import { LoginComponent } from './login/login.component';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { AgendaComponent } from './agenda/agenda.component';
+import { ApprovalListComponent } from './approval-list/approval-list.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     ScheduleCellComponent,
     ScheduleComponent,
     UserSettingsComponent,
+    ApprovalListComponent,
   ],
   imports: [
     AngularFireAuthModule,

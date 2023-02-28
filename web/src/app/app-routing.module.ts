@@ -7,6 +7,8 @@ import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { ApprovalListComponent } from './approval-list/approval-list.component';
+import { AdminGuard } from './authentication/admin.guard';
 
 const routes: Routes = [
   {
@@ -31,6 +33,11 @@ const routes: Routes = [
     path: 'agenda',
     component: AgendaComponent,
     canActivate: [AuthenticationGuard],
+  },
+  {
+    path: 'approvals',
+    component: ApprovalListComponent,
+    canActivate: [AuthenticationGuard, AdminGuard],
   },
 ];
 
