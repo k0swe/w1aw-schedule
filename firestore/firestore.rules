@@ -3,8 +3,10 @@ service cloud.firestore {
 
     // Users may only read their own profile
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']);
+      allow create: if request.auth != null && request.resource.id == request.auth.uid;
     }
 
     // Anyone may read section info
@@ -15,10 +17,12 @@ service cloud.firestore {
       match /shifts/{shiftId} {
         allow read: if request.auth != null;
         
-        // Only the user who reserved the shift may update it
+        // Users may reserve a shift for themselves.
+        // Only the user who reserved the shift may change the reservation data.
         allow update: if (request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['reservedBy', 'reservedDetails'])) && 
-          (resource.data.reservedBy == null || resource.data.reservedBy == request.auth.uid);
+          .hasOnly(['reservedBy', 'reservedDetails'])) 
+          && ((resource.data.reservedBy == null && request.resource.data.reservedBy == request.auth.uid)
+          || resource.data.reservedBy == request.auth.uid);
       }
     }
   }
