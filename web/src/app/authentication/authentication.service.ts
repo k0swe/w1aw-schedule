@@ -75,8 +75,4 @@ export class AuthenticationService {
   public logout(): Observable<void> {
     return from(this.afa.signOut());
   }
-
-  public getLoginProvidersFor(email: string): Observable<Array<string>> {
-    return from(this.afa.fetchSignInMethodsForEmail(email));
-  }
 }
