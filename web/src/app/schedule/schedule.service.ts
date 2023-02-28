@@ -35,7 +35,6 @@ export class ScheduleService {
   ): Observable<void> {
     if (!!shiftToUpdate.reservedBy) {
       // trying to take someone else's shift?
-      // TODO: client side security
       return of(undefined);
     }
     const sid = shiftId({
@@ -56,7 +55,6 @@ export class ScheduleService {
   cancelShift(shiftToUpdate: Shift, userId: string): Observable<void> {
     if (shiftToUpdate.reservedBy != userId) {
       // trying to cancel someone else's shift?
-      // TODO: client side security
       return of(undefined);
     }
     const sid = shiftId({

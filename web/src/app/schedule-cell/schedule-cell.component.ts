@@ -61,7 +61,6 @@ export class ScheduleCellComponent implements OnInit {
   }
 
   buttonDisabled(): boolean {
-    // TODO: client side security
     if (!this.userSettings$.getValue()?.callsign) {
       // The user hasn't filled out their user profile
       return true;
