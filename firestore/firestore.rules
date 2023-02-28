@@ -1,8 +1,25 @@
-// Allow read/write access on all documents to any user signed in to the application
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    // Users may only read their own profile
+    match /users/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+
+    // Anyone may read section info
+    match /sections/{sectionId} {
+      allow read;
+
+      // Any logged in user may read shifts in a section
+      match /shifts/{shiftId} {
+        allow read: if request.auth != null;
+        
+        // Only the user who reserved the shift may update it
+        allow update: if (request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['reservedBy', 'reservedDetails'])) && 
+          (resource.data.reservedBy == null || resource.data.reservedBy == request.auth.uid);
+      }
     }
   }
 }
