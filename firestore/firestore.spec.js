@@ -16,6 +16,8 @@ const {
 /** @type testing.RulesTestEnvironment */
 let testEnv;
 
+const colorado = "jZbFyscc23zjkEGRuPAI";
+
 before(async () => {
   // Silence expected rules rejections from Firestore SDK. Unexpected rejections
   // will still bubble up and will be thrown as an error (failing the tests).
@@ -110,30 +112,70 @@ describe("User profiles", () => {
       })
     );
   });
+
+  it("should allow admins to read any user", async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const fs = context.firestore();
+      await setDoc(doc(fs, `sections/${colorado}`), {
+        admins: ["amanda"],
+      });
+      await setDoc(doc(fs, "users/alice"), {
+        name: "Alice",
+        callsign: "t3st",
+        gridSquare: "DM33",
+      });
+    });
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(getDoc(doc(amandaDb, "users/alice")));
+  });
+
+  it("should allow admins to write status", async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const fs = context.firestore();
+      await setDoc(doc(fs, `sections/${colorado}`), {
+        admins: ["amanda"],
+      });
+      await setDoc(doc(fs, "users/alice"), {
+        name: "Alice",
+        callsign: "t3st",
+        gridSquare: "DM33",
+        status: "Provisional",
+      });
+    });
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(amandaDb, "users/alice"), {
+        status: "Approved",
+      })
+    );
+  });
 });
 
 describe("Section information", () => {
   it("should allow anyone to read section information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), "sections/colorado"), {
+      await setDoc(doc(context.firestore(), `sections/${colorado}`), {
         name: "Colorado",
+        admins: ["amanda"],
       });
     });
     const unauthedDb = testEnv.unauthenticatedContext().firestore();
 
-    await assertSucceeds(getDoc(doc(unauthedDb, "sections/colorado")));
+    await assertSucceeds(getDoc(doc(unauthedDb, `sections/${colorado}`)));
   });
 
   it("should not allow anyone to write section information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), "sections/colorado"), {
+      await setDoc(doc(context.firestore(), `sections/${colorado}`), {
         name: "Colorado",
       });
     });
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertFails(
-      setDoc(doc(aliceDb, "sections/colorado"), {
+      setDoc(doc(aliceDb, `sections/${colorado}`), {
         name: "The best section",
       })
     );
@@ -141,13 +183,13 @@ describe("Section information", () => {
 
   it("should not allow anyone to delete section information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), "sections/colorado"), {
+      await setDoc(doc(context.firestore(), `sections/${colorado}`), {
         name: "Colorado",
       });
     });
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
-    await assertFails(deleteDoc(doc(aliceDb, "sections/colorado")));
+    await assertFails(deleteDoc(doc(aliceDb, `sections/${colorado}`)));
   });
 });
 
@@ -155,23 +197,26 @@ describe("Shifts", () => {
   beforeEach(async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
-      await setDoc(doc(fs, "sections/colorado/shifts/shift1"), {
+      await setDoc(doc(fs, `sections/${colorado}`), {
+        admins: ["amanda"],
+      });
+      await setDoc(doc(fs, `sections/${colorado}/shifts/shift1`), {
         time: new Date(),
-        band: '20',
-        mode: 'phone',
+        band: "20",
+        mode: "phone",
         reservedBy: null,
       });
-      await setDoc(doc(fs, "sections/colorado/shifts/shift2"), {
+      await setDoc(doc(fs, `sections/${colorado}/shifts/shift2`), {
         time: new Date(),
-        band: '40',
-        mode: 'phone',
-        reservedBy: 'ravi',
+        band: "40",
+        mode: "phone",
+        reservedBy: "ravi",
       });
-      await setDoc(doc(fs, "sections/colorado/shifts/shift3"), {
+      await setDoc(doc(fs, `sections/${colorado}/shifts/shift3`), {
         time: new Date(),
-        band: '80',
-        mode: 'phone',
-        reservedBy: 'alice',
+        band: "80",
+        mode: "phone",
+        reservedBy: "alice",
       });
     });
   });
@@ -179,38 +224,77 @@ describe("Shifts", () => {
   it("should allow any authed user to read shift info", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
-    await assertSucceeds(getDoc(doc(aliceDb, "sections/colorado/shifts/shift1")));
-    await assertSucceeds(getDoc(doc(aliceDb, "sections/colorado/shifts/shift2")));
-    await assertSucceeds(getDoc(doc(aliceDb, "sections/colorado/shifts/shift3")));
+    await assertSucceeds(
+      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`))
+    );
+    await assertSucceeds(
+      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`))
+    );
+    await assertSucceeds(
+      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift3`))
+    );
   });
 
   it("should allow a user to reserve an open shift for themselves", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
-    await assertSucceeds(updateDoc(doc(aliceDb, "sections/colorado/shifts/shift1"), {reservedBy: 'alice'}));    
+    await assertSucceeds(
+      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
+        reservedBy: "alice",
+      })
+    );
   });
 
   it("should allow a user to cancel their shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
-    await assertSucceeds(updateDoc(doc(aliceDb, "sections/colorado/shifts/shift3"), {reservedBy: null}));    
+    await assertSucceeds(
+      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift3`), {
+        reservedBy: null,
+      })
+    );
   });
 
-  it("should now allow a user to reserve an open shift for someone else", async function () {
+  it("should not allow a user to reserve an open shift for someone else", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
-    await assertFails(updateDoc(doc(aliceDb, "sections/colorado/shifts/shift1"), {reservedBy: 'ravi'}));    
+    await assertFails(
+      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
+        reservedBy: "ravi",
+      })
+    );
   });
 
-  it("should now allow a user to cancel someone else's shift reservation", async function () {
+  it("should not allow a user to cancel someone else's shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
-    await assertFails(updateDoc(doc(aliceDb, "sections/colorado/shifts/shift2"), {reservedBy: null}));    
+    await assertFails(
+      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`), {
+        reservedBy: null,
+      })
+    );
   });
 
-  it("should now allow a user to take over someone else's shift reservation", async function () {
+  it("should not allow a user to take over someone else's shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
-    await assertFails(updateDoc(doc(aliceDb, "sections/colorado/shifts/shift2"), {reservedBy: 'alice'}));    
+    await assertFails(
+      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`), {
+        reservedBy: "alice",
+      })
+    );
   });
 
-  it("should now allow a user to overwrite shift info", async function () {
+  it("should not allow a user to overwrite shift info", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
-    await assertFails(updateDoc(doc(aliceDb, "sections/colorado/shifts/shift1"), {mode: 'digital'}));    
+    await assertFails(
+      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
+        mode: "digital",
+      })
+    );
+  });
+
+  it("should allow an admin to cancel a user's shift reservation", async function () {
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    await assertSucceeds(
+      updateDoc(doc(amandaDb, `sections/${colorado}/shifts/shift2`), {
+        reservedBy: null,
+      })
+    );
   });
 });

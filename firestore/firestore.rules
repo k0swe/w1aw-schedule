@@ -1,28 +1,49 @@
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function loggedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      let admins = get(/databases/$(database)/documents/sections/jZbFyscc23zjkEGRuPAI).data.admins;
+      return request.auth.uid != null && admins != null && request.auth.uid in admins;
+    }
 
     // Users may only read their own profile
     match /users/{userId} {
-      allow read, delete: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId && 
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']);
-      allow create: if request.auth != null && request.resource.id == request.auth.uid;
+      function usersOwnDoc() {
+        return request.auth.uid == userId;
+      }
+      function notUpdatingStatus() {
+        return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']);
+      }
+
+      allow create: if loggedIn() && request.resource.id == request.auth.uid;
+      allow read:   if loggedIn() && (usersOwnDoc() || isAdmin());
+      allow update: if loggedIn() && (usersOwnDoc() && notUpdatingStatus()) || isAdmin();
+      allow delete: if loggedIn() && usersOwnDoc();
     }
 
-    // Anyone may read section info
     match /sections/{sectionId} {
-      allow read;
+      allow read: if true;
 
-      // Any logged in user may read shifts in a section
       match /shifts/{shiftId} {
-        allow read: if request.auth != null;
-        
-        // Users may reserve a shift for themselves.
-        // Only the user who reserved the shift may change the reservation data.
-        allow update: if (request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['reservedBy', 'reservedDetails'])) 
-          && ((resource.data.reservedBy == null && request.resource.data.reservedBy == request.auth.uid)
-          || resource.data.reservedBy == request.auth.uid);
+        function onlyChangingReservation() {
+          return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reservedBy', 'reservedDetails']);
+        }
+        function userIsReservingForThemself() {
+          return resource.data.reservedBy == null 
+            && request.resource.data.reservedBy == request.auth.uid;
+        }
+        function userAlreadyReserved() {
+          return resource.data.reservedBy == request.auth.uid;
+        }
+
+        allow read: if loggedIn();
+        allow update: if onlyChangingReservation() 
+          && (userIsReservingForThemself() || userAlreadyReserved()) 
+          || isAdmin();
       }
     }
   }
