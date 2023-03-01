@@ -101,18 +101,22 @@ export class UserSettingsService {
 
   // Admin only
   public approve(userId: string): Observable<void> {
+    const adminId = this.authService.user$.getValue()!.uid;
     return from(
       this.firestore.doc<UserSettings>('users/' + userId).update({
         status: 'Approved',
+        approvedBy: adminId,
       })
     );
   }
 
   // Admin only
   public decline(userId: string): Observable<void> {
+    const adminId = this.authService.user$.getValue()!.uid;
     return from(
       this.firestore.doc<UserSettings>('users/' + userId).update({
         status: 'Declined',
+        declinedBy: adminId,
       })
     );
   }
@@ -125,4 +129,6 @@ export interface UserSettings {
   name?: string;
   phone?: string;
   status?: string;
+  approvedBy?: string;
+  declinedBy?: string;
 }
