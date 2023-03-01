@@ -20,6 +20,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { environment } from '../environment/environment';
+import { AgendaComponent } from './agenda/agenda.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AvatarComponent } from './avatar/avatar.component';
@@ -28,10 +29,10 @@ import { LoginComponent } from './login/login.component';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
-import { AgendaComponent } from './agenda/agenda.component';
 
 @NgModule({
   declarations: [
+    AgendaComponent,
     AppComponent,
     AvatarComponent,
     HomeComponent,
@@ -39,7 +40,6 @@ import { AgendaComponent } from './agenda/agenda.component';
     ScheduleCellComponent,
     ScheduleComponent,
     UserSettingsComponent,
-    AgendaComponent,
   ],
   imports: [
     AngularFireAuthModule,
