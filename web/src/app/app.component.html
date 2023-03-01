@@ -30,6 +30,13 @@
         My Agenda
       </mat-list-item>
       <mat-divider></mat-divider>
+      <div [hidden]="!(userIsAdmin$ | async)">
+        <mat-list-item routerLink="/approvals">
+          <mat-icon matListItemIcon>verified</mat-icon>
+          Approve Users
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </div>
       <a
         mat-list-item
         href="https://github.com/k0swe/w1aw-schedule/issues"

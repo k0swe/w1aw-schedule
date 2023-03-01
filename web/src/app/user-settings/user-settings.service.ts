@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import {
+  AngularFirestore,
+  DocumentChangeAction,
+} from '@angular/fire/compat/firestore';
+import { BehaviorSubject, Observable, from, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -65,6 +68,51 @@ export class UserSettingsService {
         return this.firestore
           .doc<UserSettings>('users/' + user.uid)
           .update(values);
+      })
+    );
+  }
+
+  // Admin only
+  public getProvisionalUsers(): Observable<
+    DocumentChangeAction<UserSettings>[]
+  > {
+    return this.getUsersByStatus('Provisional');
+  }
+
+  // Admin only
+  public getApprovedUsers(): Observable<DocumentChangeAction<UserSettings>[]> {
+    return this.getUsersByStatus('Approved');
+  }
+
+  // Admin only
+  public getDeclinedUsers(): Observable<DocumentChangeAction<UserSettings>[]> {
+    return this.getUsersByStatus('Declined');
+  }
+
+  private getUsersByStatus(
+    status: string
+  ): Observable<DocumentChangeAction<UserSettings>[]> {
+    return this.firestore
+      .collection<UserSettings>('users', (ref) =>
+        ref.where('status', '==', status)
+      )
+      .snapshotChanges();
+  }
+
+  // Admin only
+  public approve(userId: string): Observable<void> {
+    return from(
+      this.firestore.doc<UserSettings>('users/' + userId).update({
+        status: 'Approved',
+      })
+    );
+  }
+
+  // Admin only
+  public decline(userId: string): Observable<void> {
+    return from(
+      this.firestore.doc<UserSettings>('users/' + userId).update({
+        status: 'Declined',
       })
     );
   }
