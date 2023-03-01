@@ -3,6 +3,9 @@
     <mat-card-title>User Approvals</mat-card-title>
   </mat-card-header>
   <mat-card-content>
+    <div *ngIf="(provisionalUsers$ | async)?.length == 0">
+      No pending approvals
+    </div>
     <table>
       <tr *ngFor="let user of provisionalUsers$ | async">
         <td>
