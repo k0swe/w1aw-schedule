@@ -62,10 +62,18 @@
                 #passwordField
               />
             </mat-form-field>
-            <button mat-stroked-button (click)="loginEmailPass()" [disabled]="!password">
+            <button
+              mat-stroked-button
+              (click)="loginEmailPass()"
+              [disabled]="!password"
+            >
               <span>Log In</span>
             </button>
-            <button mat-stroked-button (click)="createEmailPass()" [disabled]="!password">
+            <button
+              mat-stroked-button
+              (click)="createEmailPass()"
+              [disabled]="!password"
+            >
               <span>Create Account</span>
             </button>
             <button mat-stroked-button (click)="forgotPassword()">
