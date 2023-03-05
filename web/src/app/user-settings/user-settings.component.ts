@@ -91,6 +91,7 @@ export class UserSettingsComponent implements OnInit {
         }
       );
     }
+    this.settingsForm.markAllAsTouched();
   }
 
   save(): void {
