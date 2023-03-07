@@ -3,34 +3,64 @@
     <mat-card-title>User Approvals</mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <div *ngIf="(provisionalUsers$ | async)?.length == 0">
-      No pending approvals
-    </div>
-    <table>
-      <tr *ngFor="let user of provisionalUsers$ | async">
-        <td>
-          <mat-icon>person</mat-icon>
-        </td>
-        <td>{{ user.payload.doc.data().name }}</td>
-        <td>{{ user.payload.doc.data().callsign }}</td>
-        <td>{{ user.payload.doc.data().email }}</td>
-        <td>
-          <button
-            mat-raised-button
-            color="primary"
-            (click)="approve(user.payload.doc.id)"
-          >
-            Approve
-          </button>
-          <button
-            mat-raised-button
-            color="warn"
-            (click)="decline(user.payload.doc.id)"
-          >
-            Decline
-          </button>
-        </td>
-      </tr>
-    </table>
+    <mat-tab-group>
+      <mat-tab label="Pending">
+        <div *ngIf="(provisionalUsers$ | async)?.length == 0">
+          No pending approvals
+        </div>
+        <table>
+          <tr *ngFor="let user of provisionalUsers$ | async">
+            <td>
+              <mat-icon>person</mat-icon>
+            </td>
+            <td>{{ user.payload.doc.data().name }}</td>
+            <td>{{ user.payload.doc.data().callsign }}</td>
+            <td>{{ user.payload.doc.data().email }}</td>
+            <td>
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="approve(user.payload.doc.id)"
+              >
+                Approve
+              </button>
+              <button
+                mat-raised-button
+                color="warn"
+                (click)="decline(user.payload.doc.id)"
+              >
+                Decline
+              </button>
+            </td>
+          </tr>
+        </table>
+      </mat-tab>
+      <mat-tab label="Approved">
+        <table>
+          <tr *ngFor="let user of approvedUsers$ | async">
+            <td>
+              <mat-icon>person</mat-icon>
+            </td>
+            <td>{{ user.payload.doc.data().name }}</td>
+            <td>{{ user.payload.doc.data().callsign }}</td>
+            <td>{{ user.payload.doc.data().email }}</td>
+          </tr>
+        </table>
+        <div>Email list:</div>
+        <textarea contenteditable="false" [value]="approvedEmails"></textarea>
+      </mat-tab>
+      <mat-tab label="Declined">
+        <table>
+          <tr *ngFor="let user of declinedUsers$ | async">
+            <td>
+              <mat-icon>person</mat-icon>
+            </td>
+            <td>{{ user.payload.doc.data().name }}</td>
+            <td>{{ user.payload.doc.data().callsign }}</td>
+            <td>{{ user.payload.doc.data().email }}</td>
+          </tr>
+        </table>
+      </mat-tab>
+    </mat-tab-group>
   </mat-card-content>
 </mat-card>

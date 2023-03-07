@@ -15,21 +15,22 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { environment } from '../environment/environment';
+import { AgendaComponent } from './agenda/agenda.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ApprovalListComponent } from './approval-list/approval-list.component';
 import { AvatarComponent } from './avatar/avatar.component';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
-import { AgendaComponent } from './agenda/agenda.component';
-import { ApprovalListComponent } from './approval-list/approval-list.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
     MatTableModule,
     MatToolbarModule,
     ReactiveFormsModule,
+    MatTabsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
