@@ -15,47 +15,47 @@ import {
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 import Timestamp = firestore.Timestamp;
 
-admin.initializeApp();
+export const initShifts = functions.https.onRequest(
+  async (request, response) => {
+    const userId = await validateFirebaseIdToken(request, response);
+    if (!userId || userId.uid !== 'r9qBLFDsymTyrWb3vtJmhZlDPMy1') {
+      return;
+    }
+    functions.logger.info('Validated user', userId.uid);
 
-export const initShifts = functions.https.onRequest((request, response) => {
-  const userId = validateFirebaseIdToken(request, response);
-  if (!userId) {
-    return;
-  }
-  functions.logger.info('Validated user', { userId });
+    const timeSlots = calcTimeSlots();
 
-  const timeSlots = calcTimeSlots();
-
-  const shifts: Array<Shift> = [];
-  timeSlots.forEach((timeslot) =>
-    BANDS.forEach((band) =>
-      MODES.forEach((mode) =>
-        shifts.push({
-          time: Timestamp.fromDate(timeslot),
-          band: band,
-          mode: mode,
-          reservedBy: null,
-          reservedDetails: null,
-        })
+    const shifts: Array<Shift> = [];
+    timeSlots.forEach((timeslot) =>
+      BANDS.forEach((band) =>
+        MODES.forEach((mode) =>
+          shifts.push({
+            time: Timestamp.fromDate(timeslot),
+            band: band,
+            mode: mode,
+            reservedBy: null,
+            reservedDetails: null,
+          })
+        )
       )
-    )
-  );
-  functions.logger.info('Generated shifts', { count: shifts.length });
+    );
+    functions.logger.info('Generated shifts', { count: shifts.length });
 
-  const hashedShifts = new Map<string, object>();
-  shifts.forEach((shift) => hashedShifts.set(shiftId(shift), shift));
+    const hashedShifts = new Map<string, object>();
+    shifts.forEach((shift) => hashedShifts.set(shiftId(shift), shift));
 
-  const coloradoShifts = admin
-    .firestore()
-    .collection('sections')
-    .doc(COLORADO_DOC_ID)
-    .collection('shifts');
+    const coloradoShifts = admin
+      .firestore()
+      .collection('sections')
+      .doc(COLORADO_DOC_ID)
+      .collection('shifts');
 
-  hashedShifts.forEach((shift, hash) => {
-    coloradoShifts.doc(hash).set(shift);
-  });
-  response.send({ shiftCount: hashedShifts.size });
-});
+    hashedShifts.forEach((shift, hash) => {
+      coloradoShifts.doc(hash).set(shift);
+    });
+    response.send({ shiftCount: hashedShifts.size });
+  }
+);
 
 const calcTimeSlots = (): Array<Date> => {
   const timeSlots: Array<Date> = [];
