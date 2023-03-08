@@ -43,7 +43,6 @@ export const calendar = functions.https.onRequest(async (request, response) => {
       summary: `Operate W1AW/0 on ${doc.data().band}m ${doc.data().mode}`,
     });
   });
-  // response.setHeader('content-type', 'text/calendar');
-  response.setHeader('content-type', 'text/plain');
+  response.setHeader('content-type', 'text/calendar');
   response.send(calendar.toString());
 });
