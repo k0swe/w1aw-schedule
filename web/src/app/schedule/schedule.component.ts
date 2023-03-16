@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, Observable } from 'rxjs';
 
+import { AuthenticationService } from '../authentication/authentication.service';
+import { ScheduleService } from './schedule.service';
 import {
   HF_BANDS,
   MODES,
   SHF_BANDS,
+  Shift,
   TIME_SLOTS_END,
   TIME_SLOTS_START,
   TWO_HOURS_IN_MS,
@@ -29,6 +33,7 @@ export class ScheduleComponent {
     ['UHF', UHF_BANDS],
     ['SHF', SHF_BANDS],
   ]);
+  userShifts$ = new BehaviorSubject<Shift[]>([]);
 
   viewDay: Date;
   viewBandGroup: string;
@@ -36,10 +41,18 @@ export class ScheduleComponent {
   prevDay: Date;
   nextDay: Date;
 
-  constructor(private route: ActivatedRoute, private router: Router) {
+  constructor(
+    private authenticationService: AuthenticationService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private scheduleService: ScheduleService
+  ) {
     this.viewDay = new Date(route.snapshot.queryParams['day'] || '2023-05-24');
     this.viewBandGroup = route.snapshot.queryParams['bandGroup'] || 'HF';
     this.viewMode = route.snapshot.queryParams['mode'] || 'phone';
+    this.scheduleService
+      .findUserShifts(authenticationService.user$.getValue()!.uid)
+      .subscribe((shifts) => this.userShifts$.next(shifts));
     this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
     this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
     this.changeParams();

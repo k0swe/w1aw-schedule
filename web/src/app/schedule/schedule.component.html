@@ -62,6 +62,7 @@
               [timeslot]="timeslot"
               [band]="band"
               [mode]="viewMode"
+              [userShifts]="(userShifts$ | async) || []"
             />
           </td>
         </tr>

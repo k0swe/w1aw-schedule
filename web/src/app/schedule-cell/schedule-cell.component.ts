@@ -20,6 +20,7 @@ export class ScheduleCellComponent implements OnInit {
   @Input() timeslot!: Date;
   @Input() band!: string;
   @Input() mode!: string;
+  @Input() userShifts: Shift[] = [];
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
   user$ = new BehaviorSubject<firebase.User | null>(null);
   userSettings$ = new BehaviorSubject<UserSettings>({});
@@ -61,6 +62,10 @@ export class ScheduleCellComponent implements OnInit {
   }
 
   buttonDisabled(): boolean {
+    if (this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid) {
+      // This user has reserved this shift, so they can cancel it
+      return false;
+    }
     if (!this.userSettings$.getValue()?.callsign) {
       // The user hasn't filled out their user profile
       return true;
@@ -76,6 +81,15 @@ export class ScheduleCellComponent implements OnInit {
       // This shift is already reserved by someone else
       return true;
     }
+    if (
+      this.userShifts.some(
+        (s) =>  s.time.toDate().getTime() == this.timeslot.getTime()
+      )
+    ) {
+      // This user has already reserved a different shift during this timeslot
+      return true;
+    }
+    // Otherwise, allow the user to reserve this shift!
     return false;
   }
 }
