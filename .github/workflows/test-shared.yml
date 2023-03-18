@@ -41,7 +41,7 @@ jobs:
 
       - name: Install npm deps
         working-directory: web
-        run: npm install
+        run: npm ci
 
       # - name: Test
       #   working-directory: web
@@ -49,4 +49,4 @@ jobs:
 
       - name: Compile
         working-directory: web
-        run: npm run build
+        run: npm run build:prod
