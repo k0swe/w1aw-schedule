@@ -1,6 +1,8 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { Component } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from './schedule.service';
@@ -40,12 +42,17 @@ export class ScheduleComponent {
   viewMode: string;
   prevDay: Date;
   nextDay: Date;
+  googleCalendarLink =
+    'https://calendar.google.com/calendar/u/0/embed?src=37t1at5dfkpu2gce9b0d6kg8tufub7mo@import.calendar.google.com&ctz=America/Denver&mode=WEEK&dates=20230523%2F20230530';
+  icsLink = 'https://us-central1-w1aw-schedule.cloudfunctions.net/calendar';
 
   constructor(
     private authenticationService: AuthenticationService,
     private route: ActivatedRoute,
     private router: Router,
-    private scheduleService: ScheduleService
+    private scheduleService: ScheduleService,
+    private clipboard: Clipboard,
+    private snackBarService: MatSnackBar
   ) {
     this.viewDay = new Date(route.snapshot.queryParams['day'] || '2023-05-24');
     this.viewBandGroup = route.snapshot.queryParams['bandGroup'] || 'HF';
@@ -88,5 +95,20 @@ export class ScheduleComponent {
     ) {
       this.timeSlots.push(timeSlot);
     }
+  }
+
+  copyIcsLink() {
+    this.clipboard.copy(this.icsLink);
+    this.snackBarService.open('Copied to clipboard', undefined, {
+      duration: 2000,
+    });
+  }
+
+  downloadIcs() {
+    window.open(this.icsLink, '_blank');
+  }
+
+  openGoogleCalendar() {
+    window.open(this.googleCalendarLink, '_blank');
   }
 }
