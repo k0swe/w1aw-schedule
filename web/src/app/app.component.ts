@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { BehaviorSubject } from 'rxjs';
 
 import { environment } from '../environment/environment';
 import { AuthenticationService } from './authentication/authentication.service';
-import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'kel-root',
@@ -13,9 +14,13 @@ export class AppComponent {
   appName = environment.appName;
   userIsAdmin$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private authenticationService: AuthenticationService) {
+  constructor(
+    private authenticationService: AuthenticationService,
+    private titleService: Title
+  ) {
     authenticationService
       .userIsAdmin()
       .subscribe((isAdmin) => this.userIsAdmin$.next(isAdmin));
+    this.titleService.setTitle(this.appName);
   }
 }
