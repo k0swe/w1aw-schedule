@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 
-import { environment } from '../environment/environment';
+import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
 
 @Component({

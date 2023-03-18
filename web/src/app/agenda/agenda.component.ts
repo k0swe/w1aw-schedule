@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
 
-import { environment } from '../../environment/environment';
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from '../schedule/schedule.service';
 import { Shift } from '../schedule/shared-constants';

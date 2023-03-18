@@ -5,7 +5,7 @@ import firebase from 'firebase/compat';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
-import { environment } from '../../environment/environment';
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 
 @Component({
