@@ -38,7 +38,7 @@ export class ScheduleComponent {
     ['SHF', SHF_BANDS],
   ]);
   userShifts$ = new BehaviorSubject<Shift[]>([]);
-  columnsToDisplay = ['utc', 'local'];
+  columnsToDisplay = ['utc', 'localTime'];
 
   viewDay: Date;
   viewBandGroup: string;
@@ -79,7 +79,7 @@ export class ScheduleComponent {
   }
 
   changeParams() {
-    this.columnsToDisplay  = ['utc', 'local'];
+    this.columnsToDisplay = ['utc', 'localTime'];
     for (let band of this.bandGroups.get(this.viewBandGroup)!) {
       this.columnsToDisplay.push(`${band}m ${this.viewMode}`);
     }

@@ -56,7 +56,12 @@ export class ScheduleCellComponent implements OnInit {
 
   buttonColor(): ThemePalette {
     if (this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid) {
+      // reserved by this user
       return 'accent';
+    }
+    if (this.shift$.getValue()?.reservedBy != null) {
+      // reserved by anyone else
+      return 'primary';
     }
     return undefined;
   }
@@ -78,12 +83,13 @@ export class ScheduleCellComponent implements OnInit {
       !!this.shift$.getValue()?.reservedBy &&
       this.shift$.getValue()?.reservedBy != this.user$.getValue()?.uid
     ) {
-      // This shift is already reserved by someone else
-      return true;
+      // This shift is already reserved by someone else, but we want it to be primary color,
+      // and the service will stop it from being toggled
+      return false;
     }
     if (
       this.userShifts.some(
-        (s) =>  s.time.toDate().getTime() == this.timeslot.getTime()
+        (s) => s.time.toDate().getTime() == this.timeslot.getTime()
       )
     ) {
       // This user has already reserved a different shift during this timeslot

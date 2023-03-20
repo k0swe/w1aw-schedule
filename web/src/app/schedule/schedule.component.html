@@ -49,11 +49,11 @@
       <table mat-table [dataSource]="timeSlots">
         <ng-container matColumnDef="utc">
           <th mat-header-cell *matHeaderCellDef>UTC</th>
-          <th mat-cell *matCellDef="let timeslot">
+          <td mat-cell *matCellDef="let timeslot">
             {{ timeslot | date : 'HH:mm' : 'UTC' }}
-          </th>
+          </td>
         </ng-container>
-        <ng-container matColumnDef="local">
+        <ng-container matColumnDef="localTime">
           <th mat-header-cell *matHeaderCellDef>MDT</th>
           <td mat-cell *matCellDef="let timeslot">
             {{ timeslot | date : 'MMM d, HH:mm' }}
