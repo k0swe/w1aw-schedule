@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from './schedule.service';
 import {
+  BANDS,
   HF_BANDS,
   MODES,
   SHF_BANDS,
@@ -28,6 +29,7 @@ export class ScheduleComponent {
   MODES = MODES;
   TIME_SLOTS_START = TIME_SLOTS_START;
   TIME_SLOTS_END = TIME_SLOTS_END;
+  BANDS = BANDS;
   timeSlots: Date[] = [];
   bandGroups: Map<string, string[]> = new Map([
     ['HF', HF_BANDS],
@@ -36,6 +38,7 @@ export class ScheduleComponent {
     ['SHF', SHF_BANDS],
   ]);
   userShifts$ = new BehaviorSubject<Shift[]>([]);
+  columnsToDisplay = ['utc', 'local'];
 
   viewDay: Date;
   viewBandGroup: string;
@@ -76,6 +79,10 @@ export class ScheduleComponent {
   }
 
   changeParams() {
+    this.columnsToDisplay  = ['utc', 'local'];
+    for (let band of this.bandGroups.get(this.viewBandGroup)!) {
+      this.columnsToDisplay.push(`${band}m ${this.viewMode}`);
+    }
     let isoString = this.viewDay.toISOString();
     let dateString = isoString.substring(0, isoString.indexOf('T'));
     this.router.navigate([], {
