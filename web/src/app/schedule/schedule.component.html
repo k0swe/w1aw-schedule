@@ -46,26 +46,37 @@
       </div>
     </mat-card-header>
     <mat-card-content>
-      <table>
-        <tr>
-          <th>UTC</th>
-          <th>Local</th>
-          <th *ngFor="let band of bandGroups.get(viewBandGroup)">
-            {{ band }}m {{ viewMode }}
+      <table mat-table [dataSource]="timeSlots">
+        <ng-container matColumnDef="utc">
+          <th mat-header-cell *matHeaderCellDef>UTC</th>
+          <th mat-cell *matCellDef="let timeslot">
+            {{ timeslot | date : 'HH:mm' : 'UTC' }}
           </th>
-        </tr>
-        <tr *ngFor="let timeslot of timeSlots">
-          <th>{{ timeslot | date : 'HH:mm' : 'UTC' }}</th>
-          <td>{{ timeslot | date : 'MMM d, HH:mm' }}</td>
-          <td *ngFor="let band of bandGroups.get(viewBandGroup)">
-            <kel-schedule-cell
-              [timeslot]="timeslot"
-              [band]="band"
-              [mode]="viewMode"
-              [userShifts]="(userShifts$ | async) || []"
-            />
+        </ng-container>
+        <ng-container matColumnDef="local">
+          <th mat-header-cell *matHeaderCellDef>MDT</th>
+          <td mat-cell *matCellDef="let timeslot">
+            {{ timeslot | date : 'MMM d, HH:mm' }}
           </td>
-        </tr>
+        </ng-container>
+        <ng-container *ngFor="let band of BANDS">
+          <ng-container
+            *ngFor="let mode of MODES"
+            matColumnDef="{{ band }}m {{ mode }}"
+          >
+            <th mat-header-cell *matHeaderCellDef>{{ band }}m {{ mode }}</th>
+            <td mat-cell *matCellDef="let timeslot">
+              <kel-schedule-cell
+                [band]="band"
+                [mode]="mode"
+                [timeslot]="timeslot"
+                [userShifts]="(userShifts$ | async) || []"
+              />
+            </td>
+          </ng-container>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+        <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
       </table>
     </mat-card-content>
     <mat-card-actions>
