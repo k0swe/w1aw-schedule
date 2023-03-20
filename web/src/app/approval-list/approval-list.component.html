@@ -14,12 +14,13 @@
               <mat-icon>person</mat-icon>
             </td>
             <td>{{ user.payload.doc.data().name }}</td>
-            <td>{{ user.payload.doc.data().callsign }}</td>
+            <td>{{ user.payload.doc.data().callsign || 'No callsign' }}</td>
             <td>{{ user.payload.doc.data().email }}</td>
             <td>
               <button
                 mat-raised-button
                 color="primary"
+                [disabled]="!user.payload.doc.data().callsign"
                 (click)="approve(user.payload.doc.id)"
               >
                 Approve
