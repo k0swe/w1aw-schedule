@@ -59,6 +59,12 @@
             {{ timeslot | date : 'MMM d, HH:mm' }}
           </td>
         </ng-container>
+        <ng-container matColumnDef="localTimeIcon">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let timeslot">
+            <mat-icon>{{ dayNightIcon(timeslot) }}</mat-icon>
+          </td>
+        </ng-container>
         <ng-container *ngFor="let band of BANDS">
           <ng-container
             *ngFor="let mode of MODES"

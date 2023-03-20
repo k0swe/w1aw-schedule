@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { ActivatedRoute, Router } from '@angular/router';
 import firebase from 'firebase/compat/app';
-import { BehaviorSubject, from, Observable } from 'rxjs';
-import { SectionInfoService } from '../section-info/section-info.service';
+import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+
+import { SectionInfoService } from '../section-info/section-info.service';
 
 @Injectable({
   providedIn: 'root',

@@ -39,7 +39,7 @@ export class ScheduleComponent {
   ]);
   bandGroupNames = ['HF', 'VHF', 'UHF', 'SHF'];
   userShifts$ = new BehaviorSubject<Shift[]>([]);
-  columnsToDisplay = ['utc', 'localTime'];
+  columnsToDisplay: string[] = [];
 
   viewDay: Date;
   viewBandGroup: string;
@@ -80,7 +80,7 @@ export class ScheduleComponent {
   }
 
   changeParams() {
-    this.columnsToDisplay = ['utc', 'localTime'];
+    this.columnsToDisplay = ['utc', 'localTime', 'localTimeIcon'];
     for (let band of this.bandGroups.get(this.viewBandGroup)!) {
       this.columnsToDisplay.push(`${band}m ${this.viewMode}`);
     }
@@ -103,6 +103,13 @@ export class ScheduleComponent {
     ) {
       this.timeSlots.push(timeSlot);
     }
+  }
+
+  dayNightIcon(timeSlot: Date) {
+    const localHour = new Date(
+      timeSlot.toLocaleString('en-US', { timeZone: 'America/Denver' })
+    ).getHours();
+    return localHour >= 6 && localHour < 20 ? 'light_mode' : 'dark_mode';
   }
 
   copyIcsLink() {

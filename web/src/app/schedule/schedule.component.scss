@@ -6,7 +6,7 @@
 mat-card {
   flex: 1 1 0;
   margin: 8px;
-  max-width: 950px;
+  max-width: 1050px;
 }
 
 mat-card-header {
@@ -31,4 +31,11 @@ mat-form-field {
 
 button {
   margin: 0 8px;
+}
+
+.mat-column-localTime {
+  padding-right: 2px;
+}
+.mat-column-localTimeIcon {
+  padding-left: 2px;
 }

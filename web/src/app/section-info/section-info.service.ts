@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { COLORADO_DOC_ID } from '../schedule/shared-constants';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+
+import { COLORADO_DOC_ID } from '../schedule/shared-constants';
 
 @Injectable({
   providedIn: 'root',
