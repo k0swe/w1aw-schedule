@@ -19,7 +19,7 @@
           <mat-label>Band Group</mat-label>
           <mat-select [(value)]="viewBandGroup" (valueChange)="changeParams()">
             <mat-option
-              *ngFor="let bandGroup of bandGroups.keys()"
+              *ngFor="let bandGroup of bandGroupNames"
               [value]="bandGroup"
             >
               {{ bandGroup }}
