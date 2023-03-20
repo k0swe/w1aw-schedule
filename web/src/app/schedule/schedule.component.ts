@@ -37,6 +37,7 @@ export class ScheduleComponent {
     ['UHF', UHF_BANDS],
     ['SHF', SHF_BANDS],
   ]);
+  bandGroupNames = ['HF', 'VHF', 'UHF', 'SHF'];
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   columnsToDisplay = ['utc', 'localTime'];
 
