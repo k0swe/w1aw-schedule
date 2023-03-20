@@ -5,18 +5,28 @@
   <mat-card-content>
     <mat-tab-group>
       <mat-tab label="Pending">
-        <div *ngIf="(provisionalUsers$ | async)?.length == 0">
-          No pending approvals
-        </div>
-        <table>
-          <tr *ngFor="let user of provisionalUsers$ | async">
-            <td>
-              <mat-icon>person</mat-icon>
+        <table mat-table [dataSource]="provisionalUsers$">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-icon>person</mat-icon> {{ user.payload.doc.data().name }}
             </td>
-            <td>{{ user.payload.doc.data().name }}</td>
-            <td>{{ user.payload.doc.data().callsign || 'No callsign' }}</td>
-            <td>{{ user.payload.doc.data().email }}</td>
-            <td>
+          </ng-container>
+          <ng-container matColumnDef="callsign">
+            <th mat-header-cell *matHeaderCellDef>Callsign</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.payload.doc.data().callsign || 'No callsign' }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.payload.doc.data().email }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let user">
               <button
                 mat-raised-button
                 color="primary"
@@ -33,33 +43,73 @@
                 Decline
               </button>
             </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="pendingDisplayColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let myRowData; columns: pendingDisplayColumns"
+          ></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell" [attr.colspan]="pendingDisplayColumns.length">
+              No pending approvals.
+            </td>
           </tr>
         </table>
       </mat-tab>
       <mat-tab label="Approved">
-        <table>
-          <tr *ngFor="let user of approvedUsers$ | async">
-            <td>
-              <mat-icon>person</mat-icon>
+        <table mat-table [dataSource]="approvedUsers$">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-icon>person</mat-icon> {{ user.payload.doc.data().name }}
             </td>
-            <td>{{ user.payload.doc.data().name }}</td>
-            <td>{{ user.payload.doc.data().callsign }}</td>
-            <td>{{ user.payload.doc.data().email }}</td>
-          </tr>
+          </ng-container>
+          <ng-container matColumnDef="callsign">
+            <th mat-header-cell *matHeaderCellDef>Callsign</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.payload.doc.data().callsign || 'No callsign' }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.payload.doc.data().email }}
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="approvedDisplayColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let myRowData; columns: approvedDisplayColumns"
+          ></tr>
         </table>
         <div>Email list:</div>
         <textarea contenteditable="false" [value]="approvedEmails"></textarea>
       </mat-tab>
       <mat-tab label="Declined">
-        <table>
-          <tr *ngFor="let user of declinedUsers$ | async">
-            <td>
-              <mat-icon>person</mat-icon>
+        <table mat-table [dataSource]="declinedUsers$">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-icon>person</mat-icon> {{ user.payload.doc.data().name }}
             </td>
-            <td>{{ user.payload.doc.data().name }}</td>
-            <td>{{ user.payload.doc.data().callsign }}</td>
-            <td>{{ user.payload.doc.data().email }}</td>
-          </tr>
+          </ng-container>
+          <ng-container matColumnDef="callsign">
+            <th mat-header-cell *matHeaderCellDef>Callsign</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.payload.doc.data().callsign || 'No callsign' }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.payload.doc.data().email }}
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="declinedDisplayColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let myRowData; columns: declinedDisplayColumns"
+          ></tr>
         </table>
       </mat-tab>
     </mat-tab-group>

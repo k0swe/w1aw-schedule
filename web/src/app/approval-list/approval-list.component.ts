@@ -8,6 +8,9 @@ import { UserSettingsService } from '../user-settings/user-settings.service';
   styleUrls: ['./approval-list.component.scss'],
 })
 export class ApprovalListComponent {
+  pendingDisplayColumns = ['name', 'callsign', 'email', 'actions'];
+  approvedDisplayColumns = ['name', 'callsign', 'email'];
+  declinedDisplayColumns = ['name', 'callsign', 'email'];
   provisionalUsers$ = this.userSettingsService.getProvisionalUsers();
   approvedUsers$ = this.userSettingsService.getApprovedUsers();
   declinedUsers$ = this.userSettingsService.getDeclinedUsers();
