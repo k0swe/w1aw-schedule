@@ -29,7 +29,8 @@ jobs:
       - name: npm update
         working-directory: web
         run: |
-          npm install
+          npx npm-check-updates -u -x typescript
+          npm install -f
           npm update
           npm install
 
