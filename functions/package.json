@@ -15,7 +15,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "firebase-admin": "11.9.0",
+    "firebase-admin": "11.10.1",
     "firebase-functions": "4.4.1",
     "ical-generator": "5.0.0",
     "uuid-by-string": "4.0.0"
