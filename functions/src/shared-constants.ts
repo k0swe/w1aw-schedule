@@ -1,7 +1,6 @@
 // This file is copy-pasta'd in the web app
 
-import {firestore} from "firebase-admin";
-import Timestamp = firestore.Timestamp;
+import {Timestamp} from "firebase-admin/firestore";
 
 export const TWO_HOURS_IN_MS: number = 2 * 60 * 60 * 1000;
 export const TIME_SLOTS_START = new Date('2023-09-13T00:00:00Z');

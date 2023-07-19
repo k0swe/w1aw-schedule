@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
-import { firestore } from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import {Timestamp} from "firebase-admin/firestore";
 
 import {
   BANDS,
@@ -13,7 +13,6 @@ import {
   TWO_HOURS_IN_MS,
 } from './shared-constants';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
-import Timestamp = firestore.Timestamp;
 
 export const initShifts = functions.https.onRequest(
   async (request, response) => {
