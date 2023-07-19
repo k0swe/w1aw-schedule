@@ -58,7 +58,9 @@ export class ScheduleComponent {
     private clipboard: Clipboard,
     private snackBarService: MatSnackBar
   ) {
-    this.viewDay = new Date(route.snapshot.queryParams['day'] || '2023-05-24');
+    this.viewDay = new Date(
+      route.snapshot.queryParams['day'] || TIME_SLOTS_START.toISOString().split('T')[0]
+    );
     this.viewBandGroup = route.snapshot.queryParams['bandGroup'] || 'HF';
     this.viewMode = route.snapshot.queryParams['mode'] || 'phone';
     this.scheduleService
