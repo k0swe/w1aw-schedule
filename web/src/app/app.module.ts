@@ -31,6 +31,7 @@ import { LoginComponent } from './login/login.component';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleComponent } from './schedule/schedule.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     MatButtonModule,
     MatButtonModule,
     MatCardModule,
+    HttpClientModule,
     MatDialogModule,
     MatExpansionModule,
     MatIconModule,

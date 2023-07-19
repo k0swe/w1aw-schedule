@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
@@ -45,7 +46,8 @@ export class UserSettingsComponent implements OnInit {
     private authService: AuthenticationService,
     private route: ActivatedRoute,
     private settingsService: UserSettingsService,
-    private snackBarService: MatSnackBar
+    private snackBarService: MatSnackBar,
+    private http: HttpClient
   ) {
     this.user$ = this.authService.user$;
     this.email = new BehaviorSubject<string>(
@@ -110,6 +112,15 @@ export class UserSettingsComponent implements OnInit {
         this.snackBarService.open('Saved', undefined, {
           duration: 5000,
         });
+      });
+  }
+
+  logToken() {
+    this.authService.user$
+      .getValue()
+      ?.getIdToken()
+      .then((token) => {
+        console.log('token', token);
       });
   }
 }
