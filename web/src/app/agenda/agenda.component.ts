@@ -21,7 +21,7 @@ export class AgendaComponent {
     private authenticationService: AuthenticationService,
     private clipboard: Clipboard,
     private scheduleService: ScheduleService,
-    private snackBarService: MatSnackBar
+    private snackBarService: MatSnackBar,
   ) {
     this.authenticationService.user$.subscribe((user) => {
       if (!user) {

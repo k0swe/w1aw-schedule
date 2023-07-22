@@ -56,10 +56,11 @@ export class ScheduleComponent {
     private router: Router,
     private scheduleService: ScheduleService,
     private clipboard: Clipboard,
-    private snackBarService: MatSnackBar
+    private snackBarService: MatSnackBar,
   ) {
     this.viewDay = new Date(
-      route.snapshot.queryParams['day'] || TIME_SLOTS_START.toISOString().split('T')[0]
+      route.snapshot.queryParams['day'] ||
+        TIME_SLOTS_START.toISOString().split('T')[0],
     );
     this.viewBandGroup = route.snapshot.queryParams['bandGroup'] || 'HF';
     this.viewMode = route.snapshot.queryParams['mode'] || 'phone';
@@ -109,7 +110,7 @@ export class ScheduleComponent {
 
   dayNightIcon(timeSlot: Date) {
     const localHour = new Date(
-      timeSlot.toLocaleString('en-US', { timeZone: 'America/Denver' })
+      timeSlot.toLocaleString('en-US', { timeZone: 'America/Denver' }),
     ).getHours();
     return localHour >= 6 && localHour < 20 ? 'light_mode' : 'dark_mode';
   }

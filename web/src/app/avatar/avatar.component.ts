@@ -19,7 +19,7 @@ export class AvatarComponent {
   constructor(
     public authService: AuthenticationService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
   ) {
     this.user$ = this.authService.user$;
     this.user$.subscribe((u) => {

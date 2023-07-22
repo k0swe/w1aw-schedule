@@ -21,7 +21,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthenticationService,
     private router: Router,
-    private snackBarService: MatSnackBar
+    private snackBarService: MatSnackBar,
   ) {}
 
   loginGoogle(): void {
@@ -48,7 +48,7 @@ export class LoginComponent {
     }
     const loginObs = this.authService.createEmailPass(
       this.email,
-      this.password
+      this.password,
     );
     this.handleLogin(loginObs);
   }
@@ -62,7 +62,7 @@ export class LoginComponent {
   }
 
   private handleLogin(
-    loginObs: Observable<firebase.auth.UserCredential>
+    loginObs: Observable<firebase.auth.UserCredential>,
   ): void {
     loginObs.pipe(take(1)).subscribe({
       next: (_) => {
@@ -91,7 +91,7 @@ export class LoginComponent {
               undefined,
               {
                 duration: 10000,
-              }
+              },
             );
             this.password = '';
             break;
@@ -101,7 +101,7 @@ export class LoginComponent {
               undefined,
               {
                 duration: 10000,
-              }
+              },
             );
             this.password = '';
             break;
@@ -110,7 +110,7 @@ export class LoginComponent {
             this.snackBarService.open(
               'There was a problem logging in, see the JavaScript console for details.',
               undefined,
-              { duration: 10000 }
+              { duration: 10000 },
             );
         }
       },

@@ -16,7 +16,7 @@ export class AppComponent {
 
   constructor(
     private authenticationService: AuthenticationService,
-    private titleService: Title
+    private titleService: Title,
   ) {
     authenticationService
       .userIsAdmin()

@@ -16,7 +16,7 @@ export class ScheduleService {
   public findShift(
     time: Date,
     band: string,
-    mode: string
+    mode: string,
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
@@ -31,7 +31,7 @@ export class ScheduleService {
   reserveShift(
     shiftToUpdate: Shift,
     userId: string,
-    userDetails: UserSettings
+    userDetails: UserSettings,
   ): Observable<void> {
     if (!!shiftToUpdate.reservedBy) {
       // trying to take someone else's shift?
@@ -48,7 +48,7 @@ export class ScheduleService {
         .doc(COLORADO_DOC_ID)
         .collection<Shift>('shifts')
         .doc(sid)
-        .update({ reservedBy: userId, reservedDetails: userDetails })
+        .update({ reservedBy: userId, reservedDetails: userDetails }),
     );
   }
 
@@ -68,7 +68,7 @@ export class ScheduleService {
         .doc(COLORADO_DOC_ID)
         .collection<Shift>('shifts')
         .doc(sid)
-        .update({ reservedBy: null, reservedDetails: null })
+        .update({ reservedBy: null, reservedDetails: null }),
     );
   }
 

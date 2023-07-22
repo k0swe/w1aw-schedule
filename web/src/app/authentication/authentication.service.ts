@@ -17,7 +17,7 @@ export class AuthenticationService {
     public afa: AngularFireAuth,
     private route: ActivatedRoute,
     private sectionInfoService: SectionInfoService,
-    private router: Router
+    private router: Router,
   ) {
     this.afa.user.subscribe((u) => {
       this.user$.next(u);
@@ -29,26 +29,26 @@ export class AuthenticationService {
 
   public loginGoogle(): Observable<firebase.auth.UserCredential> {
     return from(
-      this.afa.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      this.afa.signInWithPopup(new firebase.auth.GoogleAuthProvider()),
     );
   }
 
   public loginFacebook(): Observable<firebase.auth.UserCredential> {
     return from(
-      this.afa.signInWithPopup(new firebase.auth.FacebookAuthProvider())
+      this.afa.signInWithPopup(new firebase.auth.FacebookAuthProvider()),
     );
   }
 
   public loginEmailPass(
     email: string,
-    password: string
+    password: string,
   ): Observable<firebase.auth.UserCredential> {
     return from(this.afa.signInWithEmailAndPassword(email, password));
   }
 
   public createEmailPass(
     email: string,
-    password: string
+    password: string,
   ): Observable<firebase.auth.UserCredential> {
     return from(this.afa.createUserWithEmailAndPassword(email, password));
   }
@@ -67,9 +67,9 @@ export class AuthenticationService {
               return false;
             }
             return adminList.includes(user.uid);
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 

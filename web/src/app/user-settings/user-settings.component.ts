@@ -47,17 +47,17 @@ export class UserSettingsComponent implements OnInit {
     private route: ActivatedRoute,
     private settingsService: UserSettingsService,
     private snackBarService: MatSnackBar,
-    private http: HttpClient
+    private http: HttpClient,
   ) {
     this.user$ = this.authService.user$;
     this.email = new BehaviorSubject<string>(
-      this.user$.getValue()?.email || ''
+      this.user$.getValue()?.email || '',
     );
     this.status = new BehaviorSubject<string>('Provisional');
     this.settingsService.settings$.subscribe((settings) => {
       // when settings are loaded (or changed), re-bind values
       this.name.setValue(
-        settings.name || this.user$.getValue()?.displayName || ''
+        settings.name || this.user$.getValue()?.displayName || '',
       );
       this.gridSquare.setValue(settings.gridSquare || '');
       this.phone.setValue(settings.phone || '');
@@ -72,7 +72,7 @@ export class UserSettingsComponent implements OnInit {
           undefined,
           {
             duration: 10000,
-          }
+          },
         );
       }
     });
@@ -90,7 +90,7 @@ export class UserSettingsComponent implements OnInit {
         undefined,
         {
           duration: 10000,
-        }
+        },
       );
     }
     this.settingsForm.markAllAsTouched();
@@ -112,15 +112,6 @@ export class UserSettingsComponent implements OnInit {
         this.snackBarService.open('Saved', undefined, {
           duration: 5000,
         });
-      });
-  }
-
-  logToken() {
-    this.authService.user$
-      .getValue()
-      ?.getIdToken()
-      .then((token) => {
-        console.log('token', token);
       });
   }
 }

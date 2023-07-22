@@ -17,12 +17,12 @@ import { AuthenticationService } from './authentication.service';
 export class AuthenticationGuard implements CanActivate {
   constructor(
     private router: Router,
-    private authService: AuthenticationService
+    private authService: AuthenticationService,
   ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    state: RouterStateSnapshot,
   ):
     | Observable<boolean | UrlTree>
     | Promise<boolean | UrlTree>
@@ -36,9 +36,9 @@ export class AuthenticationGuard implements CanActivate {
         return of(
           this.router.createUrlTree(['/login'], {
             queryParams: { continue: state.url },
-          })
+          }),
         );
-      })
+      }),
     );
   }
 }

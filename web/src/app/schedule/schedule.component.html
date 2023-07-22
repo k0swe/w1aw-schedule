@@ -3,7 +3,7 @@
     <mat-card-header>
       <mat-card-title>
         Viewing shifts for
-        {{ viewDay | date : 'fullDate' : 'UTC' }} (UTC)
+        {{ viewDay | date: 'fullDate' : 'UTC' }} (UTC)
       </mat-card-title>
       <div class="top-actions">
         <button
@@ -50,13 +50,13 @@
         <ng-container matColumnDef="utc">
           <th mat-header-cell *matHeaderCellDef>UTC</th>
           <td mat-cell *matCellDef="let timeslot">
-            {{ timeslot | date : 'HH:mm' : 'UTC' }}
+            {{ timeslot | date: 'HH:mm' : 'UTC' }}
           </td>
         </ng-container>
         <ng-container matColumnDef="localTime">
           <th mat-header-cell *matHeaderCellDef>MDT</th>
           <td mat-cell *matCellDef="let timeslot">
-            {{ timeslot | date : 'MMM d, HH:mm' }}
+            {{ timeslot | date: 'MMM d, HH:mm' }}
           </td>
         </ng-container>
         <ng-container matColumnDef="localTimeIcon">

@@ -17,7 +17,7 @@ export class UserSettingsService {
 
   constructor(
     private authService: AuthenticationService,
-    private firestore: AngularFirestore
+    private firestore: AngularFirestore,
   ) {}
 
   public init(): void {
@@ -34,7 +34,7 @@ export class UserSettingsService {
           return this.firestore
             .doc<UserSettings>('users/' + user.uid)
             .valueChanges();
-        })
+        }),
       )
       .subscribe((settings) => {
         if (settings) {
@@ -68,7 +68,7 @@ export class UserSettingsService {
         return this.firestore
           .doc<UserSettings>('users/' + user.uid)
           .update(values);
-      })
+      }),
     );
   }
 
@@ -90,11 +90,11 @@ export class UserSettingsService {
   }
 
   private getUsersByStatus(
-    status: string
+    status: string,
   ): Observable<DocumentChangeAction<UserSettings>[]> {
     return this.firestore
       .collection<UserSettings>('users', (ref) =>
-        ref.where('status', '==', status)
+        ref.where('status', '==', status),
       )
       .snapshotChanges();
   }
@@ -106,7 +106,7 @@ export class UserSettingsService {
       this.firestore.doc<UserSettings>('users/' + userId).update({
         status: 'Approved',
         approvedBy: adminId,
-      })
+      }),
     );
   }
 
@@ -117,7 +117,7 @@ export class UserSettingsService {
       this.firestore.doc<UserSettings>('users/' + userId).update({
         status: 'Declined',
         declinedBy: adminId,
-      })
+      }),
     );
   }
 }

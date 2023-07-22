@@ -28,7 +28,7 @@ export class ScheduleCellComponent implements OnInit {
   constructor(
     private scheduleService: ScheduleService,
     private authenticationService: AuthenticationService,
-    private userSettingsService: UserSettingsService
+    private userSettingsService: UserSettingsService,
   ) {}
 
   ngOnInit(): void {
@@ -89,7 +89,7 @@ export class ScheduleCellComponent implements OnInit {
     }
     if (
       this.userShifts.some(
-        (s) => s.time.toDate().getTime() == this.timeslot.getTime()
+        (s) => s.time.toDate().getTime() == this.timeslot.getTime(),
       )
     ) {
       // This user has already reserved a different shift during this timeslot
