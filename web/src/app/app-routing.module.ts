@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AgendaComponent } from './agenda/agenda.component';
-import { ApprovalListComponent } from './approval-list/approval-list.component';
-import { AdminGuard } from './authentication/admin.guard';
 import { AuthenticationGuard } from './authentication/authentication.guard';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
@@ -36,8 +34,10 @@ const routes: Routes = [
   },
   {
     path: 'approvals',
-    component: ApprovalListComponent,
-    canActivate: [AuthenticationGuard, AdminGuard],
+    loadChildren: () =>
+      import('./approval-list/approval-list.module').then(
+        (m) => m.ApprovalListModule,
+      ),
   },
 ];
 

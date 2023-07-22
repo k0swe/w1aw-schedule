@@ -17,7 +17,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -26,7 +25,6 @@ import { environment } from '../environments/environment';
 import { AgendaComponent } from './agenda/agenda.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ApprovalListComponent } from './approval-list/approval-list.component';
 import { AvatarComponent } from './avatar/avatar.component';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
@@ -44,7 +42,6 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     ScheduleCellComponent,
     ScheduleComponent,
     UserSettingsComponent,
-    ApprovalListComponent,
   ],
   imports: [
     AngularFireAuthModule,
@@ -54,10 +51,9 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     BrowserAnimationsModule,
     BrowserModule,
     FormsModule,
-    MatButtonModule,
+    HttpClientModule,
     MatButtonModule,
     MatCardModule,
-    HttpClientModule,
     MatDialogModule,
     MatExpansionModule,
     MatIconModule,
@@ -69,9 +65,8 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     MatSnackBarModule,
     MatTableModule,
     MatToolbarModule,
-    ReactiveFormsModule,
-    MatTabsModule,
     NgOptimizedImage,
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
