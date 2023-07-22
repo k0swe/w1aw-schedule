@@ -10,7 +10,6 @@ import { MatTableModule } from '@angular/material/table';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleRoutingModule } from './schedule-routing.module';
 import { ScheduleComponent } from './schedule.component';
-import { ScheduleService } from './schedule.service';
 
 @NgModule({
   declarations: [ScheduleCellComponent, ScheduleComponent],
