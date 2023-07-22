@@ -3,13 +3,13 @@ import { ThemePalette } from '@angular/material/core';
 import firebase from 'firebase/compat/app';
 import { BehaviorSubject } from 'rxjs';
 
-import { AuthenticationService } from '../authentication/authentication.service';
-import { ScheduleService } from '../schedule/schedule.service';
-import { Shift } from '../schedule/shared-constants';
+import { AuthenticationService } from '../../authentication/authentication.service';
 import {
   UserSettings,
   UserSettingsService,
-} from '../user-settings/user-settings.service';
+} from '../../user-settings/user-settings.service';
+import { ScheduleService } from '../schedule.service';
+import { Shift } from '../shared-constants';
 
 @Component({
   selector: 'kel-schedule-cell',
