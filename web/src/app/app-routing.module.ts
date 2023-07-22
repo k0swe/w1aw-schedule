@@ -17,8 +17,10 @@ const routes: Routes = [
   },
   {
     path: 'user',
-    component: UserSettingsComponent,
-    canActivate: [AuthenticationGuard],
+    loadChildren: () =>
+      import('./user-settings/user-settings.module').then(
+        (m) => m.UserSettingsModule,
+      ),
   },
   {
     path: 'schedule',
