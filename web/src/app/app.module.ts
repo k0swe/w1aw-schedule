@@ -22,7 +22,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { environment } from '../environments/environment';
-import { AgendaComponent } from './agenda/agenda.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AvatarComponent } from './avatar/avatar.component';
@@ -34,7 +33,6 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
 
 @NgModule({
   declarations: [
-    AgendaComponent,
     AppComponent,
     AvatarComponent,
     HomeComponent,

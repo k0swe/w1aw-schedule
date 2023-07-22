@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { AgendaComponent } from './agenda/agenda.component';
 import { AuthenticationGuard } from './authentication/authentication.guard';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
@@ -29,8 +28,8 @@ const routes: Routes = [
   },
   {
     path: 'agenda',
-    component: AgendaComponent,
-    canActivate: [AuthenticationGuard],
+    loadChildren: () =>
+      import('./agenda/agenda.module').then((m) => m.AgendaModule),
   },
   {
     path: 'approvals',
