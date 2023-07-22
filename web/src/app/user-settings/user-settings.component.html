@@ -14,7 +14,7 @@
           <input
             matInput
             placeholder="me@example.com"
-            [value]="email | async"
+            [value]="(email | async) || ''"
             [disabled]="true"
             [required]="true"
           />
@@ -39,8 +39,7 @@
           <mat-label>Status</mat-label>
           <input
             matInput
-            value="Provisional"
-            [value]="status | async"
+            [value]="(status | async) ?? 'Provisional'"
             [disabled]="true"
             [required]="true"
           />

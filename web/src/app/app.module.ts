@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { AngularFireModule } from '@angular/fire/compat';
@@ -70,6 +71,7 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     MatToolbarModule,
     ReactiveFormsModule,
     MatTabsModule,
+    NgOptimizedImage,
   ],
   providers: [],
   bootstrap: [AppComponent],
