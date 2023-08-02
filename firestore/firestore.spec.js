@@ -289,11 +289,20 @@ describe("Shifts", () => {
     );
   });
 
-  it("should allow an admin to cancel a user's shift reservation", async function () {
+  it("should allow an admin to cancel another user's shift reservation", async function () {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
     await assertSucceeds(
       updateDoc(doc(amandaDb, `sections/${colorado}/shifts/shift2`), {
         reservedBy: null,
+      })
+    );
+  });
+
+  it("should allow an admin to reserve a shift for another user", async function () {
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    await assertSucceeds(
+      updateDoc(doc(amandaDb, `sections/${colorado}/shifts/shift1`), {
+        reservedBy: "alice",
       })
     );
   });
