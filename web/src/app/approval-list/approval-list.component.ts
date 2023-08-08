@@ -9,8 +9,8 @@ import { UserSettingsService } from '../user-settings/user-settings.service';
 })
 export class ApprovalListComponent {
   pendingDisplayColumns = ['name', 'callsign', 'email', 'actions'];
-  approvedDisplayColumns = ['name', 'callsign', 'email'];
-  declinedDisplayColumns = ['name', 'callsign', 'email'];
+  approvedDisplayColumns = ['name', 'callsign', 'email', 'actions'];
+  declinedDisplayColumns = ['name', 'callsign', 'email', 'actions'];
   provisionalUsers$ = this.userSettingsService.getProvisionalUsers();
   approvedUsers$ = this.userSettingsService.getApprovedUsers();
   declinedUsers$ = this.userSettingsService.getDeclinedUsers();
@@ -30,5 +30,9 @@ export class ApprovalListComponent {
 
   decline(id: string) {
     this.userSettingsService.decline(id).subscribe();
+  }
+
+  delete(id: string) {
+    this.userSettingsService.delete(id).subscribe();
   }
 }

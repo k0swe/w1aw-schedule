@@ -1,11 +1,13 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   AngularFirestore,
   DocumentChangeAction,
 } from '@angular/fire/compat/firestore';
-import { BehaviorSubject, Observable, from, of } from 'rxjs';
+import { BehaviorSubject, Observable, from, mergeMap, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 
 @Injectable({
@@ -18,6 +20,7 @@ export class UserSettingsService {
   constructor(
     private authService: AuthenticationService,
     private firestore: AngularFirestore,
+    private httpClient: HttpClient,
   ) {}
 
   public init(): void {
@@ -117,6 +120,18 @@ export class UserSettingsService {
       this.firestore.doc<UserSettings>('users/' + userId).update({
         status: 'Declined',
         declinedBy: adminId,
+      }),
+    );
+  }
+
+  delete(id: string): Observable<any> {
+    // Call cloud function to delete user
+    const url = `${environment.functionBase}/deleteUser?uid=${id}`;
+    return from(this.authService.user$.getValue()!.getIdToken(false)).pipe(
+      mergeMap((jwt) => {
+        return this.httpClient.post(url, null, {
+          headers: { Authorization: 'Bearer ' + jwt },
+        });
       }),
     );
   }

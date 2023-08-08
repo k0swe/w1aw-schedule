@@ -1,6 +1,6 @@
 // This file is copy-pasta'd in the web app
 
-import {Timestamp} from "firebase-admin/firestore";
+import { Timestamp } from 'firebase-admin/firestore';
 
 export const TWO_HOURS_IN_MS: number = 2 * 60 * 60 * 1000;
 export const TIME_SLOTS_START = new Date('2023-09-13T00:00:00Z');
@@ -12,6 +12,13 @@ export const UHF_BANDS = ['0.7', '0.33', '0.23', '0.13'];
 export const SHF_BANDS = ['0.05', '0.03'];
 export const BANDS = [...HF_BANDS, ...VHF_BANDS, ...UHF_BANDS, ...SHF_BANDS];
 export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
+
+export interface SectionInfo {
+  name: string;
+  coordinatorName: string;
+  coordinatorCallsign: string;
+  admins: string[];
+}
 
 export interface Shift {
   time: Timestamp;
