@@ -20,5 +20,15 @@ export const userStatusChanged = functions.firestore
             },
           },
         });
+    } else if (after.status === 'Declined') {
+      // find any shifts that were reserved by this user and un-assign them
+      const shifts = await admin
+        .firestore()
+        .collection('shifts')
+        .where('reservedBy', '==', change.after.id)
+        .get();
+      for (const shift of shifts.docs) {
+        await shift.ref.update({ reservedBy: null, reservedDetails: null });
+      }
     }
   });
