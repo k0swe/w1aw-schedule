@@ -6,6 +6,9 @@ import * as cors from 'cors';
 
 const corsHandler = cors({ origin: true });
 
+/**
+ * Get the section info from Firestore.
+ */
 async function getSectionInfo() {
   const sectionInfoSnapshot = await admin
     .firestore()
