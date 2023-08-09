@@ -1,7 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import firebase from 'firebase/compat/app';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 import { AuthenticationService } from '../../authentication/authentication.service';
 import {
@@ -16,7 +16,7 @@ import { Shift } from '../shared-constants';
   templateUrl: './schedule-cell.component.html',
   styleUrls: ['./schedule-cell.component.scss'],
 })
-export class ScheduleCellComponent implements OnInit {
+export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() timeslot!: Date;
   @Input() band!: string;
   @Input() mode!: string;
@@ -24,6 +24,9 @@ export class ScheduleCellComponent implements OnInit {
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
   user$ = new BehaviorSubject<firebase.User | null>(null);
   userSettings$ = new BehaviorSubject<UserSettings>({});
+  isAdmin$ = new BehaviorSubject<boolean>(false);
+  private shiftSubscription: Subscription | null = null;
+  private adminSubscription: Subscription | null = null;
 
   constructor(
     private scheduleService: ScheduleService,
@@ -33,11 +36,22 @@ export class ScheduleCellComponent implements OnInit {
 
   ngOnInit(): void {
     this.userSettingsService.init();
-    this.scheduleService
+    this.shiftSubscription = this.scheduleService
       .findShift(this.timeslot, this.band, this.mode)
       .subscribe((sh) => this.shift$.next(sh));
     this.user$ = this.authenticationService.user$;
+    this.adminSubscription = this.authenticationService
+      .userIsAdmin()
+      .subscribe((isAdmin) => {
+        console.log('isAdmin', isAdmin);
+        this.isAdmin$.next(isAdmin);
+      });
     this.userSettings$ = this.userSettingsService.settings$;
+  }
+
+  ngOnDestroy() {
+    this.shiftSubscription?.unsubscribe();
+    this.adminSubscription?.unsubscribe();
   }
 
   toggleShift() {
