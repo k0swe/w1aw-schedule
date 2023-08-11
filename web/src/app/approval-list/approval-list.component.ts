@@ -18,9 +18,7 @@ export class ApprovalListComponent {
 
   constructor(private userSettingsService: UserSettingsService) {
     this.approvedUsers$.subscribe((users) => {
-      this.approvedEmails = users
-        .map((u) => u.payload.doc.data().email)
-        .join(', ');
+      this.approvedEmails = users.map((u) => u.email).join(', ');
     });
   }
 
