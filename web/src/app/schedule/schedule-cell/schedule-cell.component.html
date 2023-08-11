@@ -1,8 +1,22 @@
-<button
-  mat-flat-button
-  [color]="buttonColor()"
-  [disabled]="buttonDisabled()"
-  (click)="toggleShift()"
->
-  {{ (shift$ | async)?.reservedDetails?.callsign || 'open' }}
-</button>
+<div class="cell-container">
+  <button
+    mat-flat-button
+    [color]="buttonColor()"
+    [disabled]="buttonDisabled()"
+    (click)="toggleShift()"
+  >
+    {{ (shift$ | async)?.reservedDetails?.callsign || 'open' }}
+  </button>
+  <span *ngIf="(isAdmin$|async)">
+    <button mat-icon-button [matMenuTriggerFor]="adminMenu">
+      <mat-icon>expand_more</mat-icon>
+    </button>
+    <mat-menu #adminMenu="matMenu">
+      <button mat-menu-item
+              *ngFor="let u of (approvedUsers$|async)"
+      (click)="reserveFor(u.id!)">
+        {{ u.callsign }}
+      </button>
+    </mat-menu>
+  </span>
+</div>

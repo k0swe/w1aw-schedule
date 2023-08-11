@@ -1,9 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  AngularFirestore,
-  DocumentChangeAction,
-} from '@angular/fire/compat/firestore';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, Observable, from, mergeMap, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -76,30 +73,26 @@ export class UserSettingsService {
   }
 
   // Admin only
-  public getProvisionalUsers(): Observable<
-    DocumentChangeAction<UserSettings>[]
-  > {
+  public getProvisionalUsers(): Observable<UserSettings[]> {
     return this.getUsersByStatus('Provisional');
   }
 
   // Admin only
-  public getApprovedUsers(): Observable<DocumentChangeAction<UserSettings>[]> {
+  public getApprovedUsers(): Observable<UserSettings[]> {
     return this.getUsersByStatus('Approved');
   }
 
   // Admin only
-  public getDeclinedUsers(): Observable<DocumentChangeAction<UserSettings>[]> {
+  public getDeclinedUsers(): Observable<UserSettings[]> {
     return this.getUsersByStatus('Declined');
   }
 
-  private getUsersByStatus(
-    status: string,
-  ): Observable<DocumentChangeAction<UserSettings>[]> {
+  private getUsersByStatus(status: string): Observable<UserSettings[]> {
     return this.firestore
       .collection<UserSettings>('users', (ref) =>
         ref.where('status', '==', status),
       )
-      .snapshotChanges();
+      .valueChanges({ idField: 'id' });
   }
 
   // Admin only
@@ -138,6 +131,7 @@ export class UserSettingsService {
 }
 
 export interface UserSettings {
+  id?: string;
   callsign?: string;
   email?: string;
   gridSquare?: string;

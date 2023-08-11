@@ -15,3 +15,5 @@ Thumbs.db
 # Firebase
 /*.log
 /.firebase/
+
+.idea

@@ -4,6 +4,7 @@ import { Timestamp } from 'firebase/firestore';
 import { Observable, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
+import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
 import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
 
@@ -11,7 +12,10 @@ import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
   providedIn: 'root',
 })
 export class ScheduleService {
-  constructor(private firestore: AngularFirestore) {}
+  constructor(
+    private firestore: AngularFirestore,
+    private authenticationService: AuthenticationService,
+  ) {}
 
   public findShift(
     time: Date,
@@ -53,7 +57,10 @@ export class ScheduleService {
   }
 
   cancelShift(shiftToUpdate: Shift, userId: string): Observable<void> {
-    if (shiftToUpdate.reservedBy != userId) {
+    if (
+      shiftToUpdate.reservedBy != userId &&
+      !this.authenticationService.userIsAdmin()
+    ) {
       // trying to cancel someone else's shift?
       return of(undefined);
     }

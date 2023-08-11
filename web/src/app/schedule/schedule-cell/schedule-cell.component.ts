@@ -1,7 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import firebase from 'firebase/compat/app';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { AuthenticationService } from '../../authentication/authentication.service';
 import {
@@ -16,7 +17,7 @@ import { Shift } from '../shared-constants';
   templateUrl: './schedule-cell.component.html',
   styleUrls: ['./schedule-cell.component.scss'],
 })
-export class ScheduleCellComponent implements OnInit {
+export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() timeslot!: Date;
   @Input() band!: string;
   @Input() mode!: string;
@@ -24,6 +25,11 @@ export class ScheduleCellComponent implements OnInit {
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
   user$ = new BehaviorSubject<firebase.User | null>(null);
   userSettings$ = new BehaviorSubject<UserSettings>({});
+  isAdmin$ = new BehaviorSubject<boolean>(false);
+  approvedUsers$ = new BehaviorSubject<UserSettings[]>([]);
+  private shiftSubscription: Subscription | null = null;
+  private adminSubscription: Subscription | null = null;
+  private approvedUsersSubscription: Subscription | null = null;
 
   constructor(
     private scheduleService: ScheduleService,
@@ -33,11 +39,31 @@ export class ScheduleCellComponent implements OnInit {
 
   ngOnInit(): void {
     this.userSettingsService.init();
-    this.scheduleService
+    this.shiftSubscription = this.scheduleService
       .findShift(this.timeslot, this.band, this.mode)
       .subscribe((sh) => this.shift$.next(sh));
     this.user$ = this.authenticationService.user$;
+    this.adminSubscription = this.authenticationService
+      .userIsAdmin()
+      .subscribe((isAdmin) => {
+        console.log('isAdmin', isAdmin);
+        this.isAdmin$.next(isAdmin);
+      });
     this.userSettings$ = this.userSettingsService.settings$;
+    this.approvedUsersSubscription = this.userSettingsService
+      .getApprovedUsers()
+      .pipe(
+        map((users: UserSettings[]) =>
+          users.sort((a, b) => a.callsign!.localeCompare(b.callsign!)),
+        ),
+      )
+      .subscribe(this.approvedUsers$);
+  }
+
+  ngOnDestroy() {
+    this.shiftSubscription?.unsubscribe();
+    this.adminSubscription?.unsubscribe();
+    this.approvedUsersSubscription?.unsubscribe();
   }
 
   toggleShift() {
@@ -48,8 +74,8 @@ export class ScheduleCellComponent implements OnInit {
     if (!shift?.reservedBy) {
       // If it's open and we want to reserve
       this.scheduleService.reserveShift(shift, userId, userDetails).subscribe();
-    } else if (shift.reservedBy == userId) {
-      // If it's ours and we want to cancel
+    } else if (shift.reservedBy == userId || this.isAdmin$.getValue()) {
+      // If it's ours (or we're an admin) and we want to cancel
       this.scheduleService.cancelShift(shift, userId).subscribe();
     }
   }
@@ -97,5 +123,13 @@ export class ScheduleCellComponent implements OnInit {
     }
     // Otherwise, allow the user to reserve this shift!
     return false;
+  }
+
+  reserveFor(userId: string) {
+    const shift = this.shift$.getValue()!;
+    const userDetails = this.approvedUsers$
+      .getValue()!
+      .find((u) => u.id == userId)!;
+    this.scheduleService.reserveShift(shift, userId, userDetails).subscribe();
   }
 }
