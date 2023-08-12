@@ -47,7 +47,7 @@ export class ScheduleComponent {
   prevDay: Date;
   nextDay: Date;
   googleCalendarLink =
-    'https://calendar.google.com/calendar/u/0/embed?src=37t1at5dfkpu2gce9b0d6kg8tufub7mo@import.calendar.google.com&ctz=America/Denver&mode=WEEK&dates=20230523%2F20230530';
+    'https://calendar.google.com/calendar/u/0/embed?src=37t1at5dfkpu2gce9b0d6kg8tufub7mo@import.calendar.google.com&ctz=America/Denver&mode=WEEK&dates=20230913%2F20230920';
   icsLink = 'https://us-central1-w1aw-schedule.cloudfunctions.net/calendar';
 
   constructor(
@@ -120,13 +120,5 @@ export class ScheduleComponent {
     this.snackBarService.open('Copied to clipboard', undefined, {
       duration: 2000,
     });
-  }
-
-  downloadIcs() {
-    window.open(this.icsLink, '_blank');
-  }
-
-  openGoogleCalendar() {
-    window.open(this.googleCalendarLink, '_blank');
   }
 }
