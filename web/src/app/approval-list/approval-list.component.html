@@ -32,14 +32,14 @@
                 mat-raised-button
                 color="primary"
                 [disabled]="!user.callsign"
-                (click)="approve(user.payload.doc.id)"
+                (click)="approve(user.id)"
               >
                 Approve
               </button>
               <button
                 mat-raised-button
                 color="warn"
-                (click)="decline(user.payload.doc.id)"
+                (click)="decline(user.id)"
               >
                 Decline
               </button>
@@ -84,7 +84,7 @@
               <button
                 mat-raised-button
                 color="warn"
-                (click)="decline(user.payload.doc.id)"
+                (click)="decline(user.id)"
               >
                 Decline
               </button>
@@ -126,14 +126,14 @@
               <button
                 mat-raised-button
                 color="primary"
-                (click)="approve(user.payload.doc.id)"
+                (click)="approve(user.id)"
               >
                 Approve
               </button>
               <button
                 mat-raised-button
                 color="warn"
-                (click)="delete(user.payload.doc.id)"
+                (click)="delete(user.id)"
               >
                 Delete
               </button>

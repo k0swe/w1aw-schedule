@@ -45,10 +45,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     this.user$ = this.authenticationService.user$;
     this.adminSubscription = this.authenticationService
       .userIsAdmin()
-      .subscribe((isAdmin) => {
-        console.log('isAdmin', isAdmin);
-        this.isAdmin$.next(isAdmin);
-      });
+      .subscribe((isAdmin) => this.isAdmin$.next(isAdmin));
     this.userSettings$ = this.userSettingsService.settings$;
     this.approvedUsersSubscription = this.userSettingsService
       .getApprovedUsers()
