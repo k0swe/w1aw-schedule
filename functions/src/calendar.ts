@@ -3,7 +3,7 @@ import { constants as httpConstants } from 'http2';
 import ical from 'ical-generator';
 import * as admin from 'firebase-admin';
 import { COLORADO_DOC_ID } from './shared-constants';
-import * as getUuid from 'uuid-by-string';
+import getUuid from 'uuid-by-string';
 
 export const calendar = functions.https.onRequest(async (request, response) => {
   let title = 'W1AW/0 Colorado schedule';

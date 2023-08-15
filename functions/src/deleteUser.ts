@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 import * as admin from 'firebase-admin';
 import { COLORADO_DOC_ID, SectionInfo } from './shared-constants';
-import * as cors from 'cors';
+import cors from 'cors';
 
 const corsHandler = cors({ origin: true });
 
