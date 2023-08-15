@@ -3,31 +3,35 @@ import { newUser } from '../src';
 import admin from 'firebase-admin';
 import * as assert from 'assert';
 import { COLORADO_DOC_ID } from '../src/shared-constants';
-
-const test = firebaseFunctionsTest(
-  {
-    databaseURL: 'https://w1aw-test.firebaseio.com',
-    projectId: 'w1aw-test',
-    storageBucket: 'w1aw-test.appspot.com',
-  },
-  'creds.json',
-);
+import { FeaturesList } from 'firebase-functions-test/lib/features';
+import { UserRecord } from 'firebase-admin/auth';
 
 describe('Cloud Functions', () => {
-  const user = test.auth.makeUserRecord({
-    uid: '12345',
-    email: 'test@example.com',
-    displayName: 'Test User',
-  });
+  let test: FeaturesList;
+  let user: UserRecord;
   const adminList = ['67890', 'abcde'];
 
-  before(async () => {
+  beforeEach(async () => {
+    test = firebaseFunctionsTest(
+      {
+        databaseURL: 'https://w1aw-test.firebaseio.com',
+        projectId: 'w1aw-test',
+        storageBucket: 'w1aw-test.appspot.com',
+      },
+      'creds.json',
+    );
+    user = test.auth.makeUserRecord({
+      uid: '12345',
+      email: 'test@example.com',
+      displayName: 'Test User',
+    });
+
     await admin.firestore().collection('sections').doc(COLORADO_DOC_ID).set({
       admins: adminList,
     });
   });
 
-  after(async () => {
+  afterEach(async () => {
     // Do cleanup tasks.
     test.cleanup();
     // Reset the database.
@@ -39,8 +43,8 @@ describe('Cloud Functions', () => {
     it('should set the user approval to provisional', async () => {
       await test
         .wrap(newUser)(user)
-        .then(() => {
-          admin
+        .then(async () => {
+          await admin
             .firestore()
             .collection('users')
             .doc(user.uid)
@@ -54,8 +58,8 @@ describe('Cloud Functions', () => {
     it('should post an email', async () => {
       await test
         .wrap(newUser)(user)
-        .then(() => {
-          admin
+        .then(async () => {
+          await admin
             .firestore()
             .collection('mail')
             .get()
@@ -63,7 +67,7 @@ describe('Cloud Functions', () => {
               assert.equal(mailDocs.size, 1);
               mailDocs.forEach((mailDoc) => {
                 assert.equal(mailDoc.data()?.to, user.email);
-                assert.equal(mailDoc.data()?.bccUids, adminList);
+                assert.deepEqual(mailDoc.data()?.bccUids, adminList);
               });
             });
         });
@@ -79,8 +83,8 @@ async function deleteCollection(
   ref: FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>,
 ) {
   await ref.get().then((snapshot) => {
-    snapshot.forEach((doc) => {
-      doc.ref.delete();
+    snapshot.forEach(async (doc) => {
+      await doc.ref.delete();
     });
   });
 }
