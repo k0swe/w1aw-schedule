@@ -22,6 +22,8 @@ describe('newUser', () => {
     await admin.firestore().collection('sections').doc(COLORADO_DOC_ID).set({
       admins: adminList,
     });
+    await deleteCollection(admin.firestore().collection('users'));
+    await deleteCollection(admin.firestore().collection('mail'));
     await test.wrap(newUser)(user);
   });
 

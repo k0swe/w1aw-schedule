@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { COLORADO_DOC_ID } from './shared-constants';
 
 export const userStatusChanged = functions.firestore
   .document('users/{userId}')
@@ -24,6 +25,8 @@ export const userStatusChanged = functions.firestore
       // find any shifts that were reserved by this user and un-assign them
       const shifts = await admin
         .firestore()
+        .collection('sections')
+        .doc(COLORADO_DOC_ID)
         .collection('shifts')
         .where('reservedBy', '==', change.after.id)
         .get();
