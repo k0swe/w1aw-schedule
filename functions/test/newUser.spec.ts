@@ -12,14 +12,7 @@ describe('Cloud Functions', () => {
   const adminList = ['67890', 'abcde'];
 
   beforeEach(async () => {
-    test = firebaseFunctionsTest(
-      {
-        databaseURL: 'https://w1aw-test.firebaseio.com',
-        projectId: 'w1aw-test',
-        storageBucket: 'w1aw-test.appspot.com',
-      },
-      'creds.json',
-    );
+    test = firebaseFunctionsTest({ projectId: 'w1aw-test' }, 'creds.json');
     user = test.auth.makeUserRecord({
       uid: '12345',
       email: 'test@example.com',
@@ -41,6 +34,7 @@ describe('Cloud Functions', () => {
 
   describe('newUser', () => {
     it('should set the user approval to provisional', async () => {
+      let testComplete = false;
       await test
         .wrap(newUser)(user)
         .then(async () => {
@@ -51,11 +45,14 @@ describe('Cloud Functions', () => {
             .get()
             .then((userDoc) => {
               assert.equal(userDoc.data()?.status, 'Provisional');
+              testComplete = true;
             });
         });
+      assert.equal(testComplete, true);
     });
 
     it('should post an email', async () => {
+      let testComplete = false;
       await test
         .wrap(newUser)(user)
         .then(async () => {
@@ -68,9 +65,11 @@ describe('Cloud Functions', () => {
               mailDocs.forEach((mailDoc) => {
                 assert.equal(mailDoc.data()?.to, user.email);
                 assert.deepEqual(mailDoc.data()?.bccUids, adminList);
+                testComplete = true;
               });
             });
         });
+      assert.equal(testComplete, true);
     });
   });
 });
