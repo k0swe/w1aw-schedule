@@ -113,6 +113,16 @@ describe("User profiles", () => {
     );
   });
 
+  it("should not allow users to write their multi-shift status", async () => {
+    const raviDb = testEnv.authenticatedContext("ravi").firestore();
+
+    await assertFails(
+      updateDoc(doc(raviDb, "users/ravi"), {
+        multiShift: true,
+      })
+    );
+  });
+
   it("should allow admins to read any user", async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
@@ -130,7 +140,7 @@ describe("User profiles", () => {
     await assertSucceeds(getDoc(doc(amandaDb, "users/alice")));
   });
 
-  it("should allow admins to write status", async () => {
+  it("should allow admins to write approval status", async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
       await setDoc(doc(fs, `sections/${colorado}`), {
@@ -151,6 +161,29 @@ describe("User profiles", () => {
       })
     );
   });
+});
+
+it("should allow admins to write multi-shift status", async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    const fs = context.firestore();
+    await setDoc(doc(fs, `sections/${colorado}`), {
+      admins: ["amanda"],
+    });
+    await setDoc(doc(fs, "users/alice"), {
+      name: "Alice",
+      callsign: "t3st",
+      gridSquare: "DM33",
+      status: "Provisional",
+      multiShift: false,
+    });
+  });
+  const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+  await assertSucceeds(
+    updateDoc(doc(amandaDb, "users/alice"), {
+      multiShift: true,
+    })
+  );
 });
 
 describe("Section information", () => {

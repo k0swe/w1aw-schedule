@@ -15,7 +15,7 @@ service cloud.firestore {
         return request.auth.uid == userId;
       }
       function notUpdatingStatus() {
-        return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']);
+        return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'multiShift']);
       }
 
       allow create: if loggedIn() && request.resource.id == request.auth.uid;
@@ -33,7 +33,7 @@ service cloud.firestore {
             .hasOnly(['reservedBy', 'reservedDetails']);
         }
         function userIsReservingForThemself() {
-          return resource.data.reservedBy == null 
+          return resource.data.reservedBy == null
             && request.resource.data.reservedBy == request.auth.uid;
         }
         function userAlreadyReserved() {
@@ -41,8 +41,8 @@ service cloud.firestore {
         }
 
         allow read: if loggedIn();
-        allow update: if onlyChangingReservation() 
-          && (userIsReservingForThemself() || userAlreadyReserved()) 
+        allow update: if onlyChangingReservation()
+          && (userIsReservingForThemself() || userAlreadyReserved())
           || isAdmin();
       }
     }
