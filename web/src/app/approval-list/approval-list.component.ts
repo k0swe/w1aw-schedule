@@ -33,4 +33,8 @@ export class ApprovalListComponent {
   delete(id: string) {
     this.userSettingsService.delete(id).subscribe();
   }
+
+  setMultiShift(id: string, value: boolean) {
+    this.userSettingsService.setMultiShift(id, value).subscribe();
+  }
 }

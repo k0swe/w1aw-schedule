@@ -117,14 +117,22 @@ export class UserSettingsService {
     );
   }
 
-  delete(id: string): Observable<any> {
+  delete(userId: string): Observable<any> {
     // Call cloud function to delete user
-    const url = `${environment.functionBase}/deleteUser?uid=${id}`;
+    const url = `${environment.functionBase}/deleteUser?uid=${userId}`;
     return from(this.authService.user$.getValue()!.getIdToken(false)).pipe(
       mergeMap((jwt) => {
         return this.httpClient.post(url, null, {
           headers: { Authorization: 'Bearer ' + jwt },
         });
+      }),
+    );
+  }
+
+  setMultiShift(userId: string, newValue: boolean) {
+    return from(
+      this.firestore.doc<UserSettings>('users/' + userId).update({
+        multiShift: newValue,
       }),
     );
   }
