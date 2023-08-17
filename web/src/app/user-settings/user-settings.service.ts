@@ -140,4 +140,5 @@ export interface UserSettings {
   status?: string;
   approvedBy?: string;
   declinedBy?: string;
+  multiShift?: boolean;
 }
