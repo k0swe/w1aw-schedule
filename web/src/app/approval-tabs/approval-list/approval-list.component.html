@@ -9,7 +9,10 @@
   <ng-container matColumnDef="callsign">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Callsign</th>
     <td mat-cell *matCellDef="let user">
-      {{ user.callsign || 'No callsign' }}
+      <span class="callsign" *ngIf="user.callsign; else noCall">{{ user.callsign }}</span>
+      <ng-template #noCall>
+        No callsign
+      </ng-template>
     </td>
   </ng-container>
   <ng-container matColumnDef="email">

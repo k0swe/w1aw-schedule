@@ -22,7 +22,10 @@ export class UserSettingsComponent implements OnInit {
   email: BehaviorSubject<string>;
   status: BehaviorSubject<string>;
 
-  callsign = new FormControl('', [Validators.required]);
+  callsign = new FormControl('', [
+    Validators.required,
+    Validators.pattern(/^[A-Z]+[0-9][A-Z]+$/i),
+  ]);
   gridSquare = new FormControl('', [
     Validators.required,
     Validators.pattern(/^[A-Z]{2}[0-9]{2}[a-z]{2}$/i),
@@ -98,7 +101,7 @@ export class UserSettingsComponent implements OnInit {
     const formValue: UserSettings = {
       email: this.email.value || '',
       status: this.status.value || '',
-      callsign: this.callsign.value || '',
+      callsign: this.callsign.value?.toUpperCase() || '',
       gridSquare: this.gridSquare.value || '',
       name: this.name.value || '',
       phone: this.phone.value || '',
