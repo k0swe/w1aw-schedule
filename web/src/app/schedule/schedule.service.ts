@@ -37,7 +37,10 @@ export class ScheduleService {
     userId: string,
     userDetails: UserSettings,
   ): Observable<void> {
-    if (!!shiftToUpdate.reservedBy) {
+    if (
+      !!shiftToUpdate.reservedBy &&
+      !this.authenticationService.userIsAdmin()
+    ) {
       // trying to take someone else's shift?
       return of(undefined);
     }
