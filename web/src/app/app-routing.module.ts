@@ -33,8 +33,8 @@ const routes: Routes = [
   {
     path: 'approvals',
     loadChildren: () =>
-      import('./approval-list/approval-list.module').then(
-        (m) => m.ApprovalListModule,
+      import('./approval-tabs/approval-tabs.module').then(
+        (m) => m.ApprovalTabsModule,
       ),
   },
 ];

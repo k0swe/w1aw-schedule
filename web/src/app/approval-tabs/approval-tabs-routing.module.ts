@@ -3,12 +3,12 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AdminGuard } from '../authentication/admin.guard';
 import { AuthenticationGuard } from '../authentication/authentication.guard';
-import { ApprovalListComponent } from './approval-list.component';
+import { ApprovalTabsComponent } from './approval-tabs.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: ApprovalListComponent,
+    component: ApprovalTabsComponent,
     canActivate: [AuthenticationGuard, AdminGuard],
   },
 ];
@@ -17,4 +17,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class ApprovalListRoutingModule {}
+export class ApprovalTabsRoutingModule {}

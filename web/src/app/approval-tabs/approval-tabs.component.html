@@ -1,0 +1,24 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>User Approvals</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-tab-group>
+      <mat-tab label="Pending">
+        <kel-approval-list [userList]="provisionalUsers$"
+                           [displayColumns]="['name', 'callsign', 'email', 'phone', 'approve', 'decline']">
+        </kel-approval-list>
+      </mat-tab>
+      <mat-tab label="Approved">
+        <kel-approval-list [userList]="approvedUsers$"
+                           [displayColumns]="['name', 'callsign', 'email', 'phone', 'multi-shift', 'decline']">
+        </kel-approval-list>
+      </mat-tab>
+      <mat-tab label="Declined">
+        <kel-approval-list [userList]="declinedUsers$"
+                           [displayColumns]="['name', 'callsign', 'email', 'phone', 'approve', 'delete']">
+        </kel-approval-list>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card-content>
+</mat-card>
