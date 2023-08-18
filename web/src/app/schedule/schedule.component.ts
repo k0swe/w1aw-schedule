@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from './schedule.service';
 import {
@@ -47,8 +48,9 @@ export class ScheduleComponent {
   prevDay: Date;
   nextDay: Date;
   googleCalendarLink =
-    'https://calendar.google.com/calendar/u/0/embed?src=37t1at5dfkpu2gce9b0d6kg8tufub7mo@import.calendar.google.com&ctz=America/Denver&mode=WEEK&dates=20230913%2F20230920';
-  icsLink = 'https://us-central1-w1aw-schedule.cloudfunctions.net/calendar';
+    'https://calendar.google.com/calendar/u/0/embed?src=37t1at5dfkpu2gce9b0d6kg8tufub7mo@import.calendar.google.com' +
+    '&ctz=America/Denver&mode=WEEK&dates=20230913%2F20230920';
+  icsLink = `${environment.functionBase}/calendar`;
 
   constructor(
     private authenticationService: AuthenticationService,

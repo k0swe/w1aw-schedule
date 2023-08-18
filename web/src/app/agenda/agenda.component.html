@@ -16,8 +16,10 @@
     <button mat-flat-button color="primary" (click)="copyIcsLink()">
       My calendar subscription link
     </button>
-    <button mat-flat-button color="primary" (click)="downloadIcs()">
-      Download my iCalendar file
-    </button>
+    <a [href]="icsLink" target="_blank" rel="noopener">
+      <button mat-flat-button color="primary">
+        Download my iCalendar file
+      </button>
+    </a>
   </div>
 </div>
