@@ -1,4 +1,11 @@
+@use '@angular/material' as mat;
+@import '../../../theme';
+
 textarea {
   width: 800px;
   height: 200px;
+}
+
+.callsign {
+  @include mat.typography-level($kel-mono-typography, 'body-1');
 }

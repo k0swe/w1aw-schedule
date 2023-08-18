@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@include mat.core();
 
 $kel-primary: mat.define-palette(mat.$blue-palette);
 $kel-accent: mat.define-palette(mat.$red-palette, 700);
