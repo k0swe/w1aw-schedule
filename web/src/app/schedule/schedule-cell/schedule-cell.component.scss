@@ -1,3 +1,6 @@
+@use '@angular/material' as mat;
+@import '../../../theme';
+
 .cell-container {
   display: flex;
   align-items: center;
@@ -5,4 +8,8 @@
 
 button {
   width: 100%;
+}
+
+.callsign {
+  @include mat.typography-level($kel-mono-typography, 'body-1');
 }
