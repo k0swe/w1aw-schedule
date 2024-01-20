@@ -22,7 +22,7 @@
     "uuid-by-string": "4.0.0"
   },
   "devDependencies": {
-    "@types/mocha": "10.0.1",
+    "@types/mocha": "10.0.6",
     "@typescript-eslint/eslint-plugin": "6.7.3",
     "@typescript-eslint/parser": "6.7.3",
     "eslint": "8.49.0",
