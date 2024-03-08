@@ -9,3 +9,10 @@ the Volunteers On The Air event! We need a way of scheduling operators to cover 
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will
 automatically reload if you change any of the source files.
+
+## Firebase
+
+This project uses several Firebase products (free tier) to handle functionality. It uses Firebase Authentication,
+Firestore and the Firebase extension firebase/firestore-send-email.
+(I happened to use SendGrid as an SMTP provider, also free tier). Those wishing to run their own instance and/or
+develop new features will need to configure their own Firebase project, SMTP providers, and API keys.
