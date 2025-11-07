@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "w1aw-schedule-76a82"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

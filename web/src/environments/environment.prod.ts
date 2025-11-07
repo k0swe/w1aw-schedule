@@ -1,6 +1,6 @@
 export const environment = {
   appName: 'W1AW/0 Colorado Schedule',
-  functionBase: `https://us-central1-w1aw-schedule.cloudfunctions.net`,
+  functionBase: `https://us-central1-w1aw-schedule-76a82.cloudfunctions.net`,
   production: true,
   firebase: {
     apiKey: "AIzaSyDP2s7s7QCk4OOnWIAqamMUE1ZAOUocuO0",
