@@ -34,7 +34,7 @@ jobs:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_W1AW_SCHEDULE }}"
           channelId: live
-          projectId: w1aw-schedule
+          projectId: w1aw-schedule-76a82
 
       - name: Tag as deployed
         run: |
