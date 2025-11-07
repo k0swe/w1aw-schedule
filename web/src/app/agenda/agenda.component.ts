@@ -7,11 +7,15 @@ import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from '../schedule/schedule.service';
 import { Shift } from '../schedule/shared-constants';
+import { NgFor, AsyncPipe, DatePipe } from '@angular/common';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card';
+import { MatButton } from '@angular/material/button';
 
 @Component({
-  selector: 'kel-agenda',
-  templateUrl: './agenda.component.html',
-  styleUrls: ['./agenda.component.scss'],
+    selector: 'kel-agenda',
+    templateUrl: './agenda.component.html',
+    styleUrls: ['./agenda.component.scss'],
+    imports: [NgFor, MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatButton, AsyncPipe, DatePipe]
 })
 export class AgendaComponent {
   userShifts$ = new BehaviorSubject<Shift[]>([]);
