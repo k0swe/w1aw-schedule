@@ -9,10 +9,11 @@
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "test": "npm run build && mocha --reporter spec ./build/ --recursive"
+    "test": "npm run build && mocha --reporter spec ./build/ --recursive",
+    "test:emulator": "firebase emulators:exec --only firestore \"npm test\""
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "build/src/index.js",
   "dependencies": {

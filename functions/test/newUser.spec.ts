@@ -13,7 +13,9 @@ describe('newUser', () => {
   const adminList = ['67890', 'abcde'];
 
   before(async () => {
-    test = firebaseFunctionsTest({ projectId: 'w1aw-test' }, 'creds.json');
+    // Initialize firebase-functions-test without a credentials file so the tests can run
+    // against the local Firestore emulator. Start the emulator before running tests.
+    test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
     user = test.auth.makeUserRecord({
       uid: '12345',
       email: 'test@example.com',
@@ -24,7 +26,9 @@ describe('newUser', () => {
     });
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
-    await test.wrap(newUser)(user);
+    // firebase-functions-test's typing doesn't match the v2 function type here; cast to any for the test call.
+    // beforeUserCreated v2 handler expects an event with a `data` property.
+    await (test.wrap(newUser as any) as any)({ data: user });
   });
 
   it('should set the user approval to provisional', async () => {

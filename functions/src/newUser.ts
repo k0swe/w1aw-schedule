@@ -1,13 +1,25 @@
 import * as admin from 'firebase-admin';
-import { auth } from 'firebase-functions/v1';
+import { beforeUserCreated } from 'firebase-functions/v2/identity';
 import { COLORADO_DOC_ID, SectionInfo } from './shared-constants';
 
-export const newUser = auth.user().onCreate(async (user) => {
+export const newUser = beforeUserCreated(async (event) => {
+  const user = event.data;
+
+  // Guard against unexpected missing event data (keeps TypeScript happy).
+  if (!user) {
+    throw new Error('Missing user data in beforeUserCreated event');
+  }
+
+  const uid = user.uid as string;
+  const email = (user.email as string) || '';
+  const displayName = (user.displayName as string) || '';
+
+  // Create user document in Firestore
   await admin
     .firestore()
     .collection('users')
-    .doc(user.uid)
-    .set({ email: user.email, status: 'Provisional', name: user.displayName });
+    .doc(uid)
+    .set({ email: email, status: 'Provisional', name: displayName });
 
   const { admins } = (
     await admin.firestore().collection('sections').doc(COLORADO_DOC_ID).get()
@@ -18,12 +30,12 @@ export const newUser = auth.user().onCreate(async (user) => {
     .collection('mail')
     .doc()
     .set({
-      to: user.email,
+      to: email,
       bccUids: admins,
       template: {
         name: 'welcome',
         data: {
-          email: user.email,
+          email: email,
         },
       },
     });

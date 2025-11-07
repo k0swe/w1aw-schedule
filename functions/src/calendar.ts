@@ -1,11 +1,11 @@
-import { https } from 'firebase-functions/v1';
+import { onRequest } from 'firebase-functions/v2/https';
 import { constants as httpConstants } from 'http2';
 import ical from 'ical-generator';
 import * as admin from 'firebase-admin';
 import { COLORADO_DOC_ID } from './shared-constants';
 import getUuid from 'uuid-by-string';
 
-export const calendar = https.onRequest(async (request, response) => {
+export const calendar = onRequest(async (request, response) => {
   let title = 'W1AW/0 Colorado schedule';
 
   const uid = request.query.uid?.toString();

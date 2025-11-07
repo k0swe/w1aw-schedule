@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
-import { https, logger } from 'firebase-functions/v1';
+import { onRequest } from 'firebase-functions/v2/https';
+import { logger } from 'firebase-functions/v2';
 import { Timestamp } from 'firebase-admin/firestore';
 
 import {
@@ -14,7 +15,7 @@ import {
 } from './shared-constants';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 
-export const initShifts = https.onRequest(async (request, response) => {
+export const initShifts = onRequest(async (request, response) => {
   const userId = await validateFirebaseIdToken(request, response);
   if (!userId || userId.uid !== 'r9qBLFDsymTyrWb3vtJmhZlDPMy1') {
     return;

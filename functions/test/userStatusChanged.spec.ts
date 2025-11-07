@@ -11,7 +11,8 @@ describe('userStatusChanged', () => {
   const exampleEmail: string = 'test@example.com';
 
   beforeEach(async () => {
-    test = firebaseFunctionsTest({ projectId: 'w1aw-test' }, 'creds.json');
+    // Initialize firebase-functions-test without passing a service account so tests use the emulator.
+    test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
     await deleteCollection(admin.firestore().collection('sections'));
   });
 
@@ -22,16 +23,12 @@ describe('userStatusChanged', () => {
 
   it('should send an email when state changes to approved', async () => {
     let testComplete = false;
-    const beforeSnap = test.firestore.makeDocumentSnapshot(
-      { status: 'Pending' },
-      'users/12345',
-    );
     const afterSnap = test.firestore.makeDocumentSnapshot(
       { status: 'Approved', email: exampleEmail, callsign: 'T3ST' },
       'users/12345',
     );
-    await test
-      .wrap(userStatusChanged)(test.makeChange(beforeSnap, afterSnap))
+    // Invoke the v2-style handler by passing an event with a `data.after` snapshot.
+    await (test.wrap(userStatusChanged as any) as any)({ data: { after: afterSnap } })
       .then(async () => {
         await admin
           .firestore()
@@ -61,16 +58,11 @@ describe('userStatusChanged', () => {
         reservedBy: '12345',
         reservedDetails: { callsign: 'Test' },
       });
-    const beforeSnap = test.firestore.makeDocumentSnapshot(
-      { status: 'Approved' },
-      'users/12345',
-    );
     const afterSnap = test.firestore.makeDocumentSnapshot(
       { status: 'Declined' },
       'users/12345',
     );
-    await test
-      .wrap(userStatusChanged)(test.makeChange(beforeSnap, afterSnap))
+    await (test.wrap(userStatusChanged as any) as any)({ data: { after: afterSnap } })
       .then(async () => {
         await admin
           .firestore()
