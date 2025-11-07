@@ -4,7 +4,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "deploy": "firebase deploy --only functions",
-    "lint": "eslint --ext .js,.ts .",
+    "lint": "eslint .",
     "logs": "firebase functions:log",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.19",
     "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",

@@ -10,8 +10,5 @@
     "target": "es2017"
   },
   "compileOnSave": true,
-  "include": [
-    "src",
-    "test"
-  ]
+  "include": ["src", "test"]
 }
