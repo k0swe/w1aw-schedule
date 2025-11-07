@@ -3,12 +3,12 @@ export const environment = {
   functionBase: `https://us-central1-w1aw-test.cloudfunctions.net`,
   production: false,
   firebase: {
-    apiKey: 'AIzaSyAySmBtnvAL3chLdDo_KmjZqp94abGxEdk',
-    authDomain: 'w1aw-test.firebaseapp.com',
-    projectId: 'w1aw-test',
-    storageBucket: 'w1aw-test.appspot.com',
-    messagingSenderId: '801447597635',
-    appId: '1:801447597635:web:8b20ff4b37fe2f32f8a6f6',
-    measurementId: 'G-H5N5TTB2Q9',
+    apiKey: "AIzaSyDP2s7s7QCk4OOnWIAqamMUE1ZAOUocuO0",
+    authDomain: "w1aw-schedule-76a82.firebaseapp.com",
+    projectId: "w1aw-schedule-76a82",
+    storageBucket: "w1aw-schedule-76a82.firebasestorage.app",
+    messagingSenderId: "562267275701",
+    appId: "1:562267275701:web:933898682479adfb8fd9fc",
+    measurementId: "G-NGR5MNXWYD"
   },
 };
