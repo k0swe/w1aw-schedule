@@ -32,5 +32,5 @@ button {
 }
 
 .callsign {
-  @include mat.typography-level($kel-mono-typography, 'body-1');
+  @include mat.m2-typography-level($kel-mono-typography, 'body-1');
 }

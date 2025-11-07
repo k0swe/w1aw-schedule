@@ -21,9 +21,10 @@ import {
 } from './shared-constants';
 
 @Component({
-  selector: 'kel-schedule',
-  templateUrl: './schedule.component.html',
-  styleUrls: ['./schedule.component.scss'],
+    selector: 'kel-schedule',
+    templateUrl: './schedule.component.html',
+    styleUrls: ['./schedule.component.scss'],
+    standalone: false
 })
 export class ScheduleComponent {
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;

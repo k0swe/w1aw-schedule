@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
@@ -22,28 +22,21 @@ import { AppComponent } from './app.component';
 import { AvatarComponent } from './avatar/avatar.component';
 import { HomeComponent } from './home/home.component';
 
-@NgModule({
-  declarations: [AppComponent, AvatarComponent, HomeComponent],
-  imports: [
-    AngularFireAuthModule,
-    AngularFireModule.initializeApp(environment.firebase),
-    AngularFirestoreModule.enablePersistence(),
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    BrowserModule,
-    HttpClientModule,
-    MatButtonModule,
-    MatCardModule,
-    MatDialogModule,
-    MatIconModule,
-    MatListModule,
-    MatMenuModule,
-    MatSidenavModule,
-    MatSnackBarModule,
-    MatToolbarModule,
-    NgOptimizedImage,
-  ],
-  providers: [],
-  bootstrap: [AppComponent],
-})
+@NgModule({ declarations: [AppComponent, AvatarComponent, HomeComponent],
+    bootstrap: [AppComponent], imports: [AngularFireAuthModule,
+        AngularFireModule.initializeApp(environment.firebase),
+        AngularFirestoreModule.enablePersistence(),
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        BrowserModule,
+        MatButtonModule,
+        MatCardModule,
+        MatDialogModule,
+        MatIconModule,
+        MatListModule,
+        MatMenuModule,
+        MatSidenavModule,
+        MatSnackBarModule,
+        MatToolbarModule,
+        NgOptimizedImage], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule {}

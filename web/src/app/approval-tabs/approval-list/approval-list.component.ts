@@ -9,9 +9,10 @@ import {
 } from '../../user-settings/user-settings.service';
 
 @Component({
-  selector: 'kel-approval-list',
-  templateUrl: './approval-list.component.html',
-  styleUrls: ['./approval-list.component.scss'],
+    selector: 'kel-approval-list',
+    templateUrl: './approval-list.component.html',
+    styleUrls: ['./approval-list.component.scss'],
+    standalone: false
 })
 export class ApprovalListComponent implements OnInit, OnDestroy {
   @Input() userList: Observable<UserSettings[]> = of([]);

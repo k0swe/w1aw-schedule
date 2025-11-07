@@ -11,9 +11,10 @@ import { AuthenticationService } from '../authentication/authentication.service'
 import { UserSettings, UserSettingsService } from './user-settings.service';
 
 @Component({
-  selector: 'kel-user-settings',
-  templateUrl: './user-settings.component.html',
-  styleUrls: ['./user-settings.component.scss'],
+    selector: 'kel-user-settings',
+    templateUrl: './user-settings.component.html',
+    styleUrls: ['./user-settings.component.scss'],
+    standalone: false
 })
 export class UserSettingsComponent implements OnInit {
   user$: BehaviorSubject<firebase.User | null>;

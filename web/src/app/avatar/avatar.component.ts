@@ -8,9 +8,10 @@ import { take } from 'rxjs/operators';
 import { AuthenticationService } from '../authentication/authentication.service';
 
 @Component({
-  selector: 'kel-avatar',
-  templateUrl: './avatar.component.html',
-  styleUrls: ['./avatar.component.scss'],
+    selector: 'kel-avatar',
+    templateUrl: './avatar.component.html',
+    styleUrls: ['./avatar.component.scss'],
+    standalone: false
 })
 export class AvatarComponent {
   user$: Observable<firebase.User | null>;

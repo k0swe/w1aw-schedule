@@ -9,9 +9,10 @@ import { ScheduleService } from '../schedule/schedule.service';
 import { Shift } from '../schedule/shared-constants';
 
 @Component({
-  selector: 'kel-agenda',
-  templateUrl: './agenda.component.html',
-  styleUrls: ['./agenda.component.scss'],
+    selector: 'kel-agenda',
+    templateUrl: './agenda.component.html',
+    styleUrls: ['./agenda.component.scss'],
+    standalone: false
 })
 export class AgendaComponent {
   userShifts$ = new BehaviorSubject<Shift[]>([]);

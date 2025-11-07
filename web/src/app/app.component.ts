@@ -6,9 +6,10 @@ import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
 
 @Component({
-  selector: 'kel-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+    selector: 'kel-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    standalone: false
 })
 export class AppComponent {
   appName = environment.appName;

@@ -7,9 +7,10 @@ import {
 } from '../user-settings/user-settings.service';
 
 @Component({
-  selector: 'kel-approval-tabs',
-  templateUrl: './approval-tabs.component.html',
-  styleUrls: ['./approval-tabs.component.scss'],
+    selector: 'kel-approval-tabs',
+    templateUrl: './approval-tabs.component.html',
+    styleUrls: ['./approval-tabs.component.scss'],
+    standalone: false
 })
 export class ApprovalTabsComponent {
   provisionalUsers$: Observable<UserSettings[]> =

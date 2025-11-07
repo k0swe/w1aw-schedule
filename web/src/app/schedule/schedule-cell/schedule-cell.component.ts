@@ -13,9 +13,10 @@ import { ScheduleService } from '../schedule.service';
 import { Shift } from '../shared-constants';
 
 @Component({
-  selector: 'kel-schedule-cell',
-  templateUrl: './schedule-cell.component.html',
-  styleUrls: ['./schedule-cell.component.scss'],
+    selector: 'kel-schedule-cell',
+    templateUrl: './schedule-cell.component.html',
+    styleUrls: ['./schedule-cell.component.scss'],
+    standalone: false
 })
 export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() timeslot!: Date;

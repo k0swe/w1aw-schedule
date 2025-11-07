@@ -9,9 +9,10 @@ import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 
 @Component({
-  selector: 'kel-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+    selector: 'kel-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss'],
+    standalone: false
 })
 export class LoginComponent {
   appName = environment.appName;
