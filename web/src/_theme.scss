@@ -1,17 +1,19 @@
 @use '@angular/material' as mat;
 
 // Define Material 3 theme with primary and tertiary colors, and typography
-$kel-theme: mat.define-theme((
-  color: (
-    theme-type: light,
-    primary: mat.$blue-palette,
-    tertiary: mat.$red-palette,
-  ),
-  typography: (
-    plain-family: 'Open Sans, Helvetica Neue, sans-serif',
-    brand-family: 'Open Sans, Helvetica Neue, sans-serif',
-  ),
-  density: (
-    scale: 0,
-  ),
-));
+$kel-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$blue-palette,
+      tertiary: mat.$red-palette,
+    ),
+    typography: (
+      plain-family: 'Open Sans, Helvetica Neue, sans-serif',
+      brand-family: 'Open Sans, Helvetica Neue, sans-serif',
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);

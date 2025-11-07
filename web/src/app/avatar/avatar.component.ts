@@ -1,21 +1,31 @@
+import { AsyncPipe, NgIf, NgOptimizedImage } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { Router, RouterLink } from '@angular/router';
 import firebase from 'firebase/compat/app';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
-import { NgIf, NgOptimizedImage, AsyncPipe } from '@angular/common';
-import { MatIconButton } from '@angular/material/button';
-import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
-import { MatIcon } from '@angular/material/icon';
 
 @Component({
-    selector: 'kel-avatar',
-    templateUrl: './avatar.component.html',
-    styleUrls: ['./avatar.component.scss'],
-    imports: [NgIf, MatIconButton, MatMenuTrigger, NgOptimizedImage, MatMenu, MatMenuItem, MatIcon, RouterLink, AsyncPipe]
+  selector: 'kel-avatar',
+  templateUrl: './avatar.component.html',
+  styleUrls: ['./avatar.component.scss'],
+  imports: [
+    NgIf,
+    MatIconButton,
+    MatMenuTrigger,
+    NgOptimizedImage,
+    MatMenu,
+    MatMenuItem,
+    MatIcon,
+    RouterLink,
+    AsyncPipe,
+  ],
 })
 export class AvatarComponent {
   user$: Observable<firebase.User | null>;

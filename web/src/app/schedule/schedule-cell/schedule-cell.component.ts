@@ -1,5 +1,9 @@
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { MatButton, MatIconButton } from '@angular/material/button';
 import { ThemePalette } from '@angular/material/core';
+import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import firebase from 'firebase/compat/app';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -11,16 +15,22 @@ import {
 } from '../../user-settings/user-settings.service';
 import { ScheduleService } from '../schedule.service';
 import { Shift } from '../shared-constants';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { NgIf, NgFor, AsyncPipe } from '@angular/common';
-import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
-import { MatIcon } from '@angular/material/icon';
 
 @Component({
-    selector: 'kel-schedule-cell',
-    templateUrl: './schedule-cell.component.html',
-    styleUrls: ['./schedule-cell.component.scss'],
-    imports: [MatButton, NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, NgFor, MatMenuItem, AsyncPipe]
+  selector: 'kel-schedule-cell',
+  templateUrl: './schedule-cell.component.html',
+  styleUrls: ['./schedule-cell.component.scss'],
+  imports: [
+    MatButton,
+    NgIf,
+    MatIconButton,
+    MatMenuTrigger,
+    MatIcon,
+    MatMenu,
+    NgFor,
+    MatMenuItem,
+    AsyncPipe,
+  ],
 })
 export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() timeslot!: Date;

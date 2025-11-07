@@ -8,8 +8,8 @@ describe('ApprovalListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [ApprovalListComponent],
-}).compileComponents();
+      imports: [ApprovalListComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ApprovalListComponent);
     component = fixture.componentInstance;

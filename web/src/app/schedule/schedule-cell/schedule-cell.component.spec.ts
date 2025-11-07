@@ -8,8 +8,8 @@ describe('ScheduleCellComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [ScheduleCellComponent],
-}).compileComponents();
+      imports: [ScheduleCellComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ScheduleCellComponent);
     component = fixture.componentInstance;

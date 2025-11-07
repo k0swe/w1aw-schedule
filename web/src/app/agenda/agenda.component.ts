@@ -1,5 +1,13 @@
 import { Clipboard } from '@angular/cdk/clipboard';
+import { AsyncPipe, DatePipe, NgFor } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatButton } from '@angular/material/button';
+import {
+  MatCard,
+  MatCardContent,
+  MatCardHeader,
+  MatCardTitle,
+} from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
 
@@ -7,15 +15,21 @@ import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from '../schedule/schedule.service';
 import { Shift } from '../schedule/shared-constants';
-import { NgFor, AsyncPipe, DatePipe } from '@angular/common';
-import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card';
-import { MatButton } from '@angular/material/button';
 
 @Component({
-    selector: 'kel-agenda',
-    templateUrl: './agenda.component.html',
-    styleUrls: ['./agenda.component.scss'],
-    imports: [NgFor, MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatButton, AsyncPipe, DatePipe]
+  selector: 'kel-agenda',
+  templateUrl: './agenda.component.html',
+  styleUrls: ['./agenda.component.scss'],
+  imports: [
+    NgFor,
+    MatCard,
+    MatCardHeader,
+    MatCardTitle,
+    MatCardContent,
+    MatButton,
+    AsyncPipe,
+    DatePipe,
+  ],
 })
 export class AgendaComponent {
   userShifts$ = new BehaviorSubject<Shift[]>([]);
