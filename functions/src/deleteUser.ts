@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+import { https, logger } from 'firebase-functions/v1';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 import * as admin from 'firebase-admin';
 import { COLORADO_DOC_ID, SectionInfo } from './shared-constants';
@@ -18,11 +18,11 @@ async function getSectionInfo() {
   return sectionInfoSnapshot.data() as SectionInfo;
 }
 
-export const deleteUser = functions.https.onRequest(
+export const deleteUser = https.onRequest(
   async (request, response) => {
     corsHandler(request, response, async () => {
       const deleteUid: string | undefined = request.query.uid?.toString();
-      functions.logger.info({ query: request.query });
+      logger.info({ query: request.query });
       if (!deleteUid) {
         response.status(400).send({ error: 'Bad request' });
         return;
@@ -37,12 +37,12 @@ export const deleteUser = functions.https.onRequest(
       const userDeletingSelf = token.uid == deleteUid;
       const adminRequest = sectionInfo.admins.find((a) => a == token.uid);
       if (userDeletingSelf) {
-        functions.logger.info({
+        logger.info({
           message: 'User deleting self',
           uid: token.uid,
         });
       } else if (adminRequest) {
-        functions.logger.info({
+        logger.info({
           message: 'Admin deleting user',
           admin: token.uid,
           user: deleteUid,
@@ -56,7 +56,7 @@ export const deleteUser = functions.https.onRequest(
         await admin.firestore().collection('users').doc(deleteUid).delete();
         await admin.auth().deleteUser(deleteUid);
       } catch (e) {
-        functions.logger.error(e);
+        logger.error(e);
         response.status(500).send({ error: 'Internal server error' });
         return;
       }

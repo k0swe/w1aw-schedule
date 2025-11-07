@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
+import { https, logger } from 'firebase-functions/v1';
 import {Timestamp} from "firebase-admin/firestore";
 
 import {
@@ -14,13 +14,13 @@ import {
 } from './shared-constants';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 
-export const initShifts = functions.https.onRequest(
+export const initShifts = https.onRequest(
   async (request, response) => {
     const userId = await validateFirebaseIdToken(request, response);
     if (!userId || userId.uid !== 'r9qBLFDsymTyrWb3vtJmhZlDPMy1') {
       return;
     }
-    functions.logger.info('Validated user', userId.uid);
+    logger.info('Validated user', userId.uid);
 
     const timeSlots = calcTimeSlots();
 
@@ -38,7 +38,7 @@ export const initShifts = functions.https.onRequest(
         )
       )
     );
-    functions.logger.info('Generated shifts', { count: shifts.length });
+    logger.info('Generated shifts', { count: shifts.length });
 
     const hashedShifts = new Map<string, object>();
     shifts.forEach((shift) => hashedShifts.set(shiftId(shift), shift));

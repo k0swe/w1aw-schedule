@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
+import { firestore } from 'firebase-functions/v1';
 import { COLORADO_DOC_ID } from './shared-constants';
 
-export const userStatusChanged = functions.firestore
+export const userStatusChanged = firestore
   .document('users/{userId}')
   .onUpdate(async (change) => {
     const after = change.after.data();

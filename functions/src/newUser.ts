@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
+import { auth } from 'firebase-functions/v1';
 import { COLORADO_DOC_ID, SectionInfo } from './shared-constants';
 
-export const newUser = functions.auth.user().onCreate(async (user) => {
+export const newUser = auth.user().onCreate(async (user) => {
   await admin
     .firestore()
     .collection('users')
