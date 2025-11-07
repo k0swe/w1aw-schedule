@@ -9,10 +9,10 @@
 }
 
 .toolbar {
-  background-color: mat.m2-get-color-from-palette($kel-primary, 'default');
-  color: mat.m2-get-color-from-palette($kel-primary, 'default-contrast');
+  background-color: var(--mat-toolbar-container-background-color);
+  color: var(--mat-toolbar-container-text-color);
   z-index: 2;
-  box-shadow: 0 1px mat.m2-get-color-from-palette($kel-foreground, divider);
+  box-shadow: 0 1px rgba(0, 0, 0, 0.12);
   display: flex;
 }
 
@@ -36,16 +36,18 @@ a.app-title {
 }
 
 h1.app-title {
-  background-color: mat.m2-get-color-from-palette($kel-primary, 'default');
-  color: mat.m2-get-color-from-palette($kel-primary, 'default-contrast');
+  background-color: var(--mat-toolbar-container-background-color);
+  color: var(--mat-toolbar-container-text-color);
   margin: 0 0 0 0;
 }
 
 .app-subtitle {
-  @include mat.m2-typography-level($kel-typography, subtitle-1);
-  background-color: mat.m2-get-color-from-palette($kel-primary, 'default');
-  color: mat.m2-get-color-from-palette($kel-primary, 'default-contrast');
+  background-color: var(--mat-toolbar-container-background-color);
+  color: var(--mat-toolbar-container-text-color);
   margin: 16px 0 0 16px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
   @media screen and (max-width: 959px) {
     display: none;
   }
@@ -56,8 +58,8 @@ h1.app-title {
 }
 
 .toolbar__menu-button {
-  background-color: mat.m2-get-color-from-palette($kel-primary, 'default');
-  color: mat.m2-get-color-from-palette($kel-primary, 'default-contrast');
+  background-color: var(--mat-toolbar-container-background-color);
+  color: var(--mat-toolbar-container-text-color);
   margin-right: 8px;
 }
 

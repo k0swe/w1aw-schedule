@@ -1,34 +1,17 @@
 @use '@angular/material' as mat;
-@include mat.elevation-classes();
-@include mat.app-background();
 
-$kel-primary: mat.m2-define-palette(mat.$m2-blue-palette);
-$kel-accent: mat.m2-define-palette(mat.$m2-red-palette, 700);
-$kel-typography: mat.m2-define-typography-config(
-  $font-family: 'Open Sans, Helvetica Neue, sans-serif',
-);
-
-$kel-theme: mat.m2-define-light-theme(
-  (
-    color: (
-      primary: $kel-primary,
-      accent: $kel-accent,
-    ),
-    typography: $kel-typography,
-  )
-);
-
-$kel-background: map-get($kel-theme, background);
-$kel-foreground: map-get($kel-theme, foreground);
-
-$kel-mono-typography: mat.m2-define-typography-config(
-  $font-family: 'DM Mono, monospace',
-);
-
-$kel-serif-typography: mat.m2-define-typography-config(
-  $font-family: 'Tinos, Times New Roman, serif',
-);
-
-$kel-emoji-typography: mat.m2-define-typography-config(
-  $font-family: 'Apple Color Emoji, Noto Colr Emoji Glyf',
-);
+// Define Material 3 theme with primary and tertiary colors, and typography
+$kel-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$blue-palette,
+    tertiary: mat.$red-palette,
+  ),
+  typography: (
+    plain-family: 'Open Sans, Helvetica Neue, sans-serif',
+    brand-family: 'Open Sans, Helvetica Neue, sans-serif',
+  ),
+  density: (
+    scale: 0,
+  ),
+));

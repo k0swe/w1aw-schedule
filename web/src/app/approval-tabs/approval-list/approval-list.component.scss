@@ -7,5 +7,7 @@ textarea {
 }
 
 .callsign {
-  @include mat.m2-typography-level($kel-mono-typography, 'body-1');
+  font-family: 'DM Mono, monospace';
+  font-size: 14px;
+  line-height: 1.5;
 }
