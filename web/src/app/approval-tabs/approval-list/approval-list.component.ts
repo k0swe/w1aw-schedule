@@ -1,18 +1,22 @@
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatNoDataRow } from '@angular/material/table';
 import { Observable, Subscription, of } from 'rxjs';
 
 import {
   UserSettings,
   UserSettingsService,
 } from '../../user-settings/user-settings.service';
+import { MatIcon } from '@angular/material/icon';
+import { NgIf } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 
 @Component({
     selector: 'kel-approval-list',
     templateUrl: './approval-list.component.html',
     styleUrls: ['./approval-list.component.scss'],
-    standalone: false
+    imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatIcon, NgIf, MatIconButton, MatSlideToggle, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatNoDataRow]
 })
 export class ApprovalListComponent implements OnInit, OnDestroy {
   @Input() userList: Observable<UserSettings[]> = of([]);

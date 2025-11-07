@@ -1,17 +1,21 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import firebase from 'firebase/compat/app';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
+import { NgIf, NgOptimizedImage, AsyncPipe } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
     selector: 'kel-avatar',
     templateUrl: './avatar.component.html',
     styleUrls: ['./avatar.component.scss'],
-    standalone: false
+    imports: [NgIf, MatIconButton, MatMenuTrigger, NgOptimizedImage, MatMenu, MatMenuItem, MatIcon, RouterLink, AsyncPipe]
 })
 export class AvatarComponent {
   user$: Observable<firebase.User | null>;

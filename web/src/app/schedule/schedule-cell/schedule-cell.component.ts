@@ -11,12 +11,16 @@ import {
 } from '../../user-settings/user-settings.service';
 import { ScheduleService } from '../schedule.service';
 import { Shift } from '../shared-constants';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
     selector: 'kel-schedule-cell',
     templateUrl: './schedule-cell.component.html',
     styleUrls: ['./schedule-cell.component.scss'],
-    standalone: false
+    imports: [MatButton, NgIf, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, NgFor, MatMenuItem, AsyncPipe]
 })
 export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() timeslot!: Date;
