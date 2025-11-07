@@ -1,6 +1,5 @@
 const eslint = require("@eslint/js");
-const tseslint = require("@typescript-eslint/eslint-plugin");
-const tsparser = require("@typescript-eslint/parser");
+const tseslint = require("typescript-eslint");
 const importPlugin = require("eslint-plugin-import");
 const prettierConfig = require("eslint-config-prettier");
 
@@ -13,15 +12,18 @@ module.exports = [
   // Base ESLint recommended rules
   eslint.configs.recommended,
 
+  // TypeScript ESLint recommended rules
+  ...tseslint.configs.recommended,
+
   // Configuration for JavaScript and TypeScript files
   {
     files: ["**/*.js", "**/*.ts"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      parser: tsparser,
       parserOptions: {
         project: ["./tsconfig.json", "./tsconfig.dev.json"],
+        tsconfigRootDir: __dirname,
       },
       globals: {
         console: "readonly",
@@ -39,13 +41,9 @@ module.exports = [
       },
     },
     plugins: {
-      "@typescript-eslint": tseslint,
       import: importPlugin,
     },
     rules: {
-      // TypeScript recommended rules
-      ...tseslint.configs.recommended.rules,
-
       // Google style guide rules (adapted for flat config)
       "no-var": "warn",
       "prefer-const": "error",
@@ -63,7 +61,6 @@ module.exports = [
       "no-caller": "error",
       "no-eval": "error",
       "no-extend-native": "warn",
-      "no-extra-bind": "warn",
       "no-implied-eval": "error",
       "no-iterator": "error",
       "no-labels": "warn",

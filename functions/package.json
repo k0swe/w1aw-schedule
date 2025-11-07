@@ -12,7 +12,7 @@
     "test": "npm run build && mocha --reporter spec ./build/ --recursive"
   },
   "engines": {
-    "node": ">= 18"
+    "node": "20"
   },
   "main": "build/src/index.js",
   "dependencies": {
@@ -35,7 +35,8 @@
     "firebase-functions-test": "^3.4.1",
     "mocha": "^11.7.5",
     "prettier": "^3.6.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3"
   },
   "private": true
 }
