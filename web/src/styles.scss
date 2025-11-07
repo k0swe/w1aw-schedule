@@ -2,18 +2,10 @@
 @import './theme';
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
-// Be sure that you only ever include this mixin once!
-// TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
-//  The following line adds:
-//    1. Default typography styles for all components
-//    2. Styles for typography hierarchy classes (e.g. .mat-headline-1)
-//  If you specify typography styles for the components you use elsewhere, you should delete this line.
-//  If you don't need the default component typographies but still want the hierarchy styles,
-//  you can delete this line and instead use:
-//    `@include mat.legacy-typography-hierarchy($kel-typography);`
-@include mat.all-component-typographies($kel-typography);
-@include mat.elevation-classes();
-@include mat.app-background();
+// Include the core styles for Material 3
+@include mat.core();
+
+// Include all component themes using Material 3 theme
 @include mat.all-component-themes($kel-theme);
 
 // Global styles.
@@ -29,9 +21,9 @@ html {
 body {
   color: #212121;
   background-color: #f3f3f3;
-  font-family: mat.m2-font-family($kel-typography);
-  line-height: mat.m2-line-height($kel-typography, body-1);
-  font-size: mat.m2-font-size($kel-typography, body-1);
+  font-family: 'Open Sans, Helvetica Neue, sans-serif';
+  line-height: 1.5;
+  font-size: 14px;
   height: 100%;
   margin: 0;
   overflow: hidden;

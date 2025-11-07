@@ -1,11 +1,36 @@
 import { Clipboard } from '@angular/cdk/clipboard';
+import { AsyncPipe, DatePipe, NgFor } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatButton } from '@angular/material/button';
+import {
+  MatCard,
+  MatCardActions,
+  MatCardContent,
+  MatCardHeader,
+  MatCardTitle,
+} from '@angular/material/card';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatLabel } from '@angular/material/input';
+import { MatOption, MatSelect } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  MatCell,
+  MatCellDef,
+  MatColumnDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef,
+  MatTable,
+} from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
+import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleService } from './schedule.service';
 import {
   BANDS,
@@ -19,20 +44,38 @@ import {
   UHF_BANDS,
   VHF_BANDS,
 } from './shared-constants';
-import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@angular/material/card';
-import { MatButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatFormField, MatLabel } from '@angular/material/input';
-import { MatSelect, MatOption } from '@angular/material/select';
-import { NgFor, AsyncPipe, DatePipe } from '@angular/common';
-import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 
 @Component({
-    selector: 'kel-schedule',
-    templateUrl: './schedule.component.html',
-    styleUrls: ['./schedule.component.scss'],
-    imports: [MatCard, MatCardHeader, MatCardTitle, MatButton, MatIcon, MatFormField, MatLabel, MatSelect, NgFor, MatOption, MatCardContent, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, ScheduleCellComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCardActions, AsyncPipe, DatePipe]
+  selector: 'kel-schedule',
+  templateUrl: './schedule.component.html',
+  styleUrls: ['./schedule.component.scss'],
+  imports: [
+    MatCard,
+    MatCardHeader,
+    MatCardTitle,
+    MatButton,
+    MatIcon,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    NgFor,
+    MatOption,
+    MatCardContent,
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    ScheduleCellComponent,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatCardActions,
+    AsyncPipe,
+    DatePipe,
+  ],
 })
 export class ScheduleComponent {
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;

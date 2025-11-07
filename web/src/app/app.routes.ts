@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 
-import { HomeComponent } from './home/home.component';
-import { AuthenticationGuard } from './authentication/authentication.guard';
 import { AdminGuard } from './authentication/admin.guard';
+import { AuthenticationGuard } from './authentication/authentication.guard';
+import { HomeComponent } from './home/home.component';
 
 export const routes: Routes = [
   {

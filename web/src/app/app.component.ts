@@ -1,23 +1,43 @@
+import { AsyncPipe, NgOptimizedImage } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import {
+  MatDivider,
+  MatListItem,
+  MatListItemIcon,
+  MatNavList,
+} from '@angular/material/list';
+import { MatSidenav, MatSidenavContainer } from '@angular/material/sidenav';
+import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatIconButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { RouterLink, RouterOutlet } from '@angular/router';
-import { NgOptimizedImage, AsyncPipe } from '@angular/common';
 import { AvatarComponent } from './avatar/avatar.component';
-import { MatSidenavContainer, MatSidenav } from '@angular/material/sidenav';
-import { MatNavList, MatListItem, MatListItemIcon, MatDivider } from '@angular/material/list';
 
 @Component({
-    selector: 'kel-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    imports: [MatToolbar, MatIconButton, MatIcon, RouterLink, NgOptimizedImage, AvatarComponent, MatSidenavContainer, MatSidenav, MatNavList, MatListItem, MatListItemIcon, MatDivider, RouterOutlet, AsyncPipe]
+  selector: 'kel-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  imports: [
+    MatToolbar,
+    MatIconButton,
+    MatIcon,
+    RouterLink,
+    NgOptimizedImage,
+    AvatarComponent,
+    MatSidenavContainer,
+    MatSidenav,
+    MatNavList,
+    MatListItem,
+    MatListItemIcon,
+    MatDivider,
+    RouterOutlet,
+    AsyncPipe,
+  ],
 })
 export class AppComponent {
   appName = environment.appName;
