@@ -3,8 +3,8 @@
 import { Timestamp } from 'firebase-admin/firestore';
 
 export const TWO_HOURS_IN_MS: number = 2 * 60 * 60 * 1000;
-export const TIME_SLOTS_START = new Date('2023-09-13T00:00:00Z');
-export const TIME_SLOTS_END = new Date('2023-09-19T23:59:59Z');
+export const TIME_SLOTS_START = new Date('2026-05-27T00:00:00Z');
+export const TIME_SLOTS_END = new Date('2026-06-02T23:59:59Z');
 export const MODES = ['phone', 'cw', 'digital'];
 export const HF_BANDS = ['160', '80', '40', '20', '15', '10'];
 export const VHF_BANDS = ['6', '2', '1.25'];
