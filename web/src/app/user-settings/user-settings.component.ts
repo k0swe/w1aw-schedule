@@ -30,6 +30,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
   selector: 'kel-user-settings',
   templateUrl: './user-settings.component.html',
   styleUrls: ['./user-settings.component.scss'],
+  standalone: true,
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -66,12 +67,12 @@ export class UserSettingsComponent implements OnInit {
     Validators.required,
     Validators.pattern(/^\(?[0-9]{3}\)? ?-?[0-9]{3}-?[0-9]{4}$/i),
   ]);
-  settingsForm = new FormGroup([
-    this.callsign,
-    this.gridSquare,
-    this.name,
-    this.phone,
-  ]);
+  settingsForm = new FormGroup({
+    callsign: this.callsign,
+    gridSquare: this.gridSquare,
+    name: this.name,
+    phone: this.phone,
+  });
 
   @ViewChild('saveButton') saveButton: MatButton | undefined;
 

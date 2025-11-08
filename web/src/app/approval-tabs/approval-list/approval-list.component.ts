@@ -29,6 +29,7 @@ import {
   selector: 'kel-approval-list',
   templateUrl: './approval-list.component.html',
   styleUrls: ['./approval-list.component.scss'],
+  standalone: true,
   imports: [
     MatTable,
     MatSort,

@@ -29,6 +29,7 @@ import { AuthenticationService } from '../authentication/authentication.service'
   selector: 'kel-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  standalone: true,
   imports: [
     MatCard,
     MatCardHeader,

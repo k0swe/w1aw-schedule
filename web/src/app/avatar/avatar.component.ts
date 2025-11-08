@@ -15,6 +15,7 @@ import { AuthenticationService } from '../authentication/authentication.service'
   selector: 'kel-avatar',
   templateUrl: './avatar.component.html',
   styleUrls: ['./avatar.component.scss'],
+  standalone: true,
   imports: [
     NgIf,
     MatIconButton,

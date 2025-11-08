@@ -18,6 +18,7 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
   selector: 'kel-approval-tabs',
   templateUrl: './approval-tabs.component.html',
   styleUrls: ['./approval-tabs.component.scss'],
+  standalone: true,
   imports: [
     MatCard,
     MatCardHeader,

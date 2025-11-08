@@ -20,6 +20,7 @@ import { Shift } from '../schedule/shared-constants';
   selector: 'kel-agenda',
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.scss'],
+  standalone: true,
   imports: [
     NgFor,
     MatCard,

@@ -20,6 +20,7 @@ import { Shift } from '../shared-constants';
   selector: 'kel-schedule-cell',
   templateUrl: './schedule-cell.component.html',
   styleUrls: ['./schedule-cell.component.scss'],
+  standalone: true,
   imports: [
     MatButton,
     NgIf,

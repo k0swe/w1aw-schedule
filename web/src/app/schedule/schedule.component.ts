@@ -49,6 +49,7 @@ import {
   selector: 'kel-schedule',
   templateUrl: './schedule.component.html',
   styleUrls: ['./schedule.component.scss'],
+  standalone: true,
   imports: [
     MatCard,
     MatCardHeader,
