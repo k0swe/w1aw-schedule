@@ -1,25 +1,21 @@
 import * as admin from 'firebase-admin';
-import { beforeUserCreated } from 'firebase-functions/v2/identity';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { COLORADO_DOC_ID, SectionInfo } from './shared-constants';
 
-export const newUser = beforeUserCreated(async (event) => {
-  const user = event.data;
-
-  // Guard against unexpected missing event data (keeps TypeScript happy).
-  if (!user) {
-    throw new Error('Missing user data in beforeUserCreated event');
+export const newUser = onDocumentCreated('users/{userId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) {
+    console.log('No data associated with the event');
+    return;
   }
 
-  const uid = user.uid as string;
-  const email = (user.email as string) || '';
-  const displayName = (user.displayName as string) || '';
+  const userData = snapshot.data();
+  const email = userData.email as string;
 
-  // Create user document in Firestore
-  await admin
-    .firestore()
-    .collection('users')
-    .doc(uid)
-    .set({ email: email, status: 'Provisional', name: displayName });
+  if (!email) {
+    console.log('No email found for new user');
+    return;
+  }
 
   const { admins } = (
     await admin.firestore().collection('sections').doc(COLORADO_DOC_ID).get()

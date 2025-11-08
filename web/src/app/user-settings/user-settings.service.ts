@@ -58,7 +58,11 @@ export class UserSettingsService {
       return;
     }
     const docRef = doc(this.firestore, 'users', u.uid);
-    setDoc(docRef, { status: 'Provisional' });
+    setDoc(docRef, {
+      email: u.email || '',
+      name: u.displayName || '',
+      status: 'Provisional',
+    });
   }
 
   public settings(): Observable<UserSettings> {

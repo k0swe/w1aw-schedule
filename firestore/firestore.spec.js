@@ -47,7 +47,7 @@ after(async () => {
 
         res.on("end", resolve);
         res.on("error", reject);
-      }
+      },
     );
   });
 
@@ -93,7 +93,7 @@ describe("User profiles", () => {
         name: "Alice",
         callsign: "t3st",
         gridSquare: "DM33",
-      })
+      }),
     );
   });
 
@@ -109,7 +109,7 @@ describe("User profiles", () => {
     await assertFails(
       updateDoc(doc(raviDb, "users/ravi"), {
         status: "Approved",
-      })
+      }),
     );
   });
 
@@ -119,7 +119,7 @@ describe("User profiles", () => {
     await assertFails(
       updateDoc(doc(raviDb, "users/ravi"), {
         multiShift: true,
-      })
+      }),
     );
   });
 
@@ -158,7 +158,7 @@ describe("User profiles", () => {
     await assertSucceeds(
       updateDoc(doc(amandaDb, "users/alice"), {
         status: "Approved",
-      })
+      }),
     );
   });
 });
@@ -182,7 +182,7 @@ it("should allow admins to write multi-shift status", async () => {
   await assertSucceeds(
     updateDoc(doc(amandaDb, "users/alice"), {
       multiShift: true,
-    })
+    }),
   );
 });
 
@@ -210,7 +210,7 @@ describe("Section information", () => {
     await assertFails(
       setDoc(doc(aliceDb, `sections/${colorado}`), {
         name: "The best section",
-      })
+      }),
     );
   });
 
@@ -258,13 +258,13 @@ describe("Shifts", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`))
+      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`)),
     );
     await assertSucceeds(
-      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`))
+      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`)),
     );
     await assertSucceeds(
-      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift3`))
+      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift3`)),
     );
   });
 
@@ -273,7 +273,7 @@ describe("Shifts", () => {
     await assertSucceeds(
       updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
         reservedBy: "alice",
-      })
+      }),
     );
   });
 
@@ -282,7 +282,7 @@ describe("Shifts", () => {
     await assertSucceeds(
       updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift3`), {
         reservedBy: null,
-      })
+      }),
     );
   });
 
@@ -291,7 +291,7 @@ describe("Shifts", () => {
     await assertFails(
       updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
         reservedBy: "ravi",
-      })
+      }),
     );
   });
 
@@ -300,7 +300,7 @@ describe("Shifts", () => {
     await assertFails(
       updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`), {
         reservedBy: null,
-      })
+      }),
     );
   });
 
@@ -309,7 +309,7 @@ describe("Shifts", () => {
     await assertFails(
       updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`), {
         reservedBy: "alice",
-      })
+      }),
     );
   });
 
@@ -318,7 +318,7 @@ describe("Shifts", () => {
     await assertFails(
       updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
         mode: "digital",
-      })
+      }),
     );
   });
 
@@ -327,7 +327,7 @@ describe("Shifts", () => {
     await assertSucceeds(
       updateDoc(doc(amandaDb, `sections/${colorado}/shifts/shift2`), {
         reservedBy: null,
-      })
+      }),
     );
   });
 
@@ -336,7 +336,7 @@ describe("Shifts", () => {
     await assertSucceeds(
       updateDoc(doc(amandaDb, `sections/${colorado}/shifts/shift1`), {
         reservedBy: "alice",
-      })
+      }),
     );
   });
 });
