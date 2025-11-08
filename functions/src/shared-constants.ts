@@ -20,13 +20,26 @@ export interface SectionInfo {
   admins: string[];
 }
 
+export interface UserSettings {
+  id?: string;
+  callsign?: string;
+  email?: string;
+  gridSquare?: string;
+  name?: string;
+  phone?: string;
+  status?: string;
+  approvedBy?: string;
+  declinedBy?: string;
+  multiShift?: boolean;
+}
+
 export interface Shift {
   time: Timestamp;
   band: string;
   mode: string;
   // Firebase User ID
   reservedBy: string | null;
-  reservedDetails: object | null;
+  reservedDetails: UserSettings | null;
 }
 
 export const shiftId = (shift: Partial<Shift>): string => {

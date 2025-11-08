@@ -28,21 +28,22 @@ describe('userStatusChanged', () => {
       'users/12345',
     );
     // Invoke the v2-style handler by passing an event with a `data.after` snapshot.
-    await (test.wrap(userStatusChanged as any) as any)({ data: { after: afterSnap } })
-      .then(async () => {
-        await admin
-          .firestore()
-          .collection('mail')
-          .get()
-          .then((mailDocs) => {
-            assert.equal(mailDocs.size, 1);
-            mailDocs.forEach((mailDoc) => {
-              assert.equal(mailDoc.data()?.to, exampleEmail);
-              assert.equal(mailDoc.data()?.template.name, 'approved');
-              testComplete = true;
-            });
+    await (test.wrap(userStatusChanged as any) as any)({
+      data: { after: afterSnap },
+    }).then(async () => {
+      await admin
+        .firestore()
+        .collection('mail')
+        .get()
+        .then((mailDocs) => {
+          assert.equal(mailDocs.size, 1);
+          mailDocs.forEach((mailDoc) => {
+            assert.equal(mailDoc.data()?.to, exampleEmail);
+            assert.equal(mailDoc.data()?.template.name, 'approved');
+            testComplete = true;
           });
-      });
+        });
+    });
     assert.equal(testComplete, true);
   });
 
@@ -62,22 +63,23 @@ describe('userStatusChanged', () => {
       { status: 'Declined' },
       'users/12345',
     );
-    await (test.wrap(userStatusChanged as any) as any)({ data: { after: afterSnap } })
-      .then(async () => {
-        await admin
-          .firestore()
-          .collection('sections')
-          .doc(COLORADO_DOC_ID)
-          .collection('shifts')
-          .get()
-          .then((shiftDocs) => {
-            shiftDocs.forEach((shiftDoc) => {
-              assert.equal(shiftDoc.data()?.reservedBy, null);
-              assert.equal(shiftDoc.data()?.reservedDetails, null);
-            });
-            testComplete = true;
+    await (test.wrap(userStatusChanged as any) as any)({
+      data: { after: afterSnap },
+    }).then(async () => {
+      await admin
+        .firestore()
+        .collection('sections')
+        .doc(COLORADO_DOC_ID)
+        .collection('shifts')
+        .get()
+        .then((shiftDocs) => {
+          shiftDocs.forEach((shiftDoc) => {
+            assert.equal(shiftDoc.data()?.reservedBy, null);
+            assert.equal(shiftDoc.data()?.reservedDetails, null);
           });
-        assert.equal(testComplete, true);
-      });
+          testComplete = true;
+        });
+      assert.equal(testComplete, true);
+    });
   });
 });

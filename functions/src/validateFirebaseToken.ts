@@ -4,10 +4,7 @@ import { Request } from 'firebase-functions/v2/https';
 import { Response } from 'express';
 
 // from https://github.com/firebase/functions-samples/blob/b5aa45d9400ed43f5b9031ed74935cdd781e614b/Node-1st-gen/authorized-https-endpoint/functions/index.js
-export const validateFirebaseIdToken = async (
-  req: Request,
-  res: Response,
-) => {
+export const validateFirebaseIdToken = async (req: Request, res: Response) => {
   logger.log('Check if request is authorized with Firebase ID token');
 
   if (

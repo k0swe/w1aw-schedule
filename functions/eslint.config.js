@@ -110,6 +110,9 @@ module.exports = [
         afterEach: "readonly",
       },
     },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
   },
 
   // Prettier config should be last to override other formatting rules
