@@ -31,8 +31,8 @@ button {
   align-items: center;
 }
 
-.callsign {
-  font-family: 'DM Mono, monospace';
+mat-form-field input.callsign {
+  font-family: 'Roboto Mono', monospace;
   font-size: 14px;
   line-height: 1.5;
 }
