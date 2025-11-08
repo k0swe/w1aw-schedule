@@ -15,7 +15,9 @@ import {
 } from './shared-constants';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 
-export const initShifts = onRequest(async (request, response) => {
+export const initShifts = onRequest(
+  { memory: '512MiB', timeoutSeconds: 540 },
+  async (request, response) => {
   const userId = await validateFirebaseIdToken(request, response);
   if (!userId || userId.uid !== 'VAfZAw8GhJQodyTTCkXgilbqvoM2') {
     return;
@@ -49,9 +51,25 @@ export const initShifts = onRequest(async (request, response) => {
     .doc(COLORADO_DOC_ID)
     .collection('shifts');
 
-  hashedShifts.forEach((shift, hash) => {
-    coloradoShifts.doc(hash).set(shift);
-  });
+  // Batch writes to reduce memory usage
+  const BATCH_SIZE = 500;
+  const entries = Array.from(hashedShifts.entries());
+  let totalWritten = 0;
+
+  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+    const batch = entries.slice(i, i + BATCH_SIZE);
+    const writePromises: Array<Promise<FirebaseFirestore.WriteResult>> = [];
+
+    batch.forEach(([hash, shift]) => {
+      writePromises.push(coloradoShifts.doc(hash).set(shift));
+    });
+
+    await Promise.all(writePromises);
+    totalWritten += batch.length;
+    logger.info(`Batch progress: ${totalWritten} / ${entries.length} shifts saved`);
+  }
+
+  logger.info('All shifts saved to Firestore');
   response.send({ shiftCount: hashedShifts.size });
 });
 
