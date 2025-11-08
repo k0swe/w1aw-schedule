@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   Auth,
   FacebookAuthProvider,
@@ -23,18 +23,18 @@ import { SectionInfoService } from '../section-info/section-info.service';
   providedIn: 'root',
 })
 export class AuthenticationService {
+  private auth = inject(Auth);
+  private route = inject(ActivatedRoute);
+  private sectionInfoService = inject(SectionInfoService);
+  private router = inject(Router);
+
   user$ = new BehaviorSubject<User | null>(null);
 
-  constructor(
-    private auth: Auth,
-    private route: ActivatedRoute,
-    private sectionInfoService: SectionInfoService,
-    private router: Router,
-  ) {
+  constructor() {
     authState(this.auth).subscribe((u) => {
       this.user$.next(u);
-      if (!!u && route.snapshot.queryParams['continue']) {
-        router.navigateByUrl(route.snapshot.queryParams['continue']);
+      if (!!u && this.route.snapshot.queryParams['continue']) {
+        this.router.navigateByUrl(this.route.snapshot.queryParams['continue']);
       }
     });
   }

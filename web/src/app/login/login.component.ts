@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { UserCredential } from '@angular/fire/auth';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
@@ -49,15 +49,13 @@ import { AuthenticationService } from '../authentication/authentication.service'
   ],
 })
 export class LoginComponent {
+  private authService = inject(AuthenticationService);
+  private router = inject(Router);
+  private snackBarService = inject(MatSnackBar);
+
   appName = environment.appName;
   email: string = '';
   password: string = '';
-
-  constructor(
-    private authService: AuthenticationService,
-    private router: Router,
-    private snackBarService: MatSnackBar,
-  ) {}
 
   loginGoogle(): void {
     const loginObs = this.authService.loginGoogle();
@@ -96,9 +94,7 @@ export class LoginComponent {
     });
   }
 
-  private handleLogin(
-    loginObs: Observable<UserCredential>,
-  ): void {
+  private handleLogin(loginObs: Observable<UserCredential>): void {
     loginObs.pipe(take(1)).subscribe({
       next: (_) => {
         this.router.navigateByUrl('/user');

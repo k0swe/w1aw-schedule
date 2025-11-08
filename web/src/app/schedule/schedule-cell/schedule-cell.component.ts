@@ -1,5 +1,5 @@
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { ThemePalette } from '@angular/material/core';
@@ -34,6 +34,10 @@ import { Shift } from '../shared-constants';
   ],
 })
 export class ScheduleCellComponent implements OnInit, OnDestroy {
+  private scheduleService = inject(ScheduleService);
+  private authenticationService = inject(AuthenticationService);
+  private userSettingsService = inject(UserSettingsService);
+
   @Input() timeslot!: Date;
   @Input() band!: string;
   @Input() mode!: string;
@@ -46,12 +50,6 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   private shiftSubscription: Subscription | null = null;
   private adminSubscription: Subscription | null = null;
   private approvedUsersSubscription: Subscription | null = null;
-
-  constructor(
-    private scheduleService: ScheduleService,
-    private authenticationService: AuthenticationService,
-    private userSettingsService: UserSettingsService,
-  ) {}
 
   ngOnInit(): void {
     this.userSettingsService.init();

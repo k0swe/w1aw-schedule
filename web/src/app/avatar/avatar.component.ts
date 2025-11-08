@@ -1,5 +1,5 @@
 import { AsyncPipe, NgIf, NgOptimizedImage } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -29,14 +29,14 @@ import { AuthenticationService } from '../authentication/authentication.service'
   ],
 })
 export class AvatarComponent {
+  authService = inject(AuthenticationService);
+  private dialog = inject(MatDialog);
+  private router = inject(Router);
+
   user$: Observable<User | null>;
   photoUrl: string = '';
 
-  constructor(
-    public authService: AuthenticationService,
-    private dialog: MatDialog,
-    private router: Router,
-  ) {
+  constructor() {
     this.user$ = this.authService.user$;
     this.user$.subscribe((u) => {
       if (!u) {

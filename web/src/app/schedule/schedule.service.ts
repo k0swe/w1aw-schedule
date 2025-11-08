@@ -1,5 +1,15 @@
-import { Injectable } from '@angular/core';
-import { collection, collectionData, doc, docData, Firestore, query, Timestamp, updateDoc, where } from '@angular/fire/firestore';
+import { Injectable, inject } from '@angular/core';
+import {
+  Firestore,
+  Timestamp,
+  collection,
+  collectionData,
+  doc,
+  docData,
+  query,
+  updateDoc,
+  where,
+} from '@angular/fire/firestore';
 import { Observable, of } from 'rxjs';
 import { from } from 'rxjs';
 
@@ -11,10 +21,8 @@ import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
   providedIn: 'root',
 })
 export class ScheduleService {
-  constructor(
-    private firestore: Firestore,
-    private authenticationService: AuthenticationService,
-  ) {}
+  private firestore = inject(Firestore);
+  private authenticationService = inject(AuthenticationService);
 
   public findShift(
     time: Date,
@@ -23,7 +31,13 @@ export class ScheduleService {
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
-    const docRef = doc(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts', sid);
+    const docRef = doc(
+      this.firestore,
+      'sections',
+      COLORADO_DOC_ID,
+      'shifts',
+      sid,
+    );
     return docData(docRef) as Observable<Shift | undefined>;
   }
 
@@ -44,9 +58,15 @@ export class ScheduleService {
       band: shiftToUpdate.band,
       mode: shiftToUpdate.mode,
     });
-    const docRef = doc(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts', sid);
+    const docRef = doc(
+      this.firestore,
+      'sections',
+      COLORADO_DOC_ID,
+      'shifts',
+      sid,
+    );
     return from(
-      updateDoc(docRef, { reservedBy: userId, reservedDetails: userDetails })
+      updateDoc(docRef, { reservedBy: userId, reservedDetails: userDetails }),
     );
   }
 
@@ -63,14 +83,23 @@ export class ScheduleService {
       band: shiftToUpdate.band,
       mode: shiftToUpdate.mode,
     });
-    const docRef = doc(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts', sid);
-    return from(
-      updateDoc(docRef, { reservedBy: null, reservedDetails: null })
+    const docRef = doc(
+      this.firestore,
+      'sections',
+      COLORADO_DOC_ID,
+      'shifts',
+      sid,
     );
+    return from(updateDoc(docRef, { reservedBy: null, reservedDetails: null }));
   }
 
   findUserShifts(uid: string): Observable<Shift[]> {
-    const shiftsCol = collection(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts');
+    const shiftsCol = collection(
+      this.firestore,
+      'sections',
+      COLORADO_DOC_ID,
+      'shifts',
+    );
     const q = query(shiftsCol, where('reservedBy', '==', uid));
     return collectionData(q) as Observable<Shift[]>;
   }

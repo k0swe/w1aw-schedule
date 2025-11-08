@@ -1,6 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { AsyncPipe, DatePipe, NgFor } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import {
   MatCard,
@@ -79,6 +79,13 @@ import {
   ],
 })
 export class ScheduleComponent {
+  private authenticationService = inject(AuthenticationService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private scheduleService = inject(ScheduleService);
+  private clipboard = inject(Clipboard);
+  private snackBarService = inject(MatSnackBar);
+
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
   TIME_SLOTS_START = TIME_SLOTS_START;
@@ -105,22 +112,15 @@ export class ScheduleComponent {
     '&ctz=America/Denver&mode=WEEK&dates=20230913%2F20230920';
   icsLink = `${environment.functionBase}/calendar`;
 
-  constructor(
-    private authenticationService: AuthenticationService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private scheduleService: ScheduleService,
-    private clipboard: Clipboard,
-    private snackBarService: MatSnackBar,
-  ) {
+  constructor() {
     this.viewDay = new Date(
-      route.snapshot.queryParams['day'] ||
+      this.route.snapshot.queryParams['day'] ||
         TIME_SLOTS_START.toISOString().split('T')[0],
     );
-    this.viewBandGroup = route.snapshot.queryParams['bandGroup'] || 'HF';
-    this.viewMode = route.snapshot.queryParams['mode'] || 'phone';
+    this.viewBandGroup = this.route.snapshot.queryParams['bandGroup'] || 'HF';
+    this.viewMode = this.route.snapshot.queryParams['mode'] || 'phone';
     this.scheduleService
-      .findUserShifts(authenticationService.user$.getValue()!.uid)
+      .findUserShifts(this.authenticationService.user$.getValue()!.uid)
       .subscribe((shifts) => this.userShifts$.next(shifts));
     this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
     this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);

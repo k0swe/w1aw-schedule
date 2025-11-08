@@ -1,5 +1,5 @@
 import { AsyncPipe, NgOptimizedImage } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import {
@@ -41,14 +41,14 @@ import { AvatarComponent } from './avatar/avatar.component';
   ],
 })
 export class AppComponent {
+  private authenticationService = inject(AuthenticationService);
+  private titleService = inject(Title);
+
   appName = environment.appName;
   userIsAdmin$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private authenticationService: AuthenticationService,
-    private titleService: Title,
-  ) {
-    authenticationService
+  constructor() {
+    this.authenticationService
       .userIsAdmin()
       .subscribe((isAdmin) => this.userIsAdmin$.next(isAdmin));
     this.titleService.setTitle(this.appName);

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivate,
@@ -13,7 +13,7 @@ import { AuthenticationService } from './authentication.service';
   providedIn: 'root',
 })
 export class AdminGuard implements CanActivate {
-  constructor(private authService: AuthenticationService) {}
+  private authService = inject(AuthenticationService);
 
   canActivate(
     route: ActivatedRouteSnapshot,

@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import {
   FormControl,
@@ -48,6 +48,11 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
   ],
 })
 export class UserSettingsComponent implements OnInit {
+  private authService = inject(AuthenticationService);
+  private route = inject(ActivatedRoute);
+  private settingsService = inject(UserSettingsService);
+  private snackBarService = inject(MatSnackBar);
+
   user$: Observable<User | null>;
 
   // email and status are read-only
@@ -76,12 +81,7 @@ export class UserSettingsComponent implements OnInit {
 
   @ViewChild('saveButton') saveButton: MatButton | undefined;
 
-  constructor(
-    private authService: AuthenticationService,
-    private route: ActivatedRoute,
-    private settingsService: UserSettingsService,
-    private snackBarService: MatSnackBar,
-  ) {
+  constructor() {
     this.user$ = this.authService.user$;
     this.email = new BehaviorSubject<string>(
       this.authService.user$.getValue()?.email || '',
@@ -115,7 +115,9 @@ export class UserSettingsComponent implements OnInit {
     this.settingsService.init();
 
     const accountCreatedInPastMinute =
-      new Date(this.authService.user$.getValue()?.metadata.creationTime!).getTime() >
+      new Date(
+        this.authService.user$.getValue()?.metadata.creationTime!,
+      ).getTime() >
       new Date().getTime() - 60000;
     if (accountCreatedInPastMinute) {
       this.snackBarService.open(

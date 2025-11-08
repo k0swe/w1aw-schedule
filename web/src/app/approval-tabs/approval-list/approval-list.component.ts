@@ -1,5 +1,12 @@
 import { NgIf } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
@@ -51,14 +58,14 @@ import {
   ],
 })
 export class ApprovalListComponent implements OnInit, OnDestroy {
+  private userSettingsService = inject(UserSettingsService);
+
   @Input() userList: Observable<UserSettings[]> = of([]);
   @Input() displayColumns = ['name', 'callsign', 'email'];
   @Input() emptyMessage = 'No users to display';
   userDataSource = new MatTableDataSource<UserSettings>();
   @ViewChild(MatSort, { static: true }) sort = new MatSort();
   userListSubscription: Subscription | null = null;
-
-  constructor(private userSettingsService: UserSettingsService) {}
 
   ngOnInit() {
     this.sort.sort({ id: 'callsign', start: 'asc', disableClear: false });

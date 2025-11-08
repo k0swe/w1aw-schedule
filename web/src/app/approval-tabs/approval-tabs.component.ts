@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   MatCard,
   MatCardContent,
@@ -30,12 +30,12 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
   ],
 })
 export class ApprovalTabsComponent {
+  private userSettingsService = inject(UserSettingsService);
+
   provisionalUsers$: Observable<UserSettings[]> =
     this.userSettingsService.getProvisionalUsers();
   approvedUsers$: Observable<UserSettings[]> =
     this.userSettingsService.getApprovedUsers();
   declinedUsers$: Observable<UserSettings[]> =
     this.userSettingsService.getDeclinedUsers();
-
-  constructor(private userSettingsService: UserSettingsService) {}
 }

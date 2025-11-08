@@ -1,6 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { AsyncPipe, DatePipe, NgFor } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import {
   MatCard,
@@ -33,15 +33,15 @@ import { Shift } from '../schedule/shared-constants';
   ],
 })
 export class AgendaComponent {
+  private authenticationService = inject(AuthenticationService);
+  private clipboard = inject(Clipboard);
+  private scheduleService = inject(ScheduleService);
+  private snackBarService = inject(MatSnackBar);
+
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   icsLink = '';
 
-  constructor(
-    private authenticationService: AuthenticationService,
-    private clipboard: Clipboard,
-    private scheduleService: ScheduleService,
-    private snackBarService: MatSnackBar,
-  ) {
+  constructor() {
     this.authenticationService.user$.subscribe((user) => {
       if (!user) {
         return;

@@ -1,6 +1,16 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { collection, collectionData, doc, docData, Firestore, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
+import { Injectable, inject } from '@angular/core';
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  docData,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, from, mergeMap, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -11,14 +21,12 @@ import { AuthenticationService } from '../authentication/authentication.service'
   providedIn: 'root',
 })
 export class UserSettingsService {
+  private authService = inject(AuthenticationService);
+  private firestore = inject(Firestore);
+  private httpClient = inject(HttpClient);
+
   settings$ = new BehaviorSubject<UserSettings>({});
   started = false;
-
-  constructor(
-    private authService: AuthenticationService,
-    private firestore: Firestore,
-    private httpClient: HttpClient,
-  ) {}
 
   public init(): void {
     if (this.started) {
@@ -98,7 +106,7 @@ export class UserSettingsService {
       updateDoc(docRef, {
         status: 'Approved',
         approvedBy: adminId,
-      })
+      }),
     );
   }
 
@@ -110,7 +118,7 @@ export class UserSettingsService {
       updateDoc(docRef, {
         status: 'Declined',
         declinedBy: adminId,
-      })
+      }),
     );
   }
 
@@ -131,7 +139,7 @@ export class UserSettingsService {
     return from(
       updateDoc(docRef, {
         multiShift: newValue,
-      })
+      }),
     );
   }
 }
