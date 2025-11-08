@@ -1,4 +1,4 @@
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -23,12 +23,10 @@ import { Shift } from '../shared-constants';
   standalone: true,
   imports: [
     MatButton,
-    NgIf,
     MatIconButton,
     MatMenuTrigger,
     MatIcon,
     MatMenu,
-    NgFor,
     MatMenuItem,
     AsyncPipe,
   ],

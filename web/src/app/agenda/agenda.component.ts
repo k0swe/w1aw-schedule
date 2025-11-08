@@ -1,5 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { AsyncPipe, DatePipe, NgFor } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import {
@@ -22,7 +22,6 @@ import { Shift } from '../schedule/shared-constants';
   styleUrls: ['./agenda.component.scss'],
   standalone: true,
   imports: [
-    NgFor,
     MatCard,
     MatCardHeader,
     MatCardTitle,

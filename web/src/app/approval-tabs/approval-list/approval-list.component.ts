@@ -1,4 +1,3 @@
-import { NgIf } from '@angular/common';
 import {
   Component,
   Input,
@@ -47,7 +46,6 @@ import {
     MatCellDef,
     MatCell,
     MatIcon,
-    NgIf,
     MatIconButton,
     MatSlideToggle,
     MatHeaderRowDef,

@@ -1,4 +1,4 @@
-import { AsyncPipe, NgIf, NgOptimizedImage } from '@angular/common';
+import { AsyncPipe, NgOptimizedImage } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { MatIconButton } from '@angular/material/button';
@@ -17,7 +17,6 @@ import { AuthenticationService } from '../authentication/authentication.service'
   styleUrls: ['./avatar.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
     MatIconButton,
     MatMenuTrigger,
     NgOptimizedImage,

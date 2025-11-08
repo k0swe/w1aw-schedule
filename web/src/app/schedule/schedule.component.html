@@ -18,20 +18,21 @@
         <mat-form-field appearance="fill" color="primary">
           <mat-label>Band Group</mat-label>
           <mat-select [(value)]="viewBandGroup" (valueChange)="changeParams()">
-            <mat-option
-              *ngFor="let bandGroup of bandGroupNames"
-              [value]="bandGroup"
-            >
-              {{ bandGroup }}
-            </mat-option>
+            @for (bandGroup of bandGroupNames; track bandGroup) {
+              <mat-option [value]="bandGroup">
+                {{ bandGroup }}
+              </mat-option>
+            }
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="fill" color="primary">
           <mat-label>Mode</mat-label>
           <mat-select [(value)]="viewMode" (valueChange)="changeParams()">
-            <mat-option *ngFor="let mode of MODES" [value]="mode">
-              {{ mode }}
-            </mat-option>
+            @for (mode of MODES; track mode) {
+              <mat-option [value]="mode">
+                {{ mode }}
+              </mat-option>
+            }
           </mat-select>
         </mat-form-field>
         <button
@@ -65,22 +66,21 @@
             <mat-icon>{{ dayNightIcon(timeslot) }}</mat-icon>
           </td>
         </ng-container>
-        <ng-container *ngFor="let band of BANDS">
-          <ng-container
-            *ngFor="let mode of MODES"
-            matColumnDef="{{ band }}m {{ mode }}"
-          >
-            <th mat-header-cell *matHeaderCellDef>{{ band }}m {{ mode }}</th>
-            <td mat-cell *matCellDef="let timeslot">
-              <kel-schedule-cell
-                [band]="band"
-                [mode]="mode"
-                [timeslot]="timeslot"
-                [userShifts]="(userShifts$ | async) || []"
-              />
-            </td>
-          </ng-container>
-        </ng-container>
+        @for (band of BANDS; track band) {
+          @for (mode of MODES; track mode) {
+            <ng-container matColumnDef="{{ band }}m {{ mode }}">
+              <th mat-header-cell *matHeaderCellDef>{{ band }}m {{ mode }}</th>
+              <td mat-cell *matCellDef="let timeslot">
+                <kel-schedule-cell
+                  [band]="band"
+                  [mode]="mode"
+                  [timeslot]="timeslot"
+                  [userShifts]="(userShifts$ | async) || []"
+                />
+              </td>
+            </ng-container>
+          }
+        }
         <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
         <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
       </table>
