@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { collection, collectionData, doc, docData, Firestore, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, from, mergeMap, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -16,7 +16,7 @@ export class UserSettingsService {
 
   constructor(
     private authService: AuthenticationService,
-    private firestore: AngularFirestore,
+    private firestore: Firestore,
     private httpClient: HttpClient,
   ) {}
 
@@ -31,9 +31,8 @@ export class UserSettingsService {
           if (user == null) {
             return of(undefined);
           }
-          return this.firestore
-            .doc<UserSettings>('users/' + user.uid)
-            .valueChanges();
+          const docRef = doc(this.firestore, 'users', user.uid);
+          return docData(docRef) as Observable<UserSettings | undefined>;
         }),
       )
       .subscribe((settings) => {
@@ -50,9 +49,8 @@ export class UserSettingsService {
     if (!u) {
       return;
     }
-    this.firestore
-      .doc<UserSettings>('users/' + u.uid)
-      .set({ status: 'Provisional' });
+    const docRef = doc(this.firestore, 'users', u.uid);
+    setDoc(docRef, { status: 'Provisional' });
   }
 
   public settings(): Observable<UserSettings> {
@@ -65,9 +63,8 @@ export class UserSettingsService {
         if (user == null) {
           return of(undefined);
         }
-        return this.firestore
-          .doc<UserSettings>('users/' + user.uid)
-          .update(values);
+        const docRef = doc(this.firestore, 'users', user.uid);
+        return from(updateDoc(docRef, { ...values }));
       }),
     );
   }
@@ -88,32 +85,32 @@ export class UserSettingsService {
   }
 
   private getUsersByStatus(status: string): Observable<UserSettings[]> {
-    return this.firestore
-      .collection<UserSettings>('users', (ref) =>
-        ref.where('status', '==', status),
-      )
-      .valueChanges({ idField: 'id' });
+    const usersCol = collection(this.firestore, 'users');
+    const q = query(usersCol, where('status', '==', status));
+    return collectionData(q, { idField: 'id' }) as Observable<UserSettings[]>;
   }
 
   // Admin only
   public approve(userId: string): Observable<void> {
     const adminId = this.authService.user$.getValue()!.uid;
+    const docRef = doc(this.firestore, 'users', userId);
     return from(
-      this.firestore.doc<UserSettings>('users/' + userId).update({
+      updateDoc(docRef, {
         status: 'Approved',
         approvedBy: adminId,
-      }),
+      })
     );
   }
 
   // Admin only
   public decline(userId: string): Observable<void> {
     const adminId = this.authService.user$.getValue()!.uid;
+    const docRef = doc(this.firestore, 'users', userId);
     return from(
-      this.firestore.doc<UserSettings>('users/' + userId).update({
+      updateDoc(docRef, {
         status: 'Declined',
         declinedBy: adminId,
-      }),
+      })
     );
   }
 
@@ -130,10 +127,11 @@ export class UserSettingsService {
   }
 
   setMultiShift(userId: string, newValue: boolean) {
+    const docRef = doc(this.firestore, 'users', userId);
     return from(
-      this.firestore.doc<UserSettings>('users/' + userId).update({
+      updateDoc(docRef, {
         multiShift: newValue,
-      }),
+      })
     );
   }
 }

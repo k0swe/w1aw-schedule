@@ -1,10 +1,10 @@
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { User } from '@angular/fire/auth';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { ThemePalette } from '@angular/material/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import firebase from 'firebase/compat/app';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -39,7 +39,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() mode!: string;
   @Input() userShifts: Shift[] = [];
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
-  user$ = new BehaviorSubject<firebase.User | null>(null);
+  user$ = new BehaviorSubject<User | null>(null);
   userSettings$ = new BehaviorSubject<UserSettings>({});
   isAdmin$ = new BehaviorSubject<boolean>(false);
   approvedUsers$ = new BehaviorSubject<UserSettings[]>([]);

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Timestamp } from 'firebase/firestore';
+import { collection, collectionData, doc, docData, Firestore, query, Timestamp, updateDoc, where } from '@angular/fire/firestore';
 import { Observable, of } from 'rxjs';
-import { fromPromise } from 'rxjs/internal/observable/innerFrom';
+import { from } from 'rxjs';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
@@ -13,7 +12,7 @@ import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
 })
 export class ScheduleService {
   constructor(
-    private firestore: AngularFirestore,
+    private firestore: Firestore,
     private authenticationService: AuthenticationService,
   ) {}
 
@@ -24,12 +23,8 @@ export class ScheduleService {
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
-    return this.firestore
-      .collection('sections')
-      .doc(COLORADO_DOC_ID)
-      .collection<Shift>('shifts')
-      .doc(sid)
-      .valueChanges();
+    const docRef = doc(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts', sid);
+    return docData(docRef) as Observable<Shift | undefined>;
   }
 
   reserveShift(
@@ -49,13 +44,9 @@ export class ScheduleService {
       band: shiftToUpdate.band,
       mode: shiftToUpdate.mode,
     });
-    return fromPromise(
-      this.firestore
-        .collection('sections')
-        .doc(COLORADO_DOC_ID)
-        .collection<Shift>('shifts')
-        .doc(sid)
-        .update({ reservedBy: userId, reservedDetails: userDetails }),
+    const docRef = doc(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts', sid);
+    return from(
+      updateDoc(docRef, { reservedBy: userId, reservedDetails: userDetails })
     );
   }
 
@@ -72,21 +63,15 @@ export class ScheduleService {
       band: shiftToUpdate.band,
       mode: shiftToUpdate.mode,
     });
-    return fromPromise(
-      this.firestore
-        .collection('sections')
-        .doc(COLORADO_DOC_ID)
-        .collection<Shift>('shifts')
-        .doc(sid)
-        .update({ reservedBy: null, reservedDetails: null }),
+    const docRef = doc(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts', sid);
+    return from(
+      updateDoc(docRef, { reservedBy: null, reservedDetails: null })
     );
   }
 
   findUserShifts(uid: string): Observable<Shift[]> {
-    return this.firestore
-      .collection('sections')
-      .doc(COLORADO_DOC_ID)
-      .collection<Shift>('shifts', (ref) => ref.where('reservedBy', '==', uid))
-      .valueChanges();
+    const shiftsCol = collection(this.firestore, 'sections', COLORADO_DOC_ID, 'shifts');
+    const q = query(shiftsCol, where('reservedBy', '==', uid));
+    return collectionData(q) as Observable<Shift[]>;
   }
 }

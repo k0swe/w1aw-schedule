@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { doc, docData, Firestore } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -9,14 +9,13 @@ import { COLORADO_DOC_ID } from '../schedule/shared-constants';
   providedIn: 'root',
 })
 export class SectionInfoService {
-  constructor(private firestore: AngularFirestore) {}
+  constructor(private firestore: Firestore) {}
 
   public getAdminList(): Observable<string[]> {
-    return this.firestore
-      .collection('sections')
-      .doc<SectionInfo>(COLORADO_DOC_ID)
-      .valueChanges()
-      .pipe(map((sectionInfo) => sectionInfo?.admins || []));
+    const docRef = doc(this.firestore, 'sections', COLORADO_DOC_ID);
+    return docData(docRef).pipe(
+      map((sectionInfo) => (sectionInfo as SectionInfo)?.admins || [])
+    );
   }
 }
 

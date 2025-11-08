@@ -1,5 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { User } from '@angular/fire/auth';
 import {
   FormControl,
   FormGroup,
@@ -19,8 +20,7 @@ import {
 import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
-import firebase from 'firebase/compat/app';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -48,7 +48,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
   ],
 })
 export class UserSettingsComponent implements OnInit {
-  user$: BehaviorSubject<firebase.User | null>;
+  user$: Observable<User | null>;
 
   // email and status are read-only
   email: BehaviorSubject<string>;
@@ -84,13 +84,13 @@ export class UserSettingsComponent implements OnInit {
   ) {
     this.user$ = this.authService.user$;
     this.email = new BehaviorSubject<string>(
-      this.user$.getValue()?.email || '',
+      this.authService.user$.getValue()?.email || '',
     );
     this.status = new BehaviorSubject<string>('Provisional');
     this.settingsService.settings$.subscribe((settings) => {
       // when settings are loaded (or changed), re-bind values
       this.name.setValue(
-        settings.name || this.user$.getValue()?.displayName || '',
+        settings.name || this.authService.user$.getValue()?.displayName || '',
       );
       this.gridSquare.setValue(settings.gridSquare || '');
       this.phone.setValue(settings.phone || '');
@@ -115,7 +115,7 @@ export class UserSettingsComponent implements OnInit {
     this.settingsService.init();
 
     const accountCreatedInPastMinute =
-      new Date(this.user$.getValue()?.metadata.creationTime!).getTime() >
+      new Date(this.authService.user$.getValue()?.metadata.creationTime!).getTime() >
       new Date().getTime() - 60000;
     if (accountCreatedInPastMinute) {
       this.snackBarService.open(

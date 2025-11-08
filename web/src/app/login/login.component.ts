@@ -1,5 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component } from '@angular/core';
+import { UserCredential } from '@angular/fire/auth';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import {
@@ -18,7 +19,6 @@ import {
 import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import firebase from 'firebase/compat/app';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -97,7 +97,7 @@ export class LoginComponent {
   }
 
   private handleLogin(
-    loginObs: Observable<firebase.auth.UserCredential>,
+    loginObs: Observable<UserCredential>,
   ): void {
     loginObs.pipe(take(1)).subscribe({
       next: (_) => {

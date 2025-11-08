@@ -1,7 +1,19 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import {
+  Auth,
+  FacebookAuthProvider,
+  GoogleAuthProvider,
+  User,
+  UserCredential,
+  authState,
+  createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+} from '@angular/fire/auth';
 import { ActivatedRoute, Router } from '@angular/router';
-import firebase from 'firebase/compat/app';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
@@ -11,15 +23,15 @@ import { SectionInfoService } from '../section-info/section-info.service';
   providedIn: 'root',
 })
 export class AuthenticationService {
-  user$ = new BehaviorSubject<firebase.User | null>(null);
+  user$ = new BehaviorSubject<User | null>(null);
 
   constructor(
-    public afa: AngularFireAuth,
+    private auth: Auth,
     private route: ActivatedRoute,
     private sectionInfoService: SectionInfoService,
     private router: Router,
   ) {
-    this.afa.user.subscribe((u) => {
+    authState(this.auth).subscribe((u) => {
       this.user$.next(u);
       if (!!u && route.snapshot.queryParams['continue']) {
         router.navigateByUrl(route.snapshot.queryParams['continue']);
@@ -27,34 +39,30 @@ export class AuthenticationService {
     });
   }
 
-  public loginGoogle(): Observable<firebase.auth.UserCredential> {
-    return from(
-      this.afa.signInWithPopup(new firebase.auth.GoogleAuthProvider()),
-    );
+  public loginGoogle(): Observable<UserCredential> {
+    return from(signInWithPopup(this.auth, new GoogleAuthProvider()));
   }
 
-  public loginFacebook(): Observable<firebase.auth.UserCredential> {
-    return from(
-      this.afa.signInWithPopup(new firebase.auth.FacebookAuthProvider()),
-    );
+  public loginFacebook(): Observable<UserCredential> {
+    return from(signInWithPopup(this.auth, new FacebookAuthProvider()));
   }
 
   public loginEmailPass(
     email: string,
     password: string,
-  ): Observable<firebase.auth.UserCredential> {
-    return from(this.afa.signInWithEmailAndPassword(email, password));
+  ): Observable<UserCredential> {
+    return from(signInWithEmailAndPassword(this.auth, email, password));
   }
 
   public createEmailPass(
     email: string,
     password: string,
-  ): Observable<firebase.auth.UserCredential> {
-    return from(this.afa.createUserWithEmailAndPassword(email, password));
+  ): Observable<UserCredential> {
+    return from(createUserWithEmailAndPassword(this.auth, email, password));
   }
 
   public forgotPassword(email: string): Observable<void> {
-    return from(this.afa.sendPasswordResetEmail(email));
+    return from(sendPasswordResetEmail(this.auth, email));
   }
 
   public userIsAdmin(): Observable<boolean> {
@@ -74,10 +82,10 @@ export class AuthenticationService {
   }
 
   public logout(): Observable<void> {
-    return from(this.afa.signOut());
+    return from(signOut(this.auth));
   }
 
   public getLoginProvidersFor(email: string): Observable<Array<string>> {
-    return from(this.afa.fetchSignInMethodsForEmail(email));
+    return from(fetchSignInMethodsForEmail(this.auth, email));
   }
 }
