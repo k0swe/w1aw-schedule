@@ -17,7 +17,7 @@ import { validateFirebaseIdToken } from './validateFirebaseToken';
 
 export const initShifts = onRequest(async (request, response) => {
   const userId = await validateFirebaseIdToken(request, response);
-  if (!userId || userId.uid !== 'r9qBLFDsymTyrWb3vtJmhZlDPMy1') {
+  if (!userId || userId.uid !== 'VAfZAw8GhJQodyTTCkXgilbqvoM2') {
     return;
   }
   logger.info('Validated user', userId.uid);
