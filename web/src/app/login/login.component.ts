@@ -83,7 +83,28 @@ export class LoginComponent {
       this.email,
       this.password,
     );
-    this.handleLogin(loginObs);
+    loginObs.pipe(take(1)).subscribe({
+      next: (_) => {
+        // Send verification email after account creation
+        this.authService.sendVerificationEmail().subscribe({
+          next: () => {
+            this.snackBarService.open(
+              'Account created! Please check your email to verify your address.',
+              undefined,
+              { duration: 10000 },
+            );
+            this.router.navigateByUrl('/user');
+          },
+          error: (err) => {
+            console.error('Error sending verification email:', err);
+            this.router.navigateByUrl('/user');
+          },
+        });
+      },
+      error: (err) => {
+        this.handleLoginError(err);
+      },
+    });
   }
 
   forgotPassword() {
@@ -100,51 +121,55 @@ export class LoginComponent {
         this.router.navigateByUrl('/user');
       },
       error: (err) => {
-        switch (err.code) {
-          case 'auth/popup-closed-by-user':
-          case 'auth/cancelled-popup-request':
-            break;
-          case 'auth/wrong-password':
-            this.snackBarService.open('Incorrect password', undefined, {
-              duration: 10000,
-            });
-            this.password = '';
-            break;
-          case 'auth/user-not-found':
-            this.snackBarService.open('User not found', undefined, {
-              duration: 10000,
-            });
-            this.password = '';
-            break;
-          case 'auth/email-already-in-use':
-            this.snackBarService.open(
-              "Can't create account, it already exists",
-              undefined,
-              {
-                duration: 10000,
-              },
-            );
-            this.password = '';
-            break;
-          case 'auth/account-exists-with-different-credential':
-            this.snackBarService.open(
-              "Can't create account, it's already created with a different login provider",
-              undefined,
-              {
-                duration: 10000,
-              },
-            );
-            this.password = '';
-            break;
-          default:
-            console.warn('Problem logging in', err);
-            this.snackBarService.open(
-              'There was a problem logging in, see the JavaScript console for details.',
-              undefined,
-              { duration: 10000 },
-            );
-        }
+        this.handleLoginError(err);
       },
     });
+  }
+
+  private handleLoginError(err: any): void {
+    switch (err.code) {
+      case 'auth/popup-closed-by-user':
+      case 'auth/cancelled-popup-request':
+        break;
+      case 'auth/wrong-password':
+        this.snackBarService.open('Incorrect password', undefined, {
+          duration: 10000,
+        });
+        this.password = '';
+        break;
+      case 'auth/user-not-found':
+        this.snackBarService.open('User not found', undefined, {
+          duration: 10000,
+        });
+        this.password = '';
+        break;
+      case 'auth/email-already-in-use':
+        this.snackBarService.open(
+          "Can't create account, it already exists",
+          undefined,
+          {
+            duration: 10000,
+          },
+        );
+        this.password = '';
+        break;
+      case 'auth/account-exists-with-different-credential':
+        this.snackBarService.open(
+          "Can't create account, it's already created with a different login provider",
+          undefined,
+          {
+            duration: 10000,
+          },
+        );
+        this.password = '';
+        break;
+      default:
+        console.warn('Problem logging in', err);
+        this.snackBarService.open(
+          'There was a problem logging in, see the JavaScript console for details.',
+          undefined,
+          { duration: 10000 },
+        );
+    }
   }
 }

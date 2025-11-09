@@ -15,7 +15,7 @@ service cloud.firestore {
         return request.auth.uid == userId;
       }
       function notUpdatingStatus() {
-        return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'multiShift']);
+        return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'multiShift', 'emailVerified']);
       }
 
       allow create: if loggedIn() && request.resource.id == request.auth.uid;

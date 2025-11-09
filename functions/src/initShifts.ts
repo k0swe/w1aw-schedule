@@ -18,60 +18,63 @@ import { validateFirebaseIdToken } from './validateFirebaseToken';
 export const initShifts = onRequest(
   { memory: '512MiB', timeoutSeconds: 540 },
   async (request, response) => {
-  const userId = await validateFirebaseIdToken(request, response);
-  if (!userId || userId.uid !== 'VAfZAw8GhJQodyTTCkXgilbqvoM2') {
-    return;
-  }
-  logger.info('Validated user', userId.uid);
+    const userId = await validateFirebaseIdToken(request, response);
+    if (!userId || userId.uid !== 'VAfZAw8GhJQodyTTCkXgilbqvoM2') {
+      return;
+    }
+    logger.info('Validated user', userId.uid);
 
-  const timeSlots = calcTimeSlots();
+    const timeSlots = calcTimeSlots();
 
-  const shifts: Array<Shift> = [];
-  timeSlots.forEach((timeslot) =>
-    BANDS.forEach((band) =>
-      MODES.forEach((mode) =>
-        shifts.push({
-          time: Timestamp.fromDate(timeslot),
-          band: band,
-          mode: mode,
-          reservedBy: null,
-          reservedDetails: null,
-        }),
+    const shifts: Array<Shift> = [];
+    timeSlots.forEach((timeslot) =>
+      BANDS.forEach((band) =>
+        MODES.forEach((mode) =>
+          shifts.push({
+            time: Timestamp.fromDate(timeslot),
+            band: band,
+            mode: mode,
+            reservedBy: null,
+            reservedDetails: null,
+          }),
+        ),
       ),
-    ),
-  );
-  logger.info('Generated shifts', { count: shifts.length });
+    );
+    logger.info('Generated shifts', { count: shifts.length });
 
-  const hashedShifts = new Map<string, object>();
-  shifts.forEach((shift) => hashedShifts.set(shiftId(shift), shift));
+    const hashedShifts = new Map<string, object>();
+    shifts.forEach((shift) => hashedShifts.set(shiftId(shift), shift));
 
-  const coloradoShifts = admin
-    .firestore()
-    .collection('sections')
-    .doc(COLORADO_DOC_ID)
-    .collection('shifts');
+    const coloradoShifts = admin
+      .firestore()
+      .collection('sections')
+      .doc(COLORADO_DOC_ID)
+      .collection('shifts');
 
-  // Batch writes to reduce memory usage
-  const BATCH_SIZE = 500;
-  const entries = Array.from(hashedShifts.entries());
-  let totalWritten = 0;
+    // Batch writes to reduce memory usage
+    const BATCH_SIZE = 500;
+    const entries = Array.from(hashedShifts.entries());
+    let totalWritten = 0;
 
-  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
-    const batch = entries.slice(i, i + BATCH_SIZE);
-    const writePromises: Array<Promise<FirebaseFirestore.WriteResult>> = [];
+    for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+      const batch = entries.slice(i, i + BATCH_SIZE);
+      const writePromises: Array<Promise<FirebaseFirestore.WriteResult>> = [];
 
-    batch.forEach(([hash, shift]) => {
-      writePromises.push(coloradoShifts.doc(hash).set(shift));
-    });
+      batch.forEach(([hash, shift]) => {
+        writePromises.push(coloradoShifts.doc(hash).set(shift));
+      });
 
-    await Promise.all(writePromises);
-    totalWritten += batch.length;
-    logger.info(`Batch progress: ${totalWritten} / ${entries.length} shifts saved`);
-  }
+      await Promise.all(writePromises);
+      totalWritten += batch.length;
+      logger.info(
+        `Batch progress: ${totalWritten} / ${entries.length} shifts saved`,
+      );
+    }
 
-  logger.info('All shifts saved to Firestore');
-  response.send({ shiftCount: hashedShifts.size });
-});
+    logger.info('All shifts saved to Firestore');
+    response.send({ shiftCount: hashedShifts.size });
+  },
+);
 
 const calcTimeSlots = (): Array<Date> => {
   const timeSlots: Array<Date> = [];

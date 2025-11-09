@@ -17,8 +17,13 @@ import {
   MatCardSubtitle,
   MatCardTitle,
 } from '@angular/material/card';
-import { MatFormField, MatInput, MatLabel, MatSuffix } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
+import {
+  MatFormField,
+  MatInput,
+  MatLabel,
+  MatSuffix,
+} from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -143,7 +148,6 @@ export class UserSettingsComponent implements OnInit {
   save(): void {
     const formValue: UserSettings = {
       email: this.email.value || '',
-      emailVerified: this.authService.user$.getValue()?.emailVerified || false,
       status: this.status.value || '',
       callsign: this.callsign.value?.toUpperCase() || '',
       gridSquare: this.gridSquare.value || '',

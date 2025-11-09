@@ -21,10 +21,6 @@ module.exports = [
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      parserOptions: {
-        project: ["./tsconfig.json", "./tsconfig.dev.json"],
-        tsconfigRootDir: __dirname,
-      },
       globals: {
         console: "readonly",
         process: "readonly",
