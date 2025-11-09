@@ -142,4 +142,10 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       .find((u) => u.id == userId)!;
     this.scheduleService.reserveShift(shift, userId, userDetails).subscribe();
   }
+
+  clearReservation() {
+    const shift = this.shift$.getValue()!;
+    const userId = this.user$.getValue()?.uid!;
+    this.scheduleService.cancelShift(shift, userId).subscribe();
+  }
 }

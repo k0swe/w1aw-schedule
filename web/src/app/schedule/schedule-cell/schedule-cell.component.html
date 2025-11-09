@@ -17,6 +17,11 @@
         <mat-icon>expand_more</mat-icon>
       </button>
       <mat-menu #adminMenu="matMenu">
+        @if ((shift$ | async)?.reservedBy) {
+          <button mat-menu-item (click)="clearReservation()">
+            <span>Clear Reservation</span>
+          </button>
+        }
         @for (u of approvedUsers$ | async; track u.id) {
           <button mat-menu-item (click)="reserveFor(u.id!)">
             <span class="callsign">{{ u.callsign }}</span>
