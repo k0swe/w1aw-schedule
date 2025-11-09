@@ -72,11 +72,15 @@ export class UserSettingsComponent implements OnInit {
     Validators.required,
     Validators.pattern(/^\(?[0-9]{3}\)? ?-?[0-9]{3}-?[0-9]{4}$/i),
   ]);
+  arrlMemberNumber = new FormControl('');
+  discordUsername = new FormControl('');
   settingsForm = new FormGroup({
     callsign: this.callsign,
     gridSquare: this.gridSquare,
     name: this.name,
     phone: this.phone,
+    arrlMemberNumber: this.arrlMemberNumber,
+    discordUsername: this.discordUsername,
   });
 
   @ViewChild('saveButton') saveButton: MatButton | undefined;
@@ -95,6 +99,8 @@ export class UserSettingsComponent implements OnInit {
       this.gridSquare.setValue(settings.gridSquare || '');
       this.phone.setValue(settings.phone || '');
       this.callsign.setValue(settings.callsign || '');
+      this.arrlMemberNumber.setValue(settings.arrlMemberNumber || '');
+      this.discordUsername.setValue(settings.discordUsername || '');
       this.status.next(settings.status || '');
     });
 
@@ -139,6 +145,8 @@ export class UserSettingsComponent implements OnInit {
       gridSquare: this.gridSquare.value || '',
       name: this.name.value || '',
       phone: this.phone.value || '',
+      arrlMemberNumber: this.arrlMemberNumber.value || '',
+      discordUsername: this.discordUsername.value || '',
     };
     this.settingsService
       .set(formValue)

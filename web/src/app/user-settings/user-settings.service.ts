@@ -159,4 +159,6 @@ export interface UserSettings {
   approvedBy?: string;
   declinedBy?: string;
   multiShift?: boolean;
+  arrlMemberNumber?: string;
+  discordUsername?: string;
 }
