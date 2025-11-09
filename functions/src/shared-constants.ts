@@ -24,6 +24,7 @@ export interface UserSettings {
   id?: string;
   callsign?: string;
   email?: string;
+  emailVerified?: boolean;
   gridSquare?: string;
   name?: string;
   phone?: string;
@@ -31,6 +32,8 @@ export interface UserSettings {
   approvedBy?: string;
   declinedBy?: string;
   multiShift?: boolean;
+  arrlMemberNumber?: string;
+  discordUsername?: string;
 }
 
 export interface Shift {

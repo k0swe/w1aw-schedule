@@ -18,6 +18,11 @@
             [disabled]="true"
             [required]="true"
           />
+          @if ((user$ | async)?.emailVerified) {
+            <mat-icon matSuffix color="accent" title="Email verified">verified</mat-icon>
+          } @else {
+            <mat-icon matSuffix color="warn" title="Email not verified">help_outline</mat-icon>
+          }
         </mat-form-field>
         <mat-form-field>
           <mat-label>Personal Callsign</mat-label>

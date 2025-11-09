@@ -152,6 +152,7 @@ export interface UserSettings {
   id?: string;
   callsign?: string;
   email?: string;
+  emailVerified?: boolean;
   gridSquare?: string;
   name?: string;
   phone?: string;
