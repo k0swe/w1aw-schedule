@@ -9,25 +9,39 @@
       </mat-card-header>
 
       <mat-card-content>
-        <mat-form-field>
-          <mat-label>Email</mat-label>
-          <input
-            matInput
-            placeholder="me@example.com"
-            [value]="(email | async) || ''"
-            [disabled]="true"
-            [required]="true"
-          />
-          @if ((user$ | async)?.emailVerified) {
-            <mat-icon matSuffix color="accent" title="Email verified"
-              >verified</mat-icon
+        <div class="form-field-with-button">
+          <mat-form-field>
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              placeholder="me@example.com"
+              [value]="(email | async) || ''"
+              [disabled]="true"
+              [required]="true"
+            />
+            @if ((user$ | async)?.emailVerified) {
+              <mat-icon matSuffix color="accent" title="Email verified">
+                verified
+              </mat-icon>
+            } @else {
+              <mat-icon matSuffix color="warn" title="Email not verified">
+                help_outline
+              </mat-icon>
+            }
+          </mat-form-field>
+          @if (!(user$ | async)?.emailVerified) {
+            <button
+              matSuffix
+              mat-icon-button
+              color="primary"
+              type="button"
+              (click)="sendVerificationEmail()"
+              title="Send verification email"
             >
-          } @else {
-            <mat-icon matSuffix color="warn" title="Email not verified"
-              >help_outline</mat-icon
-            >
+              <mat-icon>send</mat-icon>
+            </button>
           }
-        </mat-form-field>
+        </div>
         <mat-form-field>
           <mat-label>Personal Callsign</mat-label>
           <input

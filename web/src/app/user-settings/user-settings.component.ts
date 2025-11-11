@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatButton } from '@angular/material/button';
+import { MatButton, MatIconButton } from '@angular/material/button';
 import {
   MatCard,
   MatCardActions,
@@ -52,6 +52,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
     MatIcon,
     MatCardActions,
     MatButton,
+    MatIconButton,
     AsyncPipe,
   ],
 })
@@ -163,6 +164,32 @@ export class UserSettingsComponent implements OnInit {
         this.snackBarService.open('Saved', undefined, {
           duration: 5000,
         });
+      });
+  }
+
+  sendVerificationEmail(): void {
+    this.authService
+      .sendVerificationEmail()
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.snackBarService.open(
+            'Verification email sent! Please check your inbox.',
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
+        error: (error) => {
+          this.snackBarService.open(
+            'Failed to send verification email: ' + error.message,
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
       });
   }
 }

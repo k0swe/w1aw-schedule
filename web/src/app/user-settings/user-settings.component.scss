@@ -21,6 +21,16 @@ mat-card-content {
   flex-direction: column;
 }
 
+.form-field-with-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.form-field-with-button mat-form-field {
+  flex: 1 1 auto;
+}
+
 button {
   margin-bottom: 16px;
 }
