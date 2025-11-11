@@ -11,3 +11,18 @@ textarea {
   font-size: 14px;
   line-height: 1.5;
 }
+
+.cell-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.cell-container mat-icon, .cell-container span {
+  flex: 0 0 auto;
+}
+
+.cell-container div.spacer {
+  flex: 1 1 auto;
+}
