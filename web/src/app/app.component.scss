@@ -9,8 +9,9 @@
 }
 
 .toolbar {
-  background-color: var(--mat-toolbar-container-background-color);
-  color: var(--mat-toolbar-container-text-color);
+  // Use Material's color palette directly from the theme
+  background-color: mat.get-theme-color($kel-theme, primary);
+  color: mat.get-theme-color($kel-theme, on-primary);
   z-index: 2;
   box-shadow: 0 1px rgba(0, 0, 0, 0.12);
   display: flex;
@@ -36,14 +37,14 @@ a.app-title {
 }
 
 h1.app-title {
-  background-color: var(--mat-toolbar-container-background-color);
-  color: var(--mat-toolbar-container-text-color);
+  background-color: mat.get-theme-color($kel-theme, primary);
+  color: mat.get-theme-color($kel-theme, on-primary);
   margin: 0 0 0 0;
 }
 
 .app-subtitle {
-  background-color: var(--mat-toolbar-container-background-color);
-  color: var(--mat-toolbar-container-text-color);
+  background-color: mat.get-theme-color($kel-theme, primary);
+  color: mat.get-theme-color($kel-theme, on-primary);
   margin: 16px 0 0 16px;
   font-size: 16px;
   font-weight: 400;
@@ -58,8 +59,8 @@ h1.app-title {
 }
 
 .toolbar__menu-button {
-  background-color: var(--mat-toolbar-container-background-color);
-  color: var(--mat-toolbar-container-text-color);
+  background-color: mat.get-theme-color($kel-theme, primary);
+  color: mat.get-theme-color($kel-theme, on-primary);
   margin-right: 8px;
 }
 

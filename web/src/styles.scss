@@ -5,8 +5,10 @@
 // Include the core styles for Material 3
 @include mat.core();
 
-// Include all component themes using Material 3 theme
-@include mat.all-component-themes($kel-theme);
+// Apply the theme at the root level to emit CSS custom properties
+html {
+  @include mat.all-component-themes($kel-theme);
+}
 
 // Global styles.
 html {
