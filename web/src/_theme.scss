@@ -1,12 +1,13 @@
 @use '@angular/material' as mat;
+@use './_theme-colors' as my-theme;
 
 // Define Material 3 theme with primary and tertiary colors, and typography
 $kel-theme: mat.define-theme(
   (
     color: (
       theme-type: light,
-      primary: mat.$blue-palette,
-      tertiary: mat.$red-palette,
+      primary: my-theme.$primary-palette,
+      tertiary: my-theme.$tertiary-palette,
     ),
     typography: (
       plain-family: 'Open Sans, Helvetica Neue, sans-serif',
