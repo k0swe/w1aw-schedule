@@ -1,23 +1,23 @@
 .container {
   display: flex;
   flex-direction: column;
-}
-
-mat-card {
-  flex: 1 1 0;
-  margin: 8px;
   max-width: 800px;
 }
 
-mat-card-header {
+mat-card.inner {
+  flex: 1 1 0;
+  margin: 8px;
+}
+
+.inner mat-card-header {
   display: flex;
   flex-direction: column;
 }
 
-mat-card-title {
+.inner mat-card-title {
   flex: 1 1 0;
 }
 
 button {
-  margin: 0 8px;
+  margin: 8px;
 }

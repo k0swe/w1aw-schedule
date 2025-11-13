@@ -1,6 +1,6 @@
-<div class="container">
+<mat-card class="container">
   @for (shift of userShifts$ | async; track shift.time) {
-    <mat-card>
+    <mat-card class="inner">
       <mat-card-header>
         <mat-card-title>
           {{ shift.time.toDate() | date: 'fullDate' : 'America/Denver' }}
@@ -22,4 +22,4 @@
       <button matButton="filled">Download my iCalendar file</button>
     </a>
   </div>
-</div>
+</mat-card>
