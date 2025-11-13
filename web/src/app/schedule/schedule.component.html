@@ -7,8 +7,8 @@
       </mat-card-title>
       <div class="top-actions">
         <button
-          mat-flat-button
-          color="primary"
+          matButton="filled"
+          class="button-secondary-color"
           aria-label="Previous Day"
           (click)="goToPrevDay()"
           [disabled]="prevDay < TIME_SLOTS_START"
@@ -36,8 +36,8 @@
           </mat-select>
         </mat-form-field>
         <button
-          mat-flat-button
-          color="primary"
+          matButton="filled"
+          class="button-secondary-color"
           aria-label="Next Day"
           (click)="goToNextDay()"
           [disabled]="nextDay >= TIME_SLOTS_END"
@@ -82,18 +82,24 @@
           }
         }
         <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
-        <tr mat-row *matRowDef="let myRowData; columns: columnsToDisplay"></tr>
+        <tr mat-row *matRowDef="let _; columns: columnsToDisplay"></tr>
       </table>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-flat-button color="primary" (click)="copyIcsLink()">
+      <button
+        matButton="filled"
+        class="button-secondary-color"
+        (click)="copyIcsLink()"
+      >
         Calendar subscription link
       </button>
       <a [href]="icsLink" target="_blank" rel="noopener">
-        <button mat-flat-button color="primary">Download iCalendar file</button>
+        <button matButton="filled" class="button-secondary-color">
+          Download iCalendar file
+        </button>
       </a>
       <a [href]="googleCalendarLink" target="_blank" rel="noopener">
-        <button mat-flat-button color="primary">
+        <button matButton="filled" class="button-secondary-color">
           Quick View (updates lag)
         </button>
       </a>

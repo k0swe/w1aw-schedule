@@ -1,3 +1,6 @@
+@use '@angular/material' as mat;
+@import '../../theme';
+
 .container {
   display: flex;
   justify-content: center;
@@ -32,9 +35,18 @@ button {
   margin: 0 8px;
 }
 
+button.button-secondary-color {
+  @include mat.button-overrides(
+    (
+      filled-container-color: mat.get-theme-color($kel-theme, secondary),
+    )
+  );
+}
+
 .mat-column-localTime {
   padding-right: 2px;
 }
+
 .mat-column-localTimeIcon {
   padding-left: 2px;
 }
