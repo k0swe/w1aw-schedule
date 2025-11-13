@@ -16,3 +16,7 @@ This project uses several Firebase products (free tier) to handle functionality.
 Firestore and the Firebase extension firebase/firestore-send-email.
 (I happened to use SendGrid as an SMTP provider, also free tier). Those wishing to run their own instance and/or
 develop new features will need to configure their own Firebase project, SMTP providers, and API keys.
+
+## Deployment
+
+The application is automatically deployed to Firebase Hosting using GitHub Actions with Workload Identity Federation for secure, keyless authentication. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed setup instructions.
