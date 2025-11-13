@@ -34,11 +34,9 @@
       <div class="cell-container">
         <span>{{ user.email }}</span>
         @if (user.emailVerified) {
-          <mat-icon color="accent" title="Email verified">verified</mat-icon>
+          <mat-icon title="Email verified"> verified </mat-icon>
         } @else {
-          <mat-icon color="warn" title="Email not verified"
-            >help_outline
-          </mat-icon>
+          <mat-icon title="Email not verified"> help_outline </mat-icon>
         }
         <div class="spacer"></div>
       </div>
@@ -74,7 +72,6 @@
       <div class="cell-container">
         <button
           mat-icon-button
-          color="primary"
           [disabled]="!user.callsign"
           (click)="approve(user.id)"
           title="Approve"
@@ -88,12 +85,7 @@
     <th mat-header-cell *matHeaderCellDef>Decline</th>
     <td mat-cell *matCellDef="let user">
       <div class="cell-container">
-        <button
-          mat-icon-button
-          color="warn"
-          (click)="decline(user.id)"
-          title="Decline"
-        >
+        <button mat-icon-button (click)="decline(user.id)" title="Decline">
           <mat-icon>thumb_down</mat-icon>
         </button>
       </div>
@@ -104,7 +96,6 @@
     <td mat-cell *matCellDef="let user">
       <div class="cell-container">
         <mat-slide-toggle
-          color="primary"
           [checked]="user.multiShift"
           (click)="setMultiShift(user.id, !user.multiShift)"
           title="Multiple Shifts at a Time"
@@ -117,12 +108,7 @@
     <th mat-header-cell *matHeaderCellDef>Delete</th>
     <td mat-cell *matCellDef="let user">
       <div class="cell-container">
-        <button
-          mat-icon-button
-          color="warn"
-          (click)="delete(user.id)"
-          title="Delete"
-        >
+        <button mat-icon-button (click)="delete(user.id)" title="Delete">
           <mat-icon>delete_forever</mat-icon>
         </button>
       </div>

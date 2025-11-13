@@ -20,11 +20,9 @@
               [required]="true"
             />
             @if ((user$ | async)?.emailVerified) {
-              <mat-icon matSuffix color="accent" title="Email verified">
-                verified
-              </mat-icon>
+              <mat-icon matSuffix title="Email verified"> verified </mat-icon>
             } @else {
-              <mat-icon matSuffix color="warn" title="Email not verified">
+              <mat-icon matSuffix title="Email not verified">
                 help_outline
               </mat-icon>
             }
@@ -33,7 +31,6 @@
             <button
               matSuffix
               mat-icon-button
-              color="primary"
               type="button"
               (click)="sendVerificationEmail()"
               title="Send verification email"
@@ -94,7 +91,6 @@
         <button
           type="submit"
           mat-raised-button
-          color="primary"
           #saveButton
           [disabled]="!settingsForm.valid"
         >

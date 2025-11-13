@@ -15,13 +15,11 @@
     </mat-card>
   }
   <div>
-    <button mat-flat-button color="primary" (click)="copyIcsLink()">
+    <button matButton="filled" (click)="copyIcsLink()">
       My calendar subscription link
     </button>
     <a [href]="icsLink" target="_blank" rel="noopener">
-      <button mat-flat-button color="primary">
-        Download my iCalendar file
-      </button>
+      <button matButton="filled">Download my iCalendar file</button>
     </a>
   </div>
 </div>
