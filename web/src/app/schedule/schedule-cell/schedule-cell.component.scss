@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
-@import '../../../theme';
+@use 'sass:map';
+@use '../../../theme-colors' as my-theme;
 
 .cell-container {
   display: flex;
@@ -8,6 +9,30 @@
 
 button {
   width: 100%;
+
+  &.reserved-by-user {
+    background-color: map.get(
+      map.get(my-theme.$primary-palette, secondary),
+      90
+    );
+    color: map.get(map.get(my-theme.$primary-palette, secondary), 10);
+
+    &:hover:not([disabled]) {
+      background-color: map.get(
+        map.get(my-theme.$primary-palette, secondary),
+        80
+      );
+    }
+  }
+
+  &.reserved-by-other {
+    background-color: map.get(my-theme.$primary-palette, 90);
+    color: map.get(my-theme.$primary-palette, 10);
+
+    &:hover:not([disabled]) {
+      background-color: map.get(my-theme.$primary-palette, 80);
+    }
+  }
 }
 
 .callsign {

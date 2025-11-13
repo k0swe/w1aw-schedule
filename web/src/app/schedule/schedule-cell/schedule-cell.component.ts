@@ -2,7 +2,6 @@ import { AsyncPipe } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { ThemePalette } from '@angular/material/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -89,16 +88,13 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     }
   }
 
-  buttonColor(): ThemePalette {
-    if (this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid) {
-      // reserved by this user
-      return 'accent';
-    }
-    if (this.shift$.getValue()?.reservedBy != null) {
-      // reserved by anyone else
-      return 'primary';
-    }
-    return undefined;
+  isReservedByUser(): boolean {
+    return this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid;
+  }
+
+  isReservedByOther(): boolean {
+    const reservedBy = this.shift$.getValue()?.reservedBy;
+    return reservedBy != null && reservedBy != this.user$.getValue()?.uid;
   }
 
   buttonDisabled(): boolean {

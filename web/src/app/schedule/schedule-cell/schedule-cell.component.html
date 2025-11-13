@@ -1,7 +1,8 @@
 <div class="cell-container">
   <button
     mat-flat-button
-    [color]="buttonColor()"
+    [class.reserved-by-user]="isReservedByUser()"
+    [class.reserved-by-other]="isReservedByOther()"
     [disabled]="buttonDisabled()"
     (click)="toggleShift()"
   >
