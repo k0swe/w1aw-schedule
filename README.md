@@ -1,7 +1,7 @@
 # <img src="https://raw.githubusercontent.com/k0swe/w1aw-schedule/refs/heads/main/web/src/assets/Colorado_WAS250.svg" width="100px" alt="Colorado Worked All States 250 logo"> W1AW/0 Colorado Scheduler
 
-In September 13-19, 2023, the Colorado section of the ARRL is going to be operating as W1AW/0 as part of
-the Volunteers On The Air event! We need a way of scheduling operators to cover shifts.
+In September 13-19, 2023, the Colorado section of the ARRL is going to be operating as W1AW/0 as
+part of the Volunteers On The Air event! We need a way of scheduling operators to cover shifts.
 
 ![Screenshot of W1AW/0 Colorado Scheduler](w1aw-schedule.png)
 
@@ -12,7 +12,8 @@ automatically reload if you change any of the source files.
 
 ## Firebase
 
-This project uses several Firebase products (free tier) to handle functionality. It uses Firebase Authentication,
-Firestore and the Firebase extension firebase/firestore-send-email.
-(I happened to use SendGrid as an SMTP provider, also free tier). Those wishing to run their own instance and/or
-develop new features will need to configure their own Firebase project, SMTP providers, and API keys.
+This project uses several Firebase products (free tier) to handle functionality. It uses Firebase
+Authentication, Firestore and the Firebase extension firebase/firestore-send-email. (I happened to
+use SendGrid as an SMTP provider, also free tier). Those wishing to run their own instance and/or
+develop new features will need to configure their own Firebase project, SMTP providers, and API
+keys.
