@@ -146,6 +146,37 @@ export class UserSettingsService {
       }),
     );
   }
+
+  // Discord OAuth
+  initiateDiscordOAuth(): Observable<{ authUrl: string }> {
+    const url = `${environment.functionBase}/discordOAuthInitiate`;
+    return from(this.authService.user$.getValue()!.getIdToken(false)).pipe(
+      switchMap((jwt) => {
+        return this.httpClient.get<{ authUrl: string }>(url, {
+          headers: { Authorization: 'Bearer ' + jwt },
+        });
+      }),
+    );
+  }
+
+  disconnectDiscord(): Observable<void> {
+    return this.authService.user$.pipe(
+      switchMap((user) => {
+        if (user == null) {
+          return of(undefined);
+        }
+        const docRef = doc(this.firestore, 'users', user.uid);
+        return from(
+          updateDoc(docRef, {
+            discordId: null,
+            discordUsername: null,
+            discordDiscriminator: null,
+            discordAvatar: null,
+          }),
+        );
+      }),
+    );
+  }
 }
 
 export interface UserSettings {
@@ -162,4 +193,7 @@ export interface UserSettings {
   multiShift?: boolean;
   arrlMemberNumber?: string;
   discordUsername?: string;
+  discordId?: string;
+  discordDiscriminator?: string;
+  discordAvatar?: string;
 }

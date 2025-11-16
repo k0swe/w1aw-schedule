@@ -68,14 +68,37 @@
             [formControl]="arrlMemberNumber"
           />
         </mat-form-field>
-        <mat-form-field>
-          <mat-label>Discord Username</mat-label>
-          <input
-            matInput
-            placeholder="username#1234"
-            [formControl]="discordUsername"
-          />
-        </mat-form-field>
+        <div class="form-field-with-button">
+          @if (discordConnected) {
+            <mat-form-field>
+              <mat-label>Discord Account</mat-label>
+              <input
+                matInput
+                [value]="discordUsername.value || ''"
+                [disabled]="true"
+              />
+              <mat-icon matSuffix title="Discord connected"> verified </mat-icon>
+            </mat-form-field>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="disconnectDiscord()"
+              title="Disconnect Discord"
+            >
+              <mat-icon>link_off</mat-icon>
+            </button>
+          } @else {
+            <button
+              mat-raised-button
+              type="button"
+              (click)="connectDiscord()"
+              color="primary"
+            >
+              <mat-icon>link</mat-icon>
+              Connect Discord
+            </button>
+          }
+        </div>
         <mat-form-field>
           <mat-label>Status</mat-label>
           <input

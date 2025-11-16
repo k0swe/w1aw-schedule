@@ -25,7 +25,7 @@ import {
   MatSuffix,
 } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -59,6 +59,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
 export class UserSettingsComponent implements OnInit {
   private authService = inject(AuthenticationService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private settingsService = inject(UserSettingsService);
   private snackBarService = inject(MatSnackBar);
 
@@ -83,13 +84,13 @@ export class UserSettingsComponent implements OnInit {
   ]);
   arrlMemberNumber = new FormControl('');
   discordUsername = new FormControl('');
+  discordConnected = false;
   settingsForm = new FormGroup({
     callsign: this.callsign,
     gridSquare: this.gridSquare,
     name: this.name,
     phone: this.phone,
     arrlMemberNumber: this.arrlMemberNumber,
-    discordUsername: this.discordUsername,
   });
 
   @ViewChild('saveButton') saveButton: MatButton | undefined;
@@ -110,11 +111,38 @@ export class UserSettingsComponent implements OnInit {
       this.callsign.setValue(settings.callsign || '');
       this.arrlMemberNumber.setValue(settings.arrlMemberNumber || '');
       this.discordUsername.setValue(settings.discordUsername || '');
+      this.discordConnected = !!(
+        settings.discordId && settings.discordUsername
+      );
       this.status.next(settings.status || '');
     });
+  }
 
-    this.route.queryParams.subscribe((qp) => {
-      if (qp['needToComplete']) {
+  ngOnInit(): void {
+    this.settingsService.init();
+
+    // Check for Discord OAuth callback
+    this.route.queryParams.pipe(take(1)).subscribe((qp) => {
+      if (qp['discord_connected'] === 'true') {
+        this.snackBarService.open('Discord account connected!', undefined, {
+          duration: 5000,
+        });
+        // Remove query params from URL
+        this.router.navigate([], {
+          queryParams: {},
+          replaceUrl: true,
+        });
+        // Reload settings to get updated Discord info
+        this.settingsService.init();
+      } else if (qp['discord_error']) {
+        this.snackBarService.open(
+          `Discord connection failed: ${qp['discord_error']}`,
+          undefined,
+          {
+            duration: 5000,
+          },
+        );
+      } else if (qp['needToComplete']) {
         this.snackBarService.open(
           'Please fill in your station details before continuing',
           undefined,
@@ -124,10 +152,6 @@ export class UserSettingsComponent implements OnInit {
         );
       }
     });
-  }
-
-  ngOnInit(): void {
-    this.settingsService.init();
 
     const accountCreatedInPastMinute =
       new Date(
@@ -155,7 +179,6 @@ export class UserSettingsComponent implements OnInit {
       name: this.name.value || '',
       phone: this.phone.value || '',
       arrlMemberNumber: this.arrlMemberNumber.value || '',
-      discordUsername: this.discordUsername.value || '',
     };
     this.settingsService
       .set(formValue)
@@ -184,6 +207,51 @@ export class UserSettingsComponent implements OnInit {
         error: (error) => {
           this.snackBarService.open(
             'Failed to send verification email: ' + error.message,
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
+      });
+  }
+
+  connectDiscord(): void {
+    this.settingsService
+      .initiateDiscordOAuth()
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          // Open Discord OAuth in a new window
+          window.location.href = response.authUrl;
+        },
+        error: (error) => {
+          this.snackBarService.open(
+            'Failed to connect Discord: ' + error.message,
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
+      });
+  }
+
+  disconnectDiscord(): void {
+    this.settingsService
+      .disconnectDiscord()
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.discordConnected = false;
+          this.discordUsername.setValue('');
+          this.snackBarService.open('Discord disconnected', undefined, {
+            duration: 5000,
+          });
+        },
+        error: (error) => {
+          this.snackBarService.open(
+            'Failed to disconnect Discord: ' + error.message,
             undefined,
             {
               duration: 5000,
