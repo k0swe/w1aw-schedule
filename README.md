@@ -33,7 +33,13 @@ To enable Discord account linking, you need to configure Discord OAuth credentia
 4. Deploy the functions: `npm run deploy --prefix functions`
 
 For local development, download the config:
+
 ```bash
 firebase functions:config:get > functions/.runtimeconfig.json
 ```
 
+## Deployment
+
+The application is automatically deployed to Firebase Hosting using GitHub Actions with Workload
+Identity Federation for secure, keyless authentication. See [DEPLOYMENT.md](DEPLOYMENT.md) for
+detailed setup instructions.
