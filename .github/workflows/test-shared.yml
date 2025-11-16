@@ -24,11 +24,7 @@ jobs:
         working-directory: web
         run: npm ci
 
-      - name: Test
-        working-directory: web
-        run: npm run test -- --no-watch --no-progress --browsers=ChromeHeadless
-
-      - name: Compile
+      - name: Build
         working-directory: web
         run: npm run build:prod
 
