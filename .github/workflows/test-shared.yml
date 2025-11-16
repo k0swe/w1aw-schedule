@@ -2,10 +2,9 @@ name: (Reusable) Test and Compile
 on: workflow_call
 
 jobs:
-  test:
-    name: Test and Compile
+  test-web:
+    name: Test Web
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -13,40 +12,80 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
 
       - name: Cache node deps
         uses: actions/cache@v4
-        env:
-          cache-name: cache-node-deps
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Cache emulator
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-firebase-emulator
-        with:
-          path: /home/runner/.cache/firebase/emulators
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
-
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-build-artifacts
-        with:
-          path: web/dist/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          path: web/node_modules
+          key: ${{ runner.os }}-web-${{ hashFiles('web/package-lock.json') }}
 
       - name: Install npm deps
         working-directory: web
         run: npm ci
 
-      # - name: Test
-      #   working-directory: web
-      #   run: npm run test-ci
+      - name: Test
+        working-directory: web
+        run: npm run test -- --no-watch --no-progress --browsers=ChromeHeadless
 
       - name: Compile
         working-directory: web
         run: npm run build:prod
+
+  test-firestore:
+    name: Test Firestore
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cache node deps
+        uses: actions/cache@v4
+        with:
+          path: firestore/node_modules
+          key: ${{ runner.os }}-firestore-${{ hashFiles('firestore/package-lock.json') }}
+
+      - name: Install npm deps
+        working-directory: firestore
+        run: npm ci
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Test
+        working-directory: firestore
+        run: npm test
+
+  test-functions:
+    name: Test Functions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cache node deps
+        uses: actions/cache@v4
+        with:
+          path: functions/node_modules
+          key: ${{ runner.os }}-functions-${{ hashFiles('functions/package-lock.json') }}
+
+      - name: Install npm deps
+        working-directory: functions
+        run: npm ci
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Build
+        working-directory: functions
+        run: npm run build
