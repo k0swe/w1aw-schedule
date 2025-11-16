@@ -1,6 +1,13 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { defineJsonSecret, defineString } from 'firebase-functions/params';
 import cors from 'cors';
+
+const discordOauthClientCreds = defineJsonSecret('DISCORD_OAUTH_CLIENT_CREDS');
+const discordRedirectUri = defineString('DISCORD_REDIRECT_URI', {
+  default:
+    'https://us-central1-w1aw-schedule-76a82.cloudfunctions.net/discordOAuthCallback',
+});
 
 const corsHandler = cors({ origin: true });
 
@@ -9,14 +16,15 @@ const corsHandler = cors({ origin: true });
  * This function is called from the frontend to start the OAuth process
  */
 export const discordOAuthInitiate = functions.https.onRequest(
+  { secrets: [discordOauthClientCreds] },
   (request, response) => {
     corsHandler(request, response, async () => {
       try {
         // Get Discord client ID from environment config
-        const clientId = functions.config().discord?.client_id;
+        const { clientId } = discordOauthClientCreds.value();
         if (!clientId) {
           response.status(500).json({
-            error: 'Discord client ID not configured',
+            error: 'Discord client credentials not configured',
           });
           return;
         }
@@ -51,7 +59,7 @@ export const discordOAuthInitiate = functions.https.onRequest(
         });
 
         // Construct Discord OAuth URL
-        const redirectUri = `${functions.config().discord?.redirect_uri || 'https://us-central1-w1aw-schedule-76a82.cloudfunctions.net/discordOAuthCallback'}`;
+        const redirectUri = discordRedirectUri.value();
         const scopes = 'identify';
 
         const authUrl =
@@ -76,6 +84,7 @@ export const discordOAuthInitiate = functions.https.onRequest(
  * Exchanges the authorization code for an access token and stores user info
  */
 export const discordOAuthCallback = functions.https.onRequest(
+  { secrets: [discordOauthClientCreds] },
   (request, response) => {
     corsHandler(request, response, async () => {
       try {
@@ -129,11 +138,8 @@ export const discordOAuthCallback = functions.https.onRequest(
         }
 
         // Exchange authorization code for access token
-        const clientId = functions.config().discord?.client_id;
-        const clientSecret = functions.config().discord?.client_secret;
-        const redirectUri =
-          functions.config().discord?.redirect_uri ||
-          'https://us-central1-w1aw-schedule-76a82.cloudfunctions.net/discordOAuthCallback';
+        const { clientId, clientSecret } = discordOauthClientCreds.value();
+        const redirectUri = discordRedirectUri.value();
 
         if (!clientId || !clientSecret) {
           response.status(500).send('Discord OAuth not configured');
