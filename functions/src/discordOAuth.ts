@@ -120,7 +120,7 @@ export const discordOAuthCallback = functions.https.onRequest(
           return;
         }
 
-        const { token, expiresAt } = stateData.data() as {
+        const { token: firebaseIdToken, expiresAt } = stateData.data() as {
           token: string;
           expiresAt: admin.firestore.Timestamp;
         };
@@ -133,9 +133,11 @@ export const discordOAuthCallback = functions.https.onRequest(
         }
 
         // Verify the user token
-        let decodedToken;
+        let decodedFirebaseToken;
         try {
-          decodedToken = await admin.auth().verifyIdToken(token);
+          decodedFirebaseToken = await admin
+            .auth()
+            .verifyIdToken(firebaseIdToken);
         } catch {
           await stateDoc.delete();
           response.status(401).send('Invalid authentication token');
@@ -177,12 +179,12 @@ export const discordOAuthCallback = functions.https.onRequest(
           return;
         }
 
-        const tokenData = await tokenResponse.json();
+        const discordTokenData = await tokenResponse.json();
 
         // Get user info from Discord
         const userResponse = await fetch('https://discord.com/api/users/@me', {
           headers: {
-            Authorization: `Bearer ${tokenData.access_token}`,
+            Authorization: `Bearer ${discordTokenData.access_token}`,
           },
         });
 
@@ -194,10 +196,16 @@ export const discordOAuthCallback = functions.https.onRequest(
         const discordUser = await userResponse.json();
 
         // Update user document in Firestore
+        console.log(
+          'Associating Firebase user',
+          decodedFirebaseToken.email,
+          'with Discord user',
+          discordUser.username,
+        );
         const userDoc = admin
           .firestore()
           .collection('users')
-          .doc(decodedToken.uid);
+          .doc(decodedFirebaseToken.uid);
         await userDoc.update({
           discordId: discordUser.id,
           discordUsername: `${discordUser.username}${discordUser.discriminator !== '0' ? '#' + discordUser.discriminator : ''}`,
