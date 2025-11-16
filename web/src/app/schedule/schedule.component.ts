@@ -34,15 +34,15 @@ import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleService } from './schedule.service';
 import {
   BANDS,
-  HF_BANDS,
+  HI_HF_BANDS,
+  LF_BANDS,
+  LOW_HF_BANDS,
   MODES,
-  SHF_BANDS,
   Shift,
   TIME_SLOTS_END,
   TIME_SLOTS_START,
   TWO_HOURS_IN_MS,
-  UHF_BANDS,
-  VHF_BANDS,
+  VHF_UHF_BANDS,
 } from './shared-constants';
 
 @Component({
@@ -92,12 +92,12 @@ export class ScheduleComponent {
   BANDS = BANDS;
   timeSlots: Date[] = [];
   bandGroups: Map<string, string[]> = new Map([
-    ['HF', HF_BANDS],
-    ['VHF', VHF_BANDS],
-    ['UHF', UHF_BANDS],
-    ['SHF', SHF_BANDS],
+    ['LF', LF_BANDS],
+    ['Low HF', LOW_HF_BANDS],
+    ['Hi HF', HI_HF_BANDS],
+    ['VHF & UHF', VHF_UHF_BANDS],
   ]);
-  bandGroupNames = ['HF', 'VHF', 'UHF', 'SHF'];
+  bandGroupNames = ['LF', 'Low HF', 'Hi HF', 'VHF & UHF'];
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   columnsToDisplay: string[] = [];
 
@@ -116,7 +116,8 @@ export class ScheduleComponent {
       this.route.snapshot.queryParams['day'] ||
         TIME_SLOTS_START.toISOString().split('T')[0],
     );
-    this.viewBandGroup = this.route.snapshot.queryParams['bandGroup'] || 'HF';
+    this.viewBandGroup =
+      this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
     this.viewMode = this.route.snapshot.queryParams['mode'] || 'phone';
     this.scheduleService
       .findUserShifts(this.authenticationService.user$.getValue()!.uid)
