@@ -19,7 +19,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "firebase-admin": "^13.6.0",
-    "firebase-functions": "^6.6.0",
+    "firebase-functions": "^7.0.0",
     "ical-generator": "^10.0.0",
     "uuid-by-string": "^4.0.0"
   },
