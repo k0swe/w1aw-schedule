@@ -8,6 +8,9 @@ const discordRedirectUri = defineString('DISCORD_REDIRECT_URI', {
   default:
     'https://us-central1-w1aw-schedule-76a82.cloudfunctions.net/discordOAuthCallback',
 });
+const finalRedirectUrl = defineString('FINAL_REDIRECT_URI', {
+  default: 'https://w1aw-schedule-76a82.web.app/user?discord_connected=true',
+});
 
 const corsHandler = cors({ origin: true });
 
@@ -16,12 +19,14 @@ const corsHandler = cors({ origin: true });
  * This function is called from the frontend to start the OAuth process
  */
 export const discordOAuthInitiate = functions.https.onRequest(
-  { secrets: [discordOauthClientCreds] },
+  { secrets: [discordOauthClientCreds.name] },
   (request, response) => {
     corsHandler(request, response, async () => {
       try {
         // Get Discord client ID from environment config
-        const { clientId } = discordOauthClientCreds.value();
+        const { clientId } = discordOauthClientCreds.value() as {
+          clientId: string;
+        };
         if (!clientId) {
           response.status(500).json({
             error: 'Discord client credentials not configured',
@@ -84,7 +89,7 @@ export const discordOAuthInitiate = functions.https.onRequest(
  * Exchanges the authorization code for an access token and stores user info
  */
 export const discordOAuthCallback = functions.https.onRequest(
-  { secrets: [discordOauthClientCreds] },
+  { secrets: [discordOauthClientCreds.name] },
   (request, response) => {
     corsHandler(request, response, async () => {
       try {
@@ -137,8 +142,10 @@ export const discordOAuthCallback = functions.https.onRequest(
           return;
         }
 
-        // Exchange authorization code for access token
-        const { clientId, clientSecret } = discordOauthClientCreds.value();
+        const { clientId, clientSecret } = discordOauthClientCreds.value() as {
+          clientId: string;
+          clientSecret: string;
+        };
         const redirectUri = discordRedirectUri.value();
 
         if (!clientId || !clientSecret) {
@@ -202,7 +209,7 @@ export const discordOAuthCallback = functions.https.onRequest(
         await stateDoc.delete();
 
         // Redirect back to user settings page with success message
-        response.redirect('/?discord_connected=true');
+        response.redirect(finalRedirectUrl.value());
       } catch (error) {
         console.error('Error in Discord OAuth callback:', error);
         response.status(500).send('Internal server error');
