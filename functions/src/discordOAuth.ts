@@ -31,7 +31,7 @@ export const discordOAuthInitiate = functions.https.onRequest(
         const token = authHeader.split('Bearer ')[1];
         try {
           await admin.auth().verifyIdToken(token);
-        } catch (error) {
+        } catch {
           response.status(401).json({ error: 'Invalid token' });
           return;
         }
@@ -40,7 +40,10 @@ export const discordOAuthInitiate = functions.https.onRequest(
         const state = Math.random().toString(36).substring(2, 15);
 
         // Store the state in Firestore with the user's ID token
-        const stateDoc = admin.firestore().collection('oauth_states').doc(state);
+        const stateDoc = admin
+          .firestore()
+          .collection('oauth_states')
+          .doc(state);
         await stateDoc.set({
           token: token,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -50,8 +53,9 @@ export const discordOAuthInitiate = functions.https.onRequest(
         // Construct Discord OAuth URL
         const redirectUri = `${functions.config().discord?.redirect_uri || 'https://us-central1-w1aw-schedule-76a82.cloudfunctions.net/discordOAuthCallback'}`;
         const scopes = 'identify';
-        
-        const authUrl = `https://discord.com/api/oauth2/authorize?` +
+
+        const authUrl =
+          `https://discord.com/api/oauth2/authorize?` +
           `client_id=${clientId}&` +
           `redirect_uri=${encodeURIComponent(redirectUri)}&` +
           `response_type=code&` +
@@ -64,7 +68,7 @@ export const discordOAuthInitiate = functions.https.onRequest(
         response.status(500).json({ error: 'Internal server error' });
       }
     });
-  }
+  },
 );
 
 /**
@@ -79,7 +83,9 @@ export const discordOAuthCallback = functions.https.onRequest(
 
         // Check for OAuth errors
         if (error) {
-          response.redirect(`/?discord_error=${encodeURIComponent(error as string)}`);
+          response.redirect(
+            `/?discord_error=${encodeURIComponent(error as string)}`,
+          );
           return;
         }
 
@@ -89,7 +95,10 @@ export const discordOAuthCallback = functions.https.onRequest(
         }
 
         // Verify state parameter
-        const stateDoc = admin.firestore().collection('oauth_states').doc(state as string);
+        const stateDoc = admin
+          .firestore()
+          .collection('oauth_states')
+          .doc(state as string);
         const stateData = await stateDoc.get();
 
         if (!stateData.exists) {
@@ -97,7 +106,10 @@ export const discordOAuthCallback = functions.https.onRequest(
           return;
         }
 
-        const { token, expiresAt } = stateData.data() as { token: string; expiresAt: admin.firestore.Timestamp };
+        const { token, expiresAt } = stateData.data() as {
+          token: string;
+          expiresAt: admin.firestore.Timestamp;
+        };
 
         // Check if state has expired
         if (expiresAt.toDate() < new Date()) {
@@ -110,7 +122,7 @@ export const discordOAuthCallback = functions.https.onRequest(
         let decodedToken;
         try {
           decodedToken = await admin.auth().verifyIdToken(token);
-        } catch (error) {
+        } catch {
           await stateDoc.delete();
           response.status(401).send('Invalid authentication token');
           return;
@@ -119,26 +131,31 @@ export const discordOAuthCallback = functions.https.onRequest(
         // Exchange authorization code for access token
         const clientId = functions.config().discord?.client_id;
         const clientSecret = functions.config().discord?.client_secret;
-        const redirectUri = functions.config().discord?.redirect_uri || 'https://us-central1-w1aw-schedule-76a82.cloudfunctions.net/discordOAuthCallback';
+        const redirectUri =
+          functions.config().discord?.redirect_uri ||
+          'https://us-central1-w1aw-schedule-76a82.cloudfunctions.net/discordOAuthCallback';
 
         if (!clientId || !clientSecret) {
           response.status(500).send('Discord OAuth not configured');
           return;
         }
 
-        const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+        const tokenResponse = await fetch(
+          'https://discord.com/api/oauth2/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              client_id: clientId,
+              client_secret: clientSecret,
+              grant_type: 'authorization_code',
+              code: code as string,
+              redirect_uri: redirectUri,
+            }),
           },
-          body: new URLSearchParams({
-            client_id: clientId,
-            client_secret: clientSecret,
-            grant_type: 'authorization_code',
-            code: code as string,
-            redirect_uri: redirectUri,
-          }),
-        });
+        );
 
         if (!tokenResponse.ok) {
           const errorText = await tokenResponse.text();
@@ -164,7 +181,10 @@ export const discordOAuthCallback = functions.https.onRequest(
         const discordUser = await userResponse.json();
 
         // Update user document in Firestore
-        const userDoc = admin.firestore().collection('users').doc(decodedToken.uid);
+        const userDoc = admin
+          .firestore()
+          .collection('users')
+          .doc(decodedToken.uid);
         await userDoc.update({
           discordId: discordUser.id,
           discordUsername: `${discordUser.username}${discordUser.discriminator !== '0' ? '#' + discordUser.discriminator : ''}`,
@@ -182,5 +202,5 @@ export const discordOAuthCallback = functions.https.onRequest(
         response.status(500).send('Internal server error');
       }
     });
-  }
+  },
 );

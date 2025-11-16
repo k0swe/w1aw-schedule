@@ -111,7 +111,9 @@ export class UserSettingsComponent implements OnInit {
       this.callsign.setValue(settings.callsign || '');
       this.arrlMemberNumber.setValue(settings.arrlMemberNumber || '');
       this.discordUsername.setValue(settings.discordUsername || '');
-      this.discordConnected = !!(settings.discordId && settings.discordUsername);
+      this.discordConnected = !!(
+        settings.discordId && settings.discordUsername
+      );
       this.status.next(settings.status || '');
     });
   }

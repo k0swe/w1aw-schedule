@@ -17,3 +17,23 @@ Authentication, Firestore and the Firebase extension firebase/firestore-send-ema
 use SendGrid as an SMTP provider, also free tier). Those wishing to run their own instance and/or
 develop new features will need to configure their own Firebase project, SMTP providers, and API
 keys.
+
+### Discord OAuth Configuration
+
+To enable Discord account linking, you need to configure Discord OAuth credentials:
+
+1. Create a Discord application at https://discord.com/developers/applications
+2. Add a redirect URI: `https://us-central1-YOUR_PROJECT_ID.cloudfunctions.net/discordOAuthCallback`
+3. Set the following Firebase environment variables:
+   ```bash
+   firebase functions:config:set discord.client_id="YOUR_DISCORD_CLIENT_ID"
+   firebase functions:config:set discord.client_secret="YOUR_DISCORD_CLIENT_SECRET"
+   firebase functions:config:set discord.redirect_uri="https://us-central1-YOUR_PROJECT_ID.cloudfunctions.net/discordOAuthCallback"
+   ```
+4. Deploy the functions: `npm run deploy --prefix functions`
+
+For local development, download the config:
+```bash
+firebase functions:config:get > functions/.runtimeconfig.json
+```
+
