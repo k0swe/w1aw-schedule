@@ -13,7 +13,7 @@
     "test:emulator": "firebase emulators:exec --only firestore \"npm test\""
   },
   "engines": {
-    "node": "22"
+    "node": "24"
   },
   "main": "build/src/index.js",
   "dependencies": {
