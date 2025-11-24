@@ -107,8 +107,8 @@ export class ScheduleComponent {
   prevDay: Date;
   nextDay: Date;
   googleCalendarLink =
-    'https://calendar.google.com/calendar/u/0/embed?src=37t1at5dfkpu2gce9b0d6kg8tufub7mo@import.calendar.google.com' +
-    '&ctz=America/Denver&mode=WEEK&dates=20230913%2F20230920';
+    'https://calendar.google.com/calendar/u/0/embed?src=j1vm5nfmlg2djdqjv86sjfe7ob2a8bl8@import.calendar.google.com' +
+    '&ctz=America/Denver&mode=WEEK&dates=20260526/20260602';
   icsLink = `${environment.functionBase}/calendar`;
 
   constructor() {
