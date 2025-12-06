@@ -93,8 +93,14 @@ export class ScheduleService {
     
     return from(
       Promise.all([
-        updateDoc(sectionsDocRef, updateData).catch(() => {}),
-        updateDoc(eventsDocRef, updateData).catch(() => {}),
+        updateDoc(sectionsDocRef, updateData).catch((error) => {
+          // TODO: Remove after migration - suppress errors during dual-write to handle missing collections
+          console.warn('Failed to update sections collection:', error);
+        }),
+        updateDoc(eventsDocRef, updateData).catch((error) => {
+          // TODO: Remove after migration - suppress errors during dual-write to handle missing collections
+          console.warn('Failed to update events collection:', error);
+        }),
       ]).then(() => undefined),
     );
   }
@@ -132,8 +138,14 @@ export class ScheduleService {
     
     return from(
       Promise.all([
-        updateDoc(sectionsDocRef, updateData).catch(() => {}),
-        updateDoc(eventsDocRef, updateData).catch(() => {}),
+        updateDoc(sectionsDocRef, updateData).catch((error) => {
+          // TODO: Remove after migration - suppress errors during dual-write to handle missing collections
+          console.warn('Failed to update sections collection:', error);
+        }),
+        updateDoc(eventsDocRef, updateData).catch((error) => {
+          // TODO: Remove after migration - suppress errors during dual-write to handle missing collections
+          console.warn('Failed to update events collection:', error);
+        }),
       ]).then(() => undefined),
     );
   }

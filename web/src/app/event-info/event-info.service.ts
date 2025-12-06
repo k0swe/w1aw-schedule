@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Firestore, doc, docData } from '@angular/fire/firestore';
 import { Observable, of } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 
 import { COLORADO_DOC_ID, EventInfo } from '../schedule/shared-constants';
 
