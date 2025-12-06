@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { SectionInfoService } from './section-info.service';
+import { EventInfoService } from './event-info.service';
 
-describe('SectionInfoService', () => {
-  let service: SectionInfoService;
+describe('EventInfoService', () => {
+  let service: EventInfoService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(SectionInfoService);
+    service = TestBed.inject(EventInfoService);
   });
 
   it('should be created', () => {

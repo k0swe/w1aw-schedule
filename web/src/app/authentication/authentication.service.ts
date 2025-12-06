@@ -19,7 +19,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
-import { SectionInfoService } from '../section-info/section-info.service';
+import { EventInfoService } from '../event-info/event-info.service';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +28,7 @@ export class AuthenticationService {
   private auth = inject(Auth);
   private functions = inject(Functions);
   private route = inject(ActivatedRoute);
-  private sectionInfoService = inject(SectionInfoService);
+  private eventInfoService = inject(EventInfoService);
   private router = inject(Router);
 
   user$ = new BehaviorSubject<User | null>(null);
@@ -90,7 +90,7 @@ export class AuthenticationService {
   }
 
   public userIsAdmin(): Observable<boolean> {
-    const adminList$ = this.sectionInfoService.getAdminList();
+    const adminList$ = this.eventInfoService.getAdminList();
     return this.user$.pipe(
       switchMap((user) =>
         adminList$.pipe(

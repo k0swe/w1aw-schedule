@@ -21,6 +21,7 @@ describe('newUser', () => {
       email: 'test@example.com',
       displayName: 'Test User',
     });
+    // Set up test data in sections collection (the function has dual-read logic)
     await admin.firestore().collection('sections').doc(COLORADO_DOC_ID).set({
       admins: adminList,
     });

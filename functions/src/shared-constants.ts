@@ -18,12 +18,15 @@ export const BANDS = [
 ];
 export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
 
-export interface SectionInfo {
+export interface EventInfo {
   name: string;
   coordinatorName: string;
   coordinatorCallsign: string;
   admins: string[];
 }
+
+// TODO: Remove after migration - kept for backwards compatibility
+export interface SectionInfo extends EventInfo {}
 
 export interface UserSettings {
   id?: string;

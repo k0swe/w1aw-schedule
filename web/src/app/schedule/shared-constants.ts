@@ -19,6 +19,13 @@ export const BANDS = [
 ];
 export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
 
+export interface EventInfo {
+  name: string;
+  coordinatorName: string;
+  coordinatorCallsign: string;
+  admins: string[];
+}
+
 export interface Shift {
   time: Timestamp;
   band: string;
