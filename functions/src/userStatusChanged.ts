@@ -44,15 +44,35 @@ export const userStatusChanged = onDocumentUpdated(
     } else if (afterData.status === 'Declined') {
       // find any shifts that were reserved by this user and un-assign them
       // use the normalized afterId (may be null)
-      const shifts = await admin
+      // TODO: Remove dual-write logic after Firestore collection rename migration is complete
+      // Update both 'sections' (legacy) and 'events' (new) collections during migration
+      
+      // Update sections collection
+      const sectionsShifts = await admin
         .firestore()
         .collection('sections')
         .doc(COLORADO_DOC_ID)
         .collection('shifts')
         .where('reservedBy', '==', afterId)
         .get();
-      for (const shift of shifts.docs) {
+      for (const shift of sectionsShifts.docs) {
         await shift.ref.update({ reservedBy: null, reservedDetails: null });
+      }
+      
+      // Update events collection
+      try {
+        const eventsShifts = await admin
+          .firestore()
+          .collection('events')
+          .doc(COLORADO_DOC_ID)
+          .collection('shifts')
+          .where('reservedBy', '==', afterId)
+          .get();
+        for (const shift of eventsShifts.docs) {
+          await shift.ref.update({ reservedBy: null, reservedDetails: null });
+        }
+      } catch {
+        // Events collection may not exist yet, that's ok
       }
     }
   },

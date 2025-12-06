@@ -3,6 +3,8 @@
 In September 13-19, 2023, the Colorado section of the ARRL is going to be operating as W1AW/0 as
 part of the Volunteers On The Air event! We need a way of scheduling operators to cover shifts.
 
+**Note:** The codebase uses "event" terminology (e.g., `EventInfo`, `event-info` service) instead of "section". This is part of an ongoing migration to more accurate terminology. The Firestore database currently uses both "sections" (legacy) and "events" (new) collections during the transition period. Temporary dual-read/write logic is in place to ensure compatibility.
+
 ![Screenshot of W1AW/0 Colorado Scheduler](w1aw-schedule.png)
 
 ## Development server
