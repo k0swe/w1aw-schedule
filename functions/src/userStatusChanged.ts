@@ -71,7 +71,7 @@ export const userStatusChanged = onDocumentUpdated(
         for (const shift of eventsShifts.docs) {
           await shift.ref.update({ reservedBy: null, reservedDetails: null });
         }
-      } catch (error) {
+      } catch {
         // Events collection may not exist yet, that's ok
       }
     }

@@ -26,6 +26,7 @@ export interface EventInfo {
 }
 
 // TODO: Remove after migration - kept for backwards compatibility
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SectionInfo extends EventInfo {}
 
 export interface UserSettings {

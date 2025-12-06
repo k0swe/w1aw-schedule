@@ -45,7 +45,7 @@ export const calendar = onRequest(async (request, response) => {
     if (shiftsQuerySnapshot.empty) {
       throw new Error('No data in events collection');
     }
-  } catch (error) {
+  } catch {
     // Fallback to legacy 'sections' collection
     const sectionsShiftsCollection = admin
       .firestore()
