@@ -1,6 +1,6 @@
 # <img src="https://raw.githubusercontent.com/k0swe/w1aw-schedule/refs/heads/main/web/src/assets/Colorado_WAS250.svg" width="100px" alt="Colorado Worked All States 250 logo"> W1AW/0 Colorado Scheduler
 
-During the weeks of May 27 - June 2 and September 2-8, 2026, the Colorado section of the ARRL is going to be operating as W1AW/0 as part of the ARRL's America250 Worked All States award program! We need a way of scheduling operators to cover shifts.
+During the weeks of May 27th through June 2nd and September 2nd through 8th, 2026, the Colorado section of the ARRL is going to be operating as W1AW/0 as part of the ARRL's America250 Worked All States award program! We need a way of scheduling operators to cover shifts.
 
 ![Screenshot of W1AW/0 Colorado Scheduler](w1aw-schedule.png)
 
