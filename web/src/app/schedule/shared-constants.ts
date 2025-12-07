@@ -32,6 +32,10 @@ export interface EventInfo {
   timeZoneId: string;
 }
 
+export interface EventInfoWithId extends EventInfo {
+  id: string;
+}
+
 export interface Shift {
   time: Timestamp;
   band: string;

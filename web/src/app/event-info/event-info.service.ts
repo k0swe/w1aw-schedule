@@ -12,7 +12,11 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { COLORADO_DOC_ID, EventInfo } from '../schedule/shared-constants';
+import {
+  COLORADO_DOC_ID,
+  EventInfo,
+  EventInfoWithId,
+} from '../schedule/shared-constants';
 
 @Injectable({
   providedIn: 'root',
@@ -34,11 +38,11 @@ export class EventInfoService {
     return docData(eventsDocRef) as Observable<EventInfo | undefined>;
   }
 
-  public getEventBySlug(slug: string): Observable<EventInfo | undefined> {
+  public getEventBySlug(slug: string): Observable<EventInfoWithId | undefined> {
     const eventsCol = collection(this.firestore, 'events');
     const eventsQuery = query(eventsCol, where('slug', '==', slug), limit(1));
     return collectionData(eventsQuery, { idField: 'id' }).pipe(
-      map((events) => events[0] as EventInfo | undefined),
+      map((events) => events[0] as EventInfoWithId | undefined),
     );
   }
 }

@@ -1,6 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import {
   MatCard,
@@ -26,7 +26,7 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -78,7 +78,7 @@ import {
     DatePipe,
   ],
 })
-export class ScheduleComponent {
+export class ScheduleComponent implements OnDestroy {
   private authenticationService = inject(AuthenticationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -86,6 +86,7 @@ export class ScheduleComponent {
   private eventInfoService = inject(EventInfoService);
   private clipboard = inject(Clipboard);
   private snackBarService = inject(MatSnackBar);
+  private destroy$ = new Subject<void>();
 
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
@@ -125,27 +126,33 @@ export class ScheduleComponent {
       this.initializeComponent();
     } else {
       // Query Firestore to find event by slug
-      this.eventInfoService.getEventBySlug(slug).subscribe((eventInfo) => {
-        if (eventInfo && (eventInfo as any).id) {
-          this.eventId = (eventInfo as any).id;
-          this.initializeComponent();
-        } else {
-          // Fallback to Colorado event if slug not found
-          this.eventId = COLORADO_DOC_ID;
-          this.initializeComponent();
-        }
-      });
+      this.eventInfoService
+        .getEventBySlug(slug)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((eventInfo) => {
+          if (eventInfo?.id) {
+            this.eventId = eventInfo.id;
+            this.initializeComponent();
+          } else {
+            // Fallback to Colorado event if slug not found
+            this.eventId = COLORADO_DOC_ID;
+            this.initializeComponent();
+          }
+        });
     }
   }
 
   private initializeComponent() {
     // Get event info to use startTime and endTime
-    this.eventInfoService.getEventInfo(this.eventId).subscribe((eventInfo) => {
-      if (eventInfo) {
-        this.eventStartTime = eventInfo.startTime.toDate();
-        this.eventEndTime = eventInfo.endTime.toDate();
-      }
-    });
+    this.eventInfoService
+      .getEventInfo(this.eventId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((eventInfo) => {
+        if (eventInfo) {
+          this.eventStartTime = eventInfo.startTime.toDate();
+          this.eventEndTime = eventInfo.endTime.toDate();
+        }
+      });
 
     this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
     this.viewDay = new Date(
@@ -160,10 +167,16 @@ export class ScheduleComponent {
         this.authenticationService.user$.getValue()!.uid,
         this.eventId,
       )
+      .pipe(takeUntil(this.destroy$))
       .subscribe((shifts) => this.userShifts$.next(shifts));
     this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
     this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
     this.changeParams();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   goToPrevDay() {
