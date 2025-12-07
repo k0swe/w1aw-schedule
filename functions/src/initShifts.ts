@@ -9,8 +9,6 @@ import {
   MODES,
   Shift,
   shiftId,
-  TIME_SLOTS_END,
-  TIME_SLOTS_START,
   TWO_HOURS_IN_MS,
 } from './shared-constants';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
@@ -28,7 +26,23 @@ export const initShifts = onRequest(
     const eventId = request.query.eventId?.toString() || COLORADO_DOC_ID;
     logger.info('Initializing shifts for event', eventId);
 
-    const timeSlots = calcTimeSlots();
+    // Get event info to retrieve startTime and endTime
+    const eventDoc = await admin
+      .firestore()
+      .collection('events')
+      .doc(eventId)
+      .get();
+
+    if (!eventDoc.exists) {
+      response.status(404).send({ error: 'Event not found' });
+      return;
+    }
+
+    const eventData = eventDoc.data();
+    const startTime = eventData?.startTime?.toDate() || new Date('2026-05-27T00:00:00Z');
+    const endTime = eventData?.endTime?.toDate() || new Date('2026-06-02T23:59:59Z');
+
+    const timeSlots = calcTimeSlots(startTime, endTime);
 
     const shifts: Array<Shift> = [];
     timeSlots.forEach((timeslot) =>
@@ -80,10 +94,10 @@ export const initShifts = onRequest(
   },
 );
 
-const calcTimeSlots = (): Array<Date> => {
+const calcTimeSlots = (startTime: Date, endTime: Date): Array<Date> => {
   const timeSlots: Array<Date> = [];
-  let currentTimeSlot = TIME_SLOTS_START;
-  while (currentTimeSlot < TIME_SLOTS_END) {
+  let currentTimeSlot = startTime;
+  while (currentTimeSlot < endTime) {
     timeSlots.push(currentTimeSlot);
     currentTimeSlot = new Date(currentTimeSlot.getTime() + TWO_HOURS_IN_MS);
   }

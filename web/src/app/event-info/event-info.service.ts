@@ -1,5 +1,14 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, doc, docData } from '@angular/fire/firestore';
+import { 
+  Firestore, 
+  doc, 
+  docData, 
+  collection, 
+  collectionData, 
+  query, 
+  where, 
+  limit 
+} from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -15,6 +24,19 @@ export class EventInfoService {
     const eventsDocRef = doc(this.firestore, 'events', eventId);
     return docData(eventsDocRef).pipe(
       map((eventInfo) => (eventInfo as EventInfo)?.admins || []),
+    );
+  }
+
+  public getEventInfo(eventId: string = COLORADO_DOC_ID): Observable<EventInfo | undefined> {
+    const eventsDocRef = doc(this.firestore, 'events', eventId);
+    return docData(eventsDocRef) as Observable<EventInfo | undefined>;
+  }
+
+  public getEventBySlug(slug: string): Observable<EventInfo | undefined> {
+    const eventsCol = collection(this.firestore, 'events');
+    const eventsQuery = query(eventsCol, where('slug', '==', slug), limit(1));
+    return collectionData(eventsQuery, { idField: 'id' }).pipe(
+      map((events) => events[0] as EventInfo | undefined),
     );
   }
 }

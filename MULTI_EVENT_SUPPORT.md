@@ -10,19 +10,26 @@ The application now supports multiple events, allowing different ARRL sections t
 
 ### Event Identification
 
-Each event is identified by a unique event ID stored in Firestore under the `/events/{eventId}` collection. The original Colorado section event ID (`jZbFyscc23zjkEGRuPAI`) serves as the default for backward compatibility.
+Each event is identified by:
+- A unique event ID (Firestore document ID) stored in Firestore under the `/events/{eventId}` collection
+- A unique slug used in URLs for user-friendly routing
+- Event-specific time ranges (`startTime` and `endTime`) instead of global constants
+
+The original Colorado section event uses ID `jZbFyscc23zjkEGRuPAI` and slug `colorado-2026`, which serve as defaults for backward compatibility.
+
+When users access routes with a slug parameter (e.g., `/events/colorado-2026/schedule`), the application resolves the slug to the corresponding event ID by querying Firestore, then uses the event ID for all backend operations.
 
 ### Route Structure
 
-Events can be accessed through parameterized routes:
+Events can be accessed through parameterized routes using their slug:
 
-- `/events/:eventId/schedule` - View schedule for a specific event
-- `/events/:eventId/agenda` - View user's agenda for a specific event
-- `/approvals/:eventId` - Admin approval page for a specific event
+- `/events/:slug/schedule` - View schedule for a specific event
+- `/events/:slug/agenda` - View user's agenda for a specific event
+- `/approvals/:slug` - Admin approval page for a specific event
 
-Routes without an eventId parameter (e.g., `/schedule`, `/agenda`) default to the Colorado event.
+Routes without a slug parameter (e.g., `/schedule`, `/agenda`) default to the Colorado event.
 
-The menu links are currently hard-coded to use the Colorado event ID (`jZbFyscc23zjkEGRuPAI`). This should be revisited to provide dynamic event selection in the future.
+The menu links are currently hard-coded to use the Colorado event slug (`colorado-2026`). This should be revisited to provide dynamic event selection in the future.
 
 ### Data Access
 
@@ -60,9 +67,10 @@ User settings (profiles, approval status, etc.) are global across all events. A 
 The implementation maintains full backward compatibility:
 
 1. All service methods use `COLORADO_DOC_ID` as the default when no eventId is provided
-2. Routes without eventId parameters default to the Colorado event
-3. Calendar and initShifts functions default to the Colorado event when no eventId query parameter is provided
+2. Routes without slug parameters default to the Colorado event (slug: `colorado-2026`, ID: `jZbFyscc23zjkEGRuPAI`)
+3. Calendar and initShifts functions default to the Colorado event when no eventId query parameter is provided (Cloud Functions continue to use eventId, not slug)
 4. Existing code that doesn't pass eventId continues to work with the Colorado event
+5. Each event now has its own `startTime` and `endTime` properties, eliminating the need for global `TIME_SLOTS_START` and `TIME_SLOTS_END` constants
 
 ## Known Limitations
 
