@@ -82,7 +82,9 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
 
     if (!shift?.reservedBy) {
       // If it's open and we want to reserve
-      this.scheduleService.reserveShift(shift, userId, userDetails, this.eventId).subscribe();
+      this.scheduleService
+        .reserveShift(shift, userId, userDetails, this.eventId)
+        .subscribe();
     } else if (shift.reservedBy == userId || this.isAdmin$.getValue()) {
       // If it's ours (or we're an admin) and we want to cancel
       this.scheduleService.cancelShift(shift, userId, this.eventId).subscribe();
@@ -137,7 +139,9 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     const userDetails = this.approvedUsers$
       .getValue()!
       .find((u) => u.id == userId)!;
-    this.scheduleService.reserveShift(shift, userId, userDetails, this.eventId).subscribe();
+    this.scheduleService
+      .reserveShift(shift, userId, userDetails, this.eventId)
+      .subscribe();
   }
 
   clearReservation() {

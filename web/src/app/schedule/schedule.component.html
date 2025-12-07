@@ -11,7 +11,7 @@
           class="button-secondary-color"
           aria-label="Previous Day"
           (click)="goToPrevDay()"
-          [disabled]="prevDay < TIME_SLOTS_START"
+          [disabled]="prevDay < eventStartTime"
         >
           <mat-icon>arrow_back</mat-icon>
         </button>
@@ -40,7 +40,7 @@
           class="button-secondary-color"
           aria-label="Next Day"
           (click)="goToNextDay()"
-          [disabled]="nextDay >= TIME_SLOTS_END"
+          [disabled]="nextDay >= eventEndTime"
         >
           <mat-icon>arrow_forward</mat-icon>
         </button>

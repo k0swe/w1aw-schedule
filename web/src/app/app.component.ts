@@ -17,7 +17,6 @@ import { BehaviorSubject } from 'rxjs';
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
 import { AvatarComponent } from './avatar/avatar.component';
-import { COLORADO_DOC_ID } from './schedule/shared-constants';
 
 @Component({
   selector: 'kel-root',
@@ -46,8 +45,8 @@ export class AppComponent {
   private titleService = inject(Title);
 
   appName = environment.appName;
-  // TODO: Revisit hard-coded event ID - should be dynamic based on user's selected event
-  defaultEventId = COLORADO_DOC_ID;
+  // Default slug for the Colorado event - should be dynamic based on user's selected event in the future
+  defaultEventSlug = 'usa250-co-may';
   userIsAdmin$ = new BehaviorSubject<boolean>(false);
 
   constructor() {

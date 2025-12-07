@@ -29,7 +29,7 @@ export const routes: Routes = [
     canActivate: [AuthenticationGuard],
   },
   {
-    path: 'events/:eventId/schedule',
+    path: 'events/:slug/schedule',
     loadComponent: () =>
       import('./schedule/schedule.component').then((m) => m.ScheduleComponent),
     canActivate: [AuthenticationGuard],
@@ -41,7 +41,7 @@ export const routes: Routes = [
     canActivate: [AuthenticationGuard],
   },
   {
-    path: 'events/:eventId/agenda',
+    path: 'events/:slug/agenda',
     loadComponent: () =>
       import('./agenda/agenda.component').then((m) => m.AgendaComponent),
     canActivate: [AuthenticationGuard],
@@ -55,7 +55,7 @@ export const routes: Routes = [
     canActivate: [AuthenticationGuard, AdminGuard],
   },
   {
-    path: 'approvals/:eventId',
+    path: 'approvals/:slug',
     loadComponent: () =>
       import('./approval-tabs/approval-tabs.component').then(
         (m) => m.ApprovalTabsComponent,
