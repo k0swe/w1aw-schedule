@@ -111,11 +111,12 @@ export class ScheduleComponent {
   googleCalendarLink =
     'https://calendar.google.com/calendar/u/0/embed?src=j1vm5nfmlg2djdqjv86sjfe7ob2a8bl8@import.calendar.google.com' +
     '&ctz=America/Denver&mode=WEEK&dates=20260526/20260602';
-  icsLink = `${environment.functionBase}/calendar`;
+  icsLink = '';
 
   constructor() {
     // Get eventId from route parameter, default to Colorado event
     this.eventId = this.route.snapshot.paramMap.get('eventId') || COLORADO_DOC_ID;
+    this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
     this.viewDay = new Date(
       this.route.snapshot.queryParams['day'] ||
         TIME_SLOTS_START.toISOString().split('T')[0],
