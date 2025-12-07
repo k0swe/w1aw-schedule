@@ -24,6 +24,10 @@ export const initShifts = onRequest(
     }
     logger.info('Validated user', userId.uid);
 
+    // Accept eventId query parameter, default to Colorado event for backward compatibility
+    const eventId = request.query.eventId?.toString() || COLORADO_DOC_ID;
+    logger.info('Initializing shifts for event', eventId);
+
     const timeSlots = calcTimeSlots();
 
     const shifts: Array<Shift> = [];
@@ -48,7 +52,7 @@ export const initShifts = onRequest(
     const coloradoEventsShifts = admin
       .firestore()
       .collection('events')
-      .doc(COLORADO_DOC_ID)
+      .doc(eventId)
       .collection('shifts');
 
     // Batch writes to reduce memory usage

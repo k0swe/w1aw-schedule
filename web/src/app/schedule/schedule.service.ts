@@ -27,13 +27,14 @@ export class ScheduleService {
     time: Date,
     band: string,
     mode: string,
+    eventId: string = COLORADO_DOC_ID,
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
     const eventsDocRef = doc(
       this.firestore,
       'events',
-      COLORADO_DOC_ID,
+      eventId,
       'shifts',
       sid,
     );
@@ -44,6 +45,7 @@ export class ScheduleService {
     shiftToUpdate: Shift,
     userId: string,
     userDetails: UserSettings,
+    eventId: string = COLORADO_DOC_ID,
   ): Observable<void> {
     if (
       !!shiftToUpdate.reservedBy &&
@@ -60,7 +62,7 @@ export class ScheduleService {
     const eventsDocRef = doc(
       this.firestore,
       'events',
-      COLORADO_DOC_ID,
+      eventId,
       'shifts',
       sid,
     );
@@ -69,7 +71,7 @@ export class ScheduleService {
     return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
   }
 
-  cancelShift(shiftToUpdate: Shift, userId: string): Observable<void> {
+  cancelShift(shiftToUpdate: Shift, userId: string, eventId: string = COLORADO_DOC_ID): Observable<void> {
     if (
       shiftToUpdate.reservedBy != userId &&
       !this.authenticationService.userIsAdmin()
@@ -85,7 +87,7 @@ export class ScheduleService {
     const eventsDocRef = doc(
       this.firestore,
       'events',
-      COLORADO_DOC_ID,
+      eventId,
       'shifts',
       sid,
     );
@@ -94,11 +96,11 @@ export class ScheduleService {
     return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
   }
 
-  findUserShifts(uid: string): Observable<Shift[]> {
+  findUserShifts(uid: string, eventId: string = COLORADO_DOC_ID): Observable<Shift[]> {
     const eventsShiftsCol = collection(
       this.firestore,
       'events',
-      COLORADO_DOC_ID,
+      eventId,
       'shifts',
     );
     const eventsQuery = query(eventsShiftsCol, where('reservedBy', '==', uid));

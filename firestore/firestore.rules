@@ -5,7 +5,15 @@ service cloud.firestore {
       return request.auth != null;
     }
     function isAdmin() {
+      // Check admin status for the default Colorado event for backward compatibility
+      // In multi-event scenarios, this should be checked per-event
       let admins = get(/databases/$(database)/documents/events/jZbFyscc23zjkEGRuPAI).data.admins;
+      return request.auth.uid != null && admins != null && request.auth.uid in admins;
+    }
+    
+    function isAdminForEvent(eventId) {
+      // Check admin status for a specific event
+      let admins = get(/databases/$(database)/documents/events/$(eventId)).data.admins;
       return request.auth.uid != null && admins != null && request.auth.uid in admins;
     }
 
@@ -43,7 +51,7 @@ service cloud.firestore {
         allow read: if loggedIn();
         allow update: if onlyChangingReservation()
           && (userIsReservingForThemself() || userAlreadyReserved())
-          || isAdmin();
+          || isAdminForEvent(eventId);
       }
     }
   }

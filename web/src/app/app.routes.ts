@@ -29,13 +29,33 @@ export const routes: Routes = [
     canActivate: [AuthenticationGuard],
   },
   {
+    path: 'schedule/:eventId',
+    loadComponent: () =>
+      import('./schedule/schedule.component').then((m) => m.ScheduleComponent),
+    canActivate: [AuthenticationGuard],
+  },
+  {
     path: 'agenda',
     loadComponent: () =>
       import('./agenda/agenda.component').then((m) => m.AgendaComponent),
     canActivate: [AuthenticationGuard],
   },
   {
+    path: 'agenda/:eventId',
+    loadComponent: () =>
+      import('./agenda/agenda.component').then((m) => m.AgendaComponent),
+    canActivate: [AuthenticationGuard],
+  },
+  {
     path: 'approvals',
+    loadComponent: () =>
+      import('./approval-tabs/approval-tabs.component').then(
+        (m) => m.ApprovalTabsComponent,
+      ),
+    canActivate: [AuthenticationGuard, AdminGuard],
+  },
+  {
+    path: 'approvals/:eventId',
     loadComponent: () =>
       import('./approval-tabs/approval-tabs.component').then(
         (m) => m.ApprovalTabsComponent,

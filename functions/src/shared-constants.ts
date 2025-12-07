@@ -16,6 +16,8 @@ export const BANDS = [
   ...HI_HF_BANDS,
   ...VHF_UHF_BANDS,
 ];
+// Default event ID for the Colorado section W1AW/0 event
+// This is used for backward compatibility when no event ID is specified
 export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
 
 export interface EventInfo {

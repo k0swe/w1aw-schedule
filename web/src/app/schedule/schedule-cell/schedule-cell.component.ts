@@ -39,6 +39,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() band!: string;
   @Input() mode!: string;
   @Input() userShifts: Shift[] = [];
+  @Input() eventId!: string;
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
   user$ = new BehaviorSubject<User | null>(null);
   userSettings$ = new BehaviorSubject<UserSettings>({});
@@ -51,11 +52,11 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.userSettingsService.init();
     this.shiftSubscription = this.scheduleService
-      .findShift(this.timeslot, this.band, this.mode)
+      .findShift(this.timeslot, this.band, this.mode, this.eventId)
       .subscribe((sh) => this.shift$.next(sh));
     this.user$ = this.authenticationService.user$;
     this.adminSubscription = this.authenticationService
-      .userIsAdmin()
+      .userIsAdmin(this.eventId)
       .subscribe((isAdmin) => this.isAdmin$.next(isAdmin));
     this.userSettings$ = this.userSettingsService.settings$;
     this.approvedUsersSubscription = this.userSettingsService
@@ -81,10 +82,10 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
 
     if (!shift?.reservedBy) {
       // If it's open and we want to reserve
-      this.scheduleService.reserveShift(shift, userId, userDetails).subscribe();
+      this.scheduleService.reserveShift(shift, userId, userDetails, this.eventId).subscribe();
     } else if (shift.reservedBy == userId || this.isAdmin$.getValue()) {
       // If it's ours (or we're an admin) and we want to cancel
-      this.scheduleService.cancelShift(shift, userId).subscribe();
+      this.scheduleService.cancelShift(shift, userId, this.eventId).subscribe();
     }
   }
 
@@ -136,12 +137,12 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     const userDetails = this.approvedUsers$
       .getValue()!
       .find((u) => u.id == userId)!;
-    this.scheduleService.reserveShift(shift, userId, userDetails).subscribe();
+    this.scheduleService.reserveShift(shift, userId, userDetails, this.eventId).subscribe();
   }
 
   clearReservation() {
     const shift = this.shift$.getValue()!;
     const userId = this.user$.getValue()?.uid!;
-    this.scheduleService.cancelShift(shift, userId).subscribe();
+    this.scheduleService.cancelShift(shift, userId, this.eventId).subscribe();
   }
 }
