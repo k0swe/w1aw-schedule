@@ -6,6 +6,8 @@ import { COLORADO_DOC_ID } from './shared-constants';
 import getUuid from 'uuid-by-string';
 
 export const calendar = onRequest(async (request, response) => {
+  // Accept eventId query parameter, default to Colorado event for backward compatibility
+  const eventId = request.query.eventId?.toString() || COLORADO_DOC_ID;
   let title = 'W1AW/0 Colorado schedule';
 
   const uid = request.query.uid?.toString();
@@ -26,7 +28,7 @@ export const calendar = onRequest(async (request, response) => {
   const eventsShiftsCollection = admin
     .firestore()
     .collection('events')
-    .doc(COLORADO_DOC_ID)
+    .doc(eventId)
     .collection('shifts');
   let eventsQuery: admin.firestore.Query<admin.firestore.DocumentData>;
   if (uid) {

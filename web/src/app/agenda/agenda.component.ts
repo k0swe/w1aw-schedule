@@ -9,12 +9,13 @@ import {
   MatCardTitle,
 } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ScheduleService } from '../schedule/schedule.service';
-import { Shift } from '../schedule/shared-constants';
+import { COLORADO_DOC_ID, Shift } from '../schedule/shared-constants';
 
 @Component({
   selector: 'kel-agenda',
@@ -36,17 +37,21 @@ export class AgendaComponent {
   private clipboard = inject(Clipboard);
   private scheduleService = inject(ScheduleService);
   private snackBarService = inject(MatSnackBar);
+  private route = inject(ActivatedRoute);
 
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   icsLink = '';
+  eventId: string;
 
   constructor() {
+    // Get eventId from route parameter, default to Colorado event
+    this.eventId = this.route.snapshot.paramMap.get('eventId') || COLORADO_DOC_ID;
     this.authenticationService.user$.subscribe((user) => {
       if (!user) {
         return;
       }
-      this.icsLink = `${environment.functionBase}/calendar?uid=${user.uid}`;
-      this.scheduleService.findUserShifts(user.uid).subscribe((shifts) => {
+      this.icsLink = `${environment.functionBase}/calendar?uid=${user.uid}&eventId=${this.eventId}`;
+      this.scheduleService.findUserShifts(user.uid, this.eventId).subscribe((shifts) => {
         // sort by timestamp, ascending
         shifts.sort((a, b) => a.time.toMillis() - b.time.toMillis());
         this.userShifts$.next(shifts);

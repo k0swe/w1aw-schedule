@@ -34,6 +34,7 @@ import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleService } from './schedule.service';
 import {
   BANDS,
+  COLORADO_DOC_ID,
   HI_HF_BANDS,
   LF_BANDS,
   LOW_HF_BANDS,
@@ -100,6 +101,7 @@ export class ScheduleComponent {
   bandGroupNames = ['LF', 'Low HF', 'Hi HF', 'VHF & UHF'];
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   columnsToDisplay: string[] = [];
+  eventId: string;
 
   viewDay: Date;
   viewBandGroup: string;
@@ -109,9 +111,12 @@ export class ScheduleComponent {
   googleCalendarLink =
     'https://calendar.google.com/calendar/u/0/embed?src=j1vm5nfmlg2djdqjv86sjfe7ob2a8bl8@import.calendar.google.com' +
     '&ctz=America/Denver&mode=WEEK&dates=20260526/20260602';
-  icsLink = `${environment.functionBase}/calendar`;
+  icsLink = '';
 
   constructor() {
+    // Get eventId from route parameter, default to Colorado event
+    this.eventId = this.route.snapshot.paramMap.get('eventId') || COLORADO_DOC_ID;
+    this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
     this.viewDay = new Date(
       this.route.snapshot.queryParams['day'] ||
         TIME_SLOTS_START.toISOString().split('T')[0],
@@ -120,7 +125,7 @@ export class ScheduleComponent {
       this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
     this.viewMode = this.route.snapshot.queryParams['mode'] || 'phone';
     this.scheduleService
-      .findUserShifts(this.authenticationService.user$.getValue()!.uid)
+      .findUserShifts(this.authenticationService.user$.getValue()!.uid, this.eventId)
       .subscribe((shifts) => this.userShifts$.next(shifts));
     this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
     this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);

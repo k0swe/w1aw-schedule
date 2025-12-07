@@ -340,3 +340,81 @@ describe("Shifts", () => {
     );
   });
 });
+
+describe("Multi-event support", () => {
+  const newEvent = "testEvent123";
+
+  beforeEach(async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const fs = context.firestore();
+      // Setup Colorado event with amanda as admin
+      await setDoc(doc(fs, `events/${colorado}`), {
+        admins: ["amanda"],
+      });
+      // Setup new test event with bob as admin
+      await setDoc(doc(fs, `events/${newEvent}`), {
+        name: "Test Event",
+        admins: ["bob"],
+      });
+      await setDoc(doc(fs, `events/${newEvent}/shifts/shift1`), {
+        time: new Date(),
+        band: "20",
+        mode: "phone",
+        reservedBy: null,
+      });
+      await setDoc(doc(fs, `events/${newEvent}/shifts/shift2`), {
+        time: new Date(),
+        band: "40",
+        mode: "phone",
+        reservedBy: "alice",
+      });
+    });
+  });
+
+  it("should allow reading event information for any event", async function () {
+    const unauthedDb = testEnv.unauthenticatedContext().firestore();
+
+    await assertSucceeds(getDoc(doc(unauthedDb, `events/${newEvent}`)));
+  });
+
+  it("should allow a user to reserve a shift in any event", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    await assertSucceeds(
+      updateDoc(doc(aliceDb, `events/${newEvent}/shifts/shift1`), {
+        reservedBy: "alice",
+        reservedDetails: {},
+      }),
+    );
+  });
+
+  it("should allow a user to cancel their shift in any event", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    await assertSucceeds(
+      updateDoc(doc(aliceDb, `events/${newEvent}/shifts/shift2`), {
+        reservedBy: null,
+        reservedDetails: null,
+      }),
+    );
+  });
+
+  it("should allow event-specific admin to modify shifts in their event", async function () {
+    const bobDb = testEnv.authenticatedContext("bob").firestore();
+    await assertSucceeds(
+      updateDoc(doc(bobDb, `events/${newEvent}/shifts/shift1`), {
+        reservedBy: "alice",
+        reservedDetails: {},
+      }),
+    );
+  });
+
+  it("should not allow admin from one event to modify shifts in another event", async function () {
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    // Amanda is admin for Colorado but not for newEvent
+    await assertFails(
+      updateDoc(doc(amandaDb, `events/${newEvent}/shifts/shift1`), {
+        reservedBy: "alice",
+        reservedDetails: {},
+      }),
+    );
+  });
+});

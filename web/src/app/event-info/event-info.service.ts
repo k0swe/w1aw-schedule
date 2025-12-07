@@ -11,8 +11,8 @@ import { COLORADO_DOC_ID, EventInfo } from '../schedule/shared-constants';
 export class EventInfoService {
   private firestore = inject(Firestore);
 
-  public getAdminList(): Observable<string[]> {
-    const eventsDocRef = doc(this.firestore, 'events', COLORADO_DOC_ID);
+  public getAdminList(eventId: string = COLORADO_DOC_ID): Observable<string[]> {
+    const eventsDocRef = doc(this.firestore, 'events', eventId);
     return docData(eventsDocRef).pipe(
       map((eventInfo) => (eventInfo as EventInfo)?.admins || []),
     );

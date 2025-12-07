@@ -23,6 +23,8 @@ export class AdminGuard implements CanActivate {
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    return this.authService.userIsAdmin();
+    // Extract eventId from route parameters if present
+    const eventId = route.paramMap.get('eventId') || undefined;
+    return this.authService.userIsAdmin(eventId);
   }
 }

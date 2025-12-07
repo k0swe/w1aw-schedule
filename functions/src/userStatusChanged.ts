@@ -42,8 +42,11 @@ export const userStatusChanged = onDocumentUpdated(
           },
         });
     } else if (afterData.status === 'Declined') {
-      // find any shifts that were reserved by this user and un-assign them
-      // use the normalized afterId (may be null)
+      // Find any shifts that were reserved by this user and un-assign them
+      // Note: This currently only clears shifts for the default Colorado event.
+      // In a multi-event system, this would need to be expanded to clear shifts
+      // across all events where the user has reservations.
+      // Use the normalized afterId (may be null)
       const eventsShifts = await admin
         .firestore()
         .collection('events')
