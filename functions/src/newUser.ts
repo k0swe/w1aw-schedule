@@ -34,25 +34,8 @@ export const newUser = onDocumentCreated('users/{userId}', async (event) => {
     console.error('Error getting auth user:', error);
   }
 
-  // TODO: Remove dual-read logic after Firestore collection rename migration is complete
-  // Try reading from 'events' collection first, fall back to 'sections' collection
-  let eventInfoData: EventInfo | undefined;
-  
-  try {
-    const eventsDoc = await admin.firestore().collection('events').doc(COLORADO_DOC_ID).get();
-    if (eventsDoc.exists) {
-      eventInfoData = eventsDoc.data() as EventInfo;
-    }
-  } catch (error) {
-    console.warn('Failed to read from events collection, falling back to sections', error);
-  }
-  
-  if (!eventInfoData) {
-    // Fallback to legacy 'sections' collection
-    const sectionsDoc = await admin.firestore().collection('sections').doc(COLORADO_DOC_ID).get();
-    eventInfoData = sectionsDoc.data() as EventInfo;
-  }
-  
+  const eventsDoc = await admin.firestore().collection('events').doc(COLORADO_DOC_ID).get();
+  const eventInfoData = eventsDoc.data() as EventInfo;
   const { admins } = eventInfoData;
 
   await admin

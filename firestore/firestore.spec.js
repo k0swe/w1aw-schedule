@@ -126,7 +126,7 @@ describe("User profiles", () => {
   it("should allow admins to read any user", async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
-      await setDoc(doc(fs, `sections/${colorado}`), {
+      await setDoc(doc(fs, `events/${colorado}`), {
         admins: ["amanda"],
       });
       await setDoc(doc(fs, "users/alice"), {
@@ -143,7 +143,7 @@ describe("User profiles", () => {
   it("should allow admins to write approval status", async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
-      await setDoc(doc(fs, `sections/${colorado}`), {
+      await setDoc(doc(fs, `events/${colorado}`), {
         admins: ["amanda"],
       });
       await setDoc(doc(fs, "users/alice"), {
@@ -166,7 +166,7 @@ describe("User profiles", () => {
 it("should allow admins to write multi-shift status", async () => {
   await testEnv.withSecurityRulesDisabled(async (context) => {
     const fs = context.firestore();
-    await setDoc(doc(fs, `sections/${colorado}`), {
+    await setDoc(doc(fs, `events/${colorado}`), {
       admins: ["amanda"],
     });
     await setDoc(doc(fs, "users/alice"), {
@@ -186,43 +186,43 @@ it("should allow admins to write multi-shift status", async () => {
   );
 });
 
-describe("Section information", () => {
-  it("should allow anyone to read section information", async function () {
+describe("Event information", () => {
+  it("should allow anyone to read event information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), `sections/${colorado}`), {
+      await setDoc(doc(context.firestore(), `events/${colorado}`), {
         name: "Colorado",
         admins: ["amanda"],
       });
     });
     const unauthedDb = testEnv.unauthenticatedContext().firestore();
 
-    await assertSucceeds(getDoc(doc(unauthedDb, `sections/${colorado}`)));
+    await assertSucceeds(getDoc(doc(unauthedDb, `events/${colorado}`)));
   });
 
-  it("should not allow anyone to write section information", async function () {
+  it("should not allow anyone to write event information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), `sections/${colorado}`), {
+      await setDoc(doc(context.firestore(), `events/${colorado}`), {
         name: "Colorado",
       });
     });
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertFails(
-      setDoc(doc(aliceDb, `sections/${colorado}`), {
-        name: "The best section",
+      setDoc(doc(aliceDb, `events/${colorado}`), {
+        name: "The best event",
       }),
     );
   });
 
-  it("should not allow anyone to delete section information", async function () {
+  it("should not allow anyone to delete event information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), `sections/${colorado}`), {
+      await setDoc(doc(context.firestore(), `events/${colorado}`), {
         name: "Colorado",
       });
     });
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
-    await assertFails(deleteDoc(doc(aliceDb, `sections/${colorado}`)));
+    await assertFails(deleteDoc(doc(aliceDb, `events/${colorado}`)));
   });
 });
 
@@ -230,22 +230,22 @@ describe("Shifts", () => {
   beforeEach(async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
-      await setDoc(doc(fs, `sections/${colorado}`), {
+      await setDoc(doc(fs, `events/${colorado}`), {
         admins: ["amanda"],
       });
-      await setDoc(doc(fs, `sections/${colorado}/shifts/shift1`), {
+      await setDoc(doc(fs, `events/${colorado}/shifts/shift1`), {
         time: new Date(),
         band: "20",
         mode: "phone",
         reservedBy: null,
       });
-      await setDoc(doc(fs, `sections/${colorado}/shifts/shift2`), {
+      await setDoc(doc(fs, `events/${colorado}/shifts/shift2`), {
         time: new Date(),
         band: "40",
         mode: "phone",
         reservedBy: "ravi",
       });
-      await setDoc(doc(fs, `sections/${colorado}/shifts/shift3`), {
+      await setDoc(doc(fs, `events/${colorado}/shifts/shift3`), {
         time: new Date(),
         band: "80",
         mode: "phone",
@@ -258,20 +258,20 @@ describe("Shifts", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`)),
+      getDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`)),
     );
     await assertSucceeds(
-      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`)),
+      getDoc(doc(aliceDb, `events/${colorado}/shifts/shift2`)),
     );
     await assertSucceeds(
-      getDoc(doc(aliceDb, `sections/${colorado}/shifts/shift3`)),
+      getDoc(doc(aliceDb, `events/${colorado}/shifts/shift3`)),
     );
   });
 
   it("should allow a user to reserve an open shift for themselves", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertSucceeds(
-      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`), {
         reservedBy: "alice",
       }),
     );
@@ -280,7 +280,7 @@ describe("Shifts", () => {
   it("should allow a user to cancel their shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertSucceeds(
-      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift3`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift3`), {
         reservedBy: null,
       }),
     );
@@ -289,7 +289,7 @@ describe("Shifts", () => {
   it("should not allow a user to reserve an open shift for someone else", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`), {
         reservedBy: "ravi",
       }),
     );
@@ -298,7 +298,7 @@ describe("Shifts", () => {
   it("should not allow a user to cancel someone else's shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift2`), {
         reservedBy: null,
       }),
     );
@@ -307,7 +307,7 @@ describe("Shifts", () => {
   it("should not allow a user to take over someone else's shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift2`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift2`), {
         reservedBy: "alice",
       }),
     );
@@ -316,7 +316,7 @@ describe("Shifts", () => {
   it("should not allow a user to overwrite shift info", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `sections/${colorado}/shifts/shift1`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`), {
         mode: "digital",
       }),
     );
@@ -325,7 +325,7 @@ describe("Shifts", () => {
   it("should allow an admin to cancel another user's shift reservation", async function () {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `sections/${colorado}/shifts/shift2`), {
+      updateDoc(doc(amandaDb, `events/${colorado}/shifts/shift2`), {
         reservedBy: null,
       }),
     );
@@ -334,7 +334,7 @@ describe("Shifts", () => {
   it("should allow an admin to reserve a shift for another user", async function () {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `sections/${colorado}/shifts/shift1`), {
+      updateDoc(doc(amandaDb, `events/${colorado}/shifts/shift1`), {
         reservedBy: "alice",
       }),
     );

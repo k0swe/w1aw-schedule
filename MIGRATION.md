@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the migration from "section" terminology to "event" terminology throughout the codebase. This change provides more accurate naming while maintaining backward compatibility with existing Firestore data.
+This document describes the completed migration from "section" terminology to "event" terminology throughout the codebase. This change provides more accurate naming. **The migration is now complete.**
 
 ## What Changed
 
@@ -16,17 +16,14 @@ This document describes the migration from "section" terminology to "event" term
 
 ### Firestore Migration Strategy
 
-To ensure zero downtime and maintain compatibility with existing data, we implemented dual-read/write logic:
+The migration from the `sections` collection to the `events` collection has been completed:
 
-#### Read Operations
-- Try reading from the new `events` collection first
-- If not found or if an error occurs, fall back to the legacy `sections` collection
-- This ensures data can be accessed regardless of which collection it's in
-
-#### Write Operations  
-- Write to both `sections` (legacy) and `events` (new) collections
-- Both writes are executed, with errors suppressed to ensure resilience
-- This ensures data is available in both collections during the transition
+#### Completed Steps
+- All code now reads exclusively from the `events` collection
+- All code now writes exclusively to the `events` collection
+- Dual-read/write logic has been removed
+- Security rules have been updated to use the `events` collection
+- All tests have been updated to use the `events` collection
 
 ### Affected Files
 
@@ -45,22 +42,20 @@ To ensure zero downtime and maintain compatibility with existing data, we implem
 - `functions/src/userStatusChanged.ts`
 - `functions/src/shared-constants.ts`
 
-## Migration TODOs
+## Migration Completion
 
-All temporary migration code is marked with `TODO` comments for easy identification. Search for:
-```
-TODO: Remove dual-read/write logic after Firestore collection rename migration is complete
-```
+The migration is now complete. All code references have been updated:
 
-### Future Cleanup Steps
+1. ✅ Removed all dual-read logic (fallback to `sections` collection)
+2. ✅ Removed all dual-write logic (writes to `sections` collection)
+3. ✅ Simplified all Firestore access code to only reference the `events` collection
+4. ✅ Updated Firestore security rules to use `events` collection
+5. ✅ Updated all tests to use `events` collection
+6. ✅ Updated documentation to reflect completion of migration
 
-Once the Firestore `sections` collection has been renamed to `events` (or data has been fully migrated):
+### Database Cleanup
 
-1. Remove all dual-read logic (fallback to `sections` collection)
-2. Remove all dual-write logic (writes to `sections` collection)
-3. Remove the backwards-compatible `SectionInfo` interface from `functions/src/shared-constants.ts`
-4. Simplify all Firestore access code to only reference the `events` collection
-5. Update this document to reflect completion of migration
+The legacy `sections` collection in the Firestore database can be safely deleted once you have verified that all functionality works correctly with the `events` collection.
 
 ## Testing
 
@@ -85,12 +80,12 @@ The migration maintains full backward compatibility:
 
 As of this migration:
 - All code references use "event" terminology
-- All Firestore operations use dual-read/write logic
-- The `sections` collection is still the primary data source
-- Documentation has been updated to explain the migration
+- All Firestore operations use only the `events` collection
+- The `events` collection is the only data source
+- Documentation has been updated to reflect the completed migration
 
 ## Notes
 
 - The README mentions that "Colorado section" refers to the ARRL Colorado Section, which is the correct terminology in that context (organizational unit, not the code terminology)
-- Firestore collection renaming is a manual operation that requires careful planning and should be done during a maintenance window
-- The dual-read/write approach ensures no data loss and no downtime during migration
+- The legacy `sections` collection can be manually deleted from Firestore once the migration is verified to be working correctly
+- This migration was completed without downtime by first migrating data, then updating code

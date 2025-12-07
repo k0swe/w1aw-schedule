@@ -45,14 +45,6 @@ export const initShifts = onRequest(
     const hashedShifts = new Map<string, object>();
     shifts.forEach((shift) => hashedShifts.set(shiftId(shift), shift));
 
-    // TODO: Remove dual-write logic after Firestore collection rename migration is complete
-    // Write to both 'sections' (legacy) and 'events' (new) collections during migration
-    const coloradoSectionsShifts = admin
-      .firestore()
-      .collection('sections')
-      .doc(COLORADO_DOC_ID)
-      .collection('shifts');
-    
     const coloradoEventsShifts = admin
       .firestore()
       .collection('events')
@@ -69,18 +61,17 @@ export const initShifts = onRequest(
       const writePromises: Array<Promise<FirebaseFirestore.WriteResult>> = [];
 
       batch.forEach(([hash, shift]) => {
-        writePromises.push(coloradoSectionsShifts.doc(hash).set(shift));
         writePromises.push(coloradoEventsShifts.doc(hash).set(shift));
       });
 
       await Promise.all(writePromises);
       totalWritten += batch.length;
       logger.info(
-        `Batch progress: ${totalWritten} / ${entries.length} shifts saved to both collections`,
+        `Batch progress: ${totalWritten} / ${entries.length} shifts saved`,
       );
     }
 
-    logger.info('All shifts saved to Firestore (both sections and events collections)');
+    logger.info('All shifts saved to Firestore events collection');
     response.send({ shiftCount: hashedShifts.size });
   },
 );

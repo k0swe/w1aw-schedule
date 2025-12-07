@@ -13,11 +13,11 @@ describe('userStatusChanged', () => {
   beforeEach(async () => {
     // Initialize firebase-functions-test without passing a service account so tests use the emulator.
     test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
-    await deleteCollection(admin.firestore().collection('sections'));
+    await deleteCollection(admin.firestore().collection('events'));
   });
 
   afterEach(async () => {
-    await deleteCollection(admin.firestore().collection('sections'));
+    await deleteCollection(admin.firestore().collection('events'));
     test.cleanup();
   });
 
@@ -51,7 +51,7 @@ describe('userStatusChanged', () => {
     let testComplete = false;
     await admin
       .firestore()
-      .collection('sections')
+      .collection('events')
       .doc(COLORADO_DOC_ID)
       .collection('shifts')
       .doc()
@@ -68,7 +68,7 @@ describe('userStatusChanged', () => {
     }).then(async () => {
       await admin
         .firestore()
-        .collection('sections')
+        .collection('events')
         .doc(COLORADO_DOC_ID)
         .collection('shifts')
         .get()
