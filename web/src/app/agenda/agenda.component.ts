@@ -16,7 +16,11 @@ import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
 import { ScheduleService } from '../schedule/schedule.service';
-import { COLORADO_DOC_ID, COLORADO_SLUG, Shift } from '../schedule/shared-constants';
+import {
+  COLORADO_DOC_ID,
+  COLORADO_SLUG,
+  Shift,
+} from '../schedule/shared-constants';
 
 @Component({
   selector: 'kel-agenda',
@@ -48,7 +52,7 @@ export class AgendaComponent {
   constructor() {
     // Get slug from route parameter, default to Colorado slug
     const slug = this.route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
-    
+
     // Resolve slug to eventId
     if (slug === COLORADO_SLUG) {
       // Optimization: use default Colorado event ID without query
@@ -75,11 +79,13 @@ export class AgendaComponent {
         return;
       }
       this.icsLink = `${environment.functionBase}/calendar?uid=${user.uid}&eventId=${this.eventId}`;
-      this.scheduleService.findUserShifts(user.uid, this.eventId).subscribe((shifts) => {
-        // sort by timestamp, ascending
-        shifts.sort((a, b) => a.time.toMillis() - b.time.toMillis());
-        this.userShifts$.next(shifts);
-      });
+      this.scheduleService
+        .findUserShifts(user.uid, this.eventId)
+        .subscribe((shifts) => {
+          // sort by timestamp, ascending
+          shifts.sort((a, b) => a.time.toMillis() - b.time.toMillis());
+          this.userShifts$.next(shifts);
+        });
     });
   }
 

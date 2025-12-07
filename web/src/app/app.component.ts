@@ -18,7 +18,6 @@ import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
 import { AvatarComponent } from './avatar/avatar.component';
 
-
 @Component({
   selector: 'kel-root',
   templateUrl: './app.component.html',

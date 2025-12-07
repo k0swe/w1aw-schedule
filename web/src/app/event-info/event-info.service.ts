@@ -1,13 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { 
-  Firestore, 
-  doc, 
-  docData, 
-  collection, 
-  collectionData, 
-  query, 
-  where, 
-  limit 
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  docData,
+  limit,
+  query,
+  where,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -27,7 +27,9 @@ export class EventInfoService {
     );
   }
 
-  public getEventInfo(eventId: string = COLORADO_DOC_ID): Observable<EventInfo | undefined> {
+  public getEventInfo(
+    eventId: string = COLORADO_DOC_ID,
+  ): Observable<EventInfo | undefined> {
     const eventsDocRef = doc(this.firestore, 'events', eventId);
     return docData(eventsDocRef) as Observable<EventInfo | undefined>;
   }

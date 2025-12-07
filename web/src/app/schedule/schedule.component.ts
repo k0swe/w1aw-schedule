@@ -117,7 +117,7 @@ export class ScheduleComponent {
   constructor() {
     // Get slug from route parameter, default to Colorado slug
     const slug = this.route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
-    
+
     // Resolve slug to eventId and get event info
     if (slug === COLORADO_SLUG) {
       // Optimization: use default Colorado event ID without query
@@ -156,7 +156,10 @@ export class ScheduleComponent {
       this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
     this.viewMode = this.route.snapshot.queryParams['mode'] || 'phone';
     this.scheduleService
-      .findUserShifts(this.authenticationService.user$.getValue()!.uid, this.eventId)
+      .findUserShifts(
+        this.authenticationService.user$.getValue()!.uid,
+        this.eventId,
+      )
       .subscribe((shifts) => this.userShifts$.next(shifts));
     this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
     this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
