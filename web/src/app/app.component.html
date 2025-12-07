@@ -27,12 +27,11 @@
         <mat-icon matListItemIcon>person</mat-icon>
         My Settings
       </mat-list-item>
-      <!-- TODO: Revisit hard-coded event ID - should be dynamic based on user's selected event -->
-      <mat-list-item routerLink="/events/jZbFyscc23zjkEGRuPAI/schedule">
+      <mat-list-item [routerLink]="'/events/' + defaultEventId + '/schedule'">
         <mat-icon matListItemIcon>calendar_month</mat-icon>
         Full Schedule
       </mat-list-item>
-      <mat-list-item routerLink="/events/jZbFyscc23zjkEGRuPAI/agenda">
+      <mat-list-item [routerLink]="'/events/' + defaultEventId + '/agenda'">
         <mat-icon matListItemIcon>event_available</mat-icon>
         My Agenda
       </mat-list-item>
