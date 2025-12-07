@@ -16,11 +16,13 @@ Each event is identified by a unique event ID stored in Firestore under the `/ev
 
 Events can be accessed through parameterized routes:
 
-- `/schedule/:eventId` - View schedule for a specific event
-- `/agenda/:eventId` - View user's agenda for a specific event
+- `/events/:eventId/schedule` - View schedule for a specific event
+- `/events/:eventId/agenda` - View user's agenda for a specific event
 - `/approvals/:eventId` - Admin approval page for a specific event
 
-Routes without an eventId parameter default to the Colorado event.
+Routes without an eventId parameter (e.g., `/schedule`, `/agenda`) default to the Colorado event.
+
+The menu links are currently hard-coded to use the Colorado event ID (`jZbFyscc23zjkEGRuPAI`). This should be revisited to provide dynamic event selection in the future.
 
 ### Data Access
 
