@@ -5,7 +5,7 @@ service cloud.firestore {
       return request.auth != null;
     }
     function isAdmin() {
-      let admins = get(/databases/$(database)/documents/sections/jZbFyscc23zjkEGRuPAI).data.admins;
+      let admins = get(/databases/$(database)/documents/events/jZbFyscc23zjkEGRuPAI).data.admins;
       return request.auth.uid != null && admins != null && request.auth.uid in admins;
     }
 
@@ -24,7 +24,7 @@ service cloud.firestore {
       allow delete: if loggedIn() && usersOwnDoc();
     }
 
-    match /sections/{sectionId} {
+    match /events/{eventId} {
       allow read: if true;
 
       match /shifts/{shiftId} {

@@ -6,30 +6,14 @@ import { COLORADO_DOC_ID, EventInfo } from './shared-constants';
 
 /**
  * Get the event info from Firestore.
- * TODO: Remove dual-read logic after Firestore collection rename migration is complete
  */
 async function getEventInfo() {
-  // Try reading from 'events' collection first, fall back to 'sections' collection
-  try {
-    const eventInfoSnapshot = await admin
-      .firestore()
-      .collection('events')
-      .doc(COLORADO_DOC_ID)
-      .get();
-    if (eventInfoSnapshot.exists) {
-      return eventInfoSnapshot.data() as EventInfo;
-    }
-  } catch (error) {
-    logger.warn('Failed to read from events collection, falling back to sections', error);
-  }
-  
-  // Fallback to legacy 'sections' collection
-  const sectionInfoSnapshot = await admin
+  const eventInfoSnapshot = await admin
     .firestore()
-    .collection('sections')
+    .collection('events')
     .doc(COLORADO_DOC_ID)
     .get();
-  return sectionInfoSnapshot.data() as EventInfo;
+  return eventInfoSnapshot.data() as EventInfo;
 }
 
 export const deleteUser = onRequest(

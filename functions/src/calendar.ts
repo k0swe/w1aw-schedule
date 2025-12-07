@@ -23,43 +23,18 @@ export const calendar = onRequest(async (request, response) => {
     title += ` for ${stationSnapshot.data()?.callsign}`;
   }
 
-  // TODO: Remove dual-read logic after Firestore collection rename migration is complete
-  // Try reading from 'events' collection first, fall back to 'sections' collection
-  let shiftsQuerySnapshot: admin.firestore.QuerySnapshot<admin.firestore.DocumentData>;
-  
-  try {
-    const eventsShiftsCollection = admin
-      .firestore()
-      .collection('events')
-      .doc(COLORADO_DOC_ID)
-      .collection('shifts');
-    let eventsQuery: admin.firestore.Query<admin.firestore.DocumentData>;
-    if (uid) {
-      eventsQuery = eventsShiftsCollection.where('reservedBy', '==', uid);
-    } else {
-      eventsQuery = eventsShiftsCollection.where('reservedBy', '!=', null);
-    }
-    shiftsQuerySnapshot = await eventsQuery.get();
-    
-    // If no data in events collection, fall back to sections
-    if (shiftsQuerySnapshot.empty) {
-      throw new Error('No data in events collection');
-    }
-  } catch {
-    // Fallback to legacy 'sections' collection
-    const sectionsShiftsCollection = admin
-      .firestore()
-      .collection('sections')
-      .doc(COLORADO_DOC_ID)
-      .collection('shifts');
-    let sectionsQuery: admin.firestore.Query<admin.firestore.DocumentData>;
-    if (uid) {
-      sectionsQuery = sectionsShiftsCollection.where('reservedBy', '==', uid);
-    } else {
-      sectionsQuery = sectionsShiftsCollection.where('reservedBy', '!=', null);
-    }
-    shiftsQuerySnapshot = await sectionsQuery.get();
+  const eventsShiftsCollection = admin
+    .firestore()
+    .collection('events')
+    .doc(COLORADO_DOC_ID)
+    .collection('shifts');
+  let eventsQuery: admin.firestore.Query<admin.firestore.DocumentData>;
+  if (uid) {
+    eventsQuery = eventsShiftsCollection.where('reservedBy', '==', uid);
+  } else {
+    eventsQuery = eventsShiftsCollection.where('reservedBy', '!=', null);
   }
+  const shiftsQuerySnapshot = await eventsQuery.get();
 
   const calendar = ical({
     name: title,
