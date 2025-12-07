@@ -18,7 +18,7 @@ export const BANDS = [
 // This is used for backward compatibility when no event ID is specified
 export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
 // Default event slug for the Colorado section W1AW/0 event
-export const COLORADO_SLUG = 'colorado-2026';
+export const COLORADO_SLUG = 'usa250-co-may';
 
 export interface EventInfo {
   name: string;

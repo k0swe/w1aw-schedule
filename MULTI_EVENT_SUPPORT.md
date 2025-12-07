@@ -15,9 +15,9 @@ Each event is identified by:
 - A unique slug used in URLs for user-friendly routing
 - Event-specific time ranges (`startTime` and `endTime`) instead of global constants
 
-The original Colorado section event uses ID `jZbFyscc23zjkEGRuPAI` and slug `colorado-2026`, which serve as defaults for backward compatibility.
+The original Colorado section event uses ID `jZbFyscc23zjkEGRuPAI` and slug `usa250-co-may`, which serve as defaults for backward compatibility.
 
-When users access routes with a slug parameter (e.g., `/events/colorado-2026/schedule`), the application resolves the slug to the corresponding event ID by querying Firestore, then uses the event ID for all backend operations.
+When users access routes with a slug parameter (e.g., `/events/usa250-co-may/schedule`), the application resolves the slug to the corresponding event ID by querying Firestore, then uses the event ID for all backend operations.
 
 ### Route Structure
 
@@ -29,7 +29,7 @@ Events can be accessed through parameterized routes using their slug:
 
 Routes without a slug parameter (e.g., `/schedule`, `/agenda`) default to the Colorado event.
 
-The menu links are currently hard-coded to use the Colorado event slug (`colorado-2026`). This should be revisited to provide dynamic event selection in the future.
+The menu links are currently hard-coded to use the Colorado event slug (`usa250-co-may`). This should be revisited to provide dynamic event selection in the future.
 
 ### Data Access
 
@@ -67,7 +67,7 @@ User settings (profiles, approval status, etc.) are global across all events. A 
 The implementation maintains full backward compatibility:
 
 1. All service methods use `COLORADO_DOC_ID` as the default when no eventId is provided
-2. Routes without slug parameters default to the Colorado event (slug: `colorado-2026`, ID: `jZbFyscc23zjkEGRuPAI`)
+2. Routes without slug parameters default to the Colorado event (slug: `usa250-co-may`, ID: `jZbFyscc23zjkEGRuPAI`)
 3. Calendar and initShifts functions default to the Colorado event when no eventId query parameter is provided (Cloud Functions continue to use eventId, not slug)
 4. Existing code that doesn't pass eventId continues to work with the Colorado event
 5. Each event now has its own `startTime` and `endTime` properties, eliminating the need for global `TIME_SLOTS_START` and `TIME_SLOTS_END` constants

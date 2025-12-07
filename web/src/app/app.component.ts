@@ -46,7 +46,7 @@ export class AppComponent {
 
   appName = environment.appName;
   // Default slug for the Colorado event - should be dynamic based on user's selected event in the future
-  defaultEventSlug = 'colorado-2026';
+  defaultEventSlug = 'usa250-co-may';
   userIsAdmin$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
