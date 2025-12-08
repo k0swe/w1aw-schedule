@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "angular": {
+      "command": "node",
+      "args": [
+        "./web/node_modules/@angular/mcp/bin/mcp-server-angular.js"
+      ],
+      "cwd": "./web",
+      "env": {}
+    }
+  }
+}
