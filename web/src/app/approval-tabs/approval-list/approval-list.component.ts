@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   OnDestroy,
@@ -36,6 +37,7 @@ import {
   templateUrl: './approval-list.component.html',
   styleUrls: ['./approval-list.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatTable,
     MatSort,

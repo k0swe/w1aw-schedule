@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import {
   FormControl,
@@ -37,6 +37,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
   templateUrl: './user-settings.component.html',
   styleUrls: ['./user-settings.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     ReactiveFormsModule,
