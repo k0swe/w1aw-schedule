@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   OnDestroy,
@@ -35,6 +36,7 @@ import {
   selector: 'kel-approval-list',
   templateUrl: './approval-list.component.html',
   styleUrls: ['./approval-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     MatTable,

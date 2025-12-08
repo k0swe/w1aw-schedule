@@ -1,6 +1,11 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, OnDestroy, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import {
   MatCard,
@@ -26,6 +31,7 @@ import {
   selector: 'kel-agenda',
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     MatCard,

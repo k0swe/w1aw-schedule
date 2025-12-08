@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   MatCard,
   MatCardContent,
@@ -18,6 +18,7 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
   selector: 'kel-approval-tabs',
   templateUrl: './approval-tabs.component.html',
   styleUrls: ['./approval-tabs.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     MatCard,

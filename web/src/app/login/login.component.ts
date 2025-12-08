@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { UserCredential } from '@angular/fire/auth';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
@@ -29,6 +29,7 @@ import { AuthenticationService } from '../authentication/authentication.service'
   selector: 'kel-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     MatCard,

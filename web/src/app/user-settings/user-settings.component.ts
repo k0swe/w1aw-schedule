@@ -1,5 +1,11 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { User } from '@angular/fire/auth';
 import {
   FormControl,
@@ -36,6 +42,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
   selector: 'kel-user-settings',
   templateUrl: './user-settings.component.html',
   styleUrls: ['./user-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     FormsModule,
