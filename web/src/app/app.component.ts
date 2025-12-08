@@ -1,5 +1,5 @@
 import { AsyncPipe, NgOptimizedImage } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import {
@@ -23,6 +23,7 @@ import { AvatarComponent } from './avatar/avatar.component';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatToolbar,
     MatIconButton,

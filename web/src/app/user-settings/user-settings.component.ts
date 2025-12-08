@@ -1,5 +1,12 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { User } from '@angular/fire/auth';
 import {
   FormControl,
@@ -37,6 +44,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
   templateUrl: './user-settings.component.html',
   styleUrls: ['./user-settings.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -84,7 +92,7 @@ export class UserSettingsComponent implements OnInit {
   ]);
   arrlMemberNumber = new FormControl('');
   discordUsername = new FormControl('');
-  discordConnected = false;
+  discordConnected = signal<boolean>(false);
   settingsForm = new FormGroup({
     callsign: this.callsign,
     gridSquare: this.gridSquare,
@@ -111,8 +119,8 @@ export class UserSettingsComponent implements OnInit {
       this.callsign.setValue(settings.callsign || '');
       this.arrlMemberNumber.setValue(settings.arrlMemberNumber || '');
       this.discordUsername.setValue(settings.discordUsername || '');
-      this.discordConnected = !!(
-        settings.discordId && settings.discordUsername
+      this.discordConnected.set(
+        !!(settings.discordId && settings.discordUsername)
       );
       this.status.next(settings.status || '');
     });
@@ -243,7 +251,7 @@ export class UserSettingsComponent implements OnInit {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.discordConnected = false;
+          this.discordConnected.set(false);
           this.discordUsername.setValue('');
           this.snackBarService.open('Discord disconnected', undefined, {
             duration: 5000,

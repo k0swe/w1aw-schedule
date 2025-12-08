@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -20,6 +20,7 @@ import { Shift } from '../shared-constants';
   templateUrl: './schedule-cell.component.html',
   styleUrls: ['./schedule-cell.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatButton,
     MatIconButton,

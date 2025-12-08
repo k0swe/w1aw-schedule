@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   MatCard,
   MatCardContent,
@@ -19,6 +19,7 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
   templateUrl: './approval-tabs.component.html',
   styleUrls: ['./approval-tabs.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCard,
     MatCardHeader,

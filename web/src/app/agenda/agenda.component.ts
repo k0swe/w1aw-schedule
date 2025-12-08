@@ -1,6 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, inject } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import {
   MatCard,
@@ -27,6 +27,7 @@ import {
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCard,
     MatCardHeader,

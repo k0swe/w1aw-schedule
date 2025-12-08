@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { UserCredential } from '@angular/fire/auth';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
@@ -30,6 +30,7 @@ import { AuthenticationService } from '../authentication/authentication.service'
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatCard,
     MatCardHeader,

@@ -69,7 +69,7 @@
           />
         </mat-form-field>
         <div class="form-field-with-button">
-          @if (discordConnected) {
+          @if (discordConnected()) {
             <mat-form-field>
               <mat-label>Discord Account</mat-label>
               <input
