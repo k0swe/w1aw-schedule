@@ -37,6 +37,10 @@ For local development, download the config:
 firebase functions:config:get > functions/.runtimeconfig.json
 ```
 
+## AI Development Tools
+
+This project includes Angular CLI MCP (Model Context Protocol) server support for AI-assisted development. The MCP server provides tools for code analysis, migration assistance, and Angular best practices. See [docs/angular-mcp-tools.md](docs/angular-mcp-tools.md) for complete documentation of available tools including the `onpush_zoneless_migration` tool.
+
 ## Deployment
 
 The application is automatically deployed to Firebase Hosting using GitHub Actions with Workload
