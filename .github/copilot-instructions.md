@@ -35,8 +35,8 @@ This is the W1AW/0 Colorado Scheduler application for scheduling amateur radio o
 
 ### TypeScript/JavaScript
 - **Indentation**: 2 spaces (enforced by .editorconfig)
-- **Quotes**: Single quotes for imports/strings
-- **Line length**: 80 characters maximum (functions/)
+- **Quotes**: Single quotes for imports/strings (web/), double quotes (functions/)
+- **Line length**: 80 characters maximum (functions/), no strict limit (web/)
 - **Semicolons**: Required
 - Use Prettier for formatting with import sorting plugin
 - Follow strict TypeScript configuration (strict mode enabled)
@@ -179,7 +179,7 @@ firebase functions:config:set discord.redirect_uri="..."
 
 ## Important Notes
 
-- **Node Version**: 22 (specified in .nvmrc and package.json engines)
+- **Node Version**: 22+ (web requires >= 22, functions requires exactly 22)
 - **Default Event**: Code defaults to Colorado event for backward compatibility
 - **User Settings**: Global across all events (not event-specific)
 - **Admin Permissions**: Event-specific (admins manage only their events)
