@@ -1,5 +1,5 @@
 import { AsyncPipe, NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -34,7 +34,7 @@ export class AvatarComponent {
   private router = inject(Router);
 
   user$: Observable<User | null>;
-  photoUrl: string = '';
+  photoUrl = signal<string>('');
 
   constructor() {
     this.user$ = this.authService.user$;
@@ -43,9 +43,10 @@ export class AvatarComponent {
         return;
       }
       const firstLetter = u.email?.at(0);
-      this.photoUrl =
+      this.photoUrl.set(
         u?.photoURL ||
-        `https://ui-avatars.com/api/?name=${firstLetter}&background=c62828&color=fff`;
+          `https://ui-avatars.com/api/?name=${firstLetter}&background=c62828&color=fff`
+      );
     });
   }
 
