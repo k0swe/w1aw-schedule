@@ -418,3 +418,300 @@ describe("Multi-event support", () => {
     );
   });
 });
+
+describe("Per-event approval", () => {
+  const newEvent = "testEvent456";
+
+  beforeEach(async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const fs = context.firestore();
+      // Setup Colorado event with amanda as admin
+      await setDoc(doc(fs, `events/${colorado}`), {
+        admins: ["amanda"],
+      });
+      // Setup new test event with bob as admin
+      await setDoc(doc(fs, `events/${newEvent}`), {
+        name: "Another Test Event",
+        admins: ["bob"],
+      });
+      // Setup alice's user profile
+      await setDoc(doc(fs, "users/alice"), {
+        name: "Alice",
+        callsign: "AL1CE",
+        email: "alice@example.com",
+      });
+    });
+  });
+
+  it("should allow a user to create their own event approval application", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+    await assertSucceeds(
+      setDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+        status: "Provisional",
+        appliedAt: new Date(),
+      }),
+    );
+  });
+
+  it("should not allow a user to create approval for another user", async function () {
+    const bobDb = testEnv.authenticatedContext("bob").firestore();
+
+    await assertFails(
+      setDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`), {
+        status: "Provisional",
+        appliedAt: new Date(),
+      }),
+    );
+  });
+
+  it("should allow a user to read their own event approval status", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+    await assertSucceeds(
+      getDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`)),
+    );
+  });
+
+  it("should not allow a user to read another user's event approval status", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const bobDb = testEnv.authenticatedContext("bob").firestore();
+
+    await assertFails(
+      getDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`)),
+    );
+  });
+
+  it("should allow event admin to read user's approval status for their event", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      getDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`)),
+    );
+  });
+
+  it("should not allow admin from one event to read approval for another event", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${newEvent}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    // Amanda is admin for Colorado but not for newEvent
+
+    await assertFails(
+      getDoc(doc(amandaDb, `users/alice/eventApprovals/${newEvent}`)),
+    );
+  });
+
+  it("should not allow user to change their own approval status", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+    await assertFails(
+      updateDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+        status: "Approved",
+      }),
+    );
+  });
+
+  it("should allow event admin to approve user for their event", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`), {
+        status: "Approved",
+        approvedBy: "amanda",
+        statusChangedAt: new Date(),
+      }),
+    );
+  });
+
+  it("should allow event admin to decline user for their event", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`), {
+        status: "Declined",
+        declinedBy: "amanda",
+        statusChangedAt: new Date(),
+      }),
+    );
+  });
+
+  it("should not allow admin from one event to approve for another event", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${newEvent}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    // Amanda is admin for Colorado but not for newEvent
+
+    await assertFails(
+      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${newEvent}`), {
+        status: "Approved",
+        approvedBy: "amanda",
+        statusChangedAt: new Date(),
+      }),
+    );
+  });
+
+  it("should allow user to update non-protected fields in their approval", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date("2025-01-01"),
+          notes: "Initial application",
+        },
+      );
+    });
+
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+        notes: "Updated notes",
+      }),
+    );
+  });
+
+  it("should allow user to delete their own event approval", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+    await assertSucceeds(
+      deleteDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`)),
+    );
+  });
+
+  it("should not allow user to delete another user's event approval", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Provisional",
+          appliedAt: new Date(),
+        },
+      );
+    });
+
+    const bobDb = testEnv.authenticatedContext("bob").firestore();
+
+    await assertFails(
+      deleteDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`)),
+    );
+  });
+});
