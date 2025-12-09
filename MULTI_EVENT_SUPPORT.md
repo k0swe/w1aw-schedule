@@ -60,7 +60,34 @@ The shift update rules use `isAdminForEvent(eventId)` to ensure admins can only 
 
 ## User Settings
 
-User settings (profiles, approval status, etc.) are global across all events. A user approved for one event can participate in any event. This design decision was made to allow users to join multiple events without needing separate approvals.
+User settings (profiles such as name, callsign, email, etc.) are global across all events and stored in the `/users/{userId}` collection.
+
+### Approval Status (Per-Event)
+
+**New Design (In Progress):** Approval status is managed on a per-event basis to allow different organizers to independently approve operators for their events. This is implemented using a subcollection:
+
+- **Collection:** `/users/{userId}/eventApprovals/{eventId}`
+- **Fields:**
+  - `status`: 'Provisional' | 'Approved' | 'Declined'
+  - `approvedBy`: UID of admin who approved (optional)
+  - `declinedBy`: UID of admin who declined (optional)
+  - `appliedAt`: Timestamp when user applied
+  - `statusChangedAt`: Timestamp of last status change (optional)
+
+**Migration Strategy:**
+- **Phase 1 (Current):** New data structure and Firestore rules are in place. The legacy global `status` field in `/users/{userId}` is preserved for backward compatibility.
+- **Phase 2 (Future):** Update frontend and backend code to read/write per-event approvals. Migrate existing approval data from global to per-event structure.
+- **Phase 3 (Future):** Remove legacy global `status` field once all code is migrated.
+
+### Firestore Security Rules
+
+Approval security is enforced through Firestore rules:
+- Users can create their own event approval applications
+- Users can read their own approval status for any event
+- Users can update non-protected fields (e.g., notes) but cannot change status, approvedBy, declinedBy, or statusChangedAt
+- Event-specific admins can read and update approval status only for their events
+- Admins from one event cannot modify approvals for another event
+- Users can withdraw (delete) their own applications
 
 ## Backward Compatibility
 
@@ -74,18 +101,38 @@ The implementation maintains full backward compatibility:
 
 ## Known Limitations
 
-1. **User Status Changes**: The `userStatusChanged` function currently only clears shifts for the default Colorado event when a user is declined. In a true multi-event system, this would need to clear shifts across all events.
+1. **User Status Changes**: The `userStatusChanged` function currently only clears shifts for the default Colorado event when a user is declined. With per-event approvals, this will need to clear shifts only for the specific event where the user was declined.
 
-2. **Event Discovery**: There is currently no UI for users to discover or list available events. Users must know the eventId to access a specific event's schedule.
+2. **Approval Status Migration**: The system currently supports both the legacy global `status` field and the new per-event approval structure. Frontend and backend code still use the legacy field. Full migration is planned in future phases.
 
-3. **Cross-Event Admin Privileges**: The default `isAdmin()` function used in user management checks admin status only for the Colorado event. Admins of other events cannot perform user management actions.
+3. **Event Discovery**: There is currently no UI for users to discover or list available events. Users must know the eventId to access a specific event's schedule.
+
+4. **Cross-Event Admin Privileges**: The default `isAdmin()` function used in user management checks admin status only for the Colorado event. With per-event approvals, user management is inherently event-specific, and admins can only approve users for their own events.
 
 ## Future Enhancements
 
 To fully support multiple independent events, consider:
 
-1. Add an event listing/discovery page
-2. Update user status change logic to clear shifts across all events
-3. Implement event-specific user approval workflows
-4. Add navigation UI to switch between events
-5. Store user's event memberships/preferences
+1. **Complete Per-Event Approval Migration:**
+   - Update frontend components to use per-event approvals
+   - Update backend functions to use per-event approvals
+   - Migrate existing approval data from global to per-event structure
+   - Remove legacy global `status` field
+
+2. **Event Discovery:**
+   - Add an event listing/discovery page
+   - Add navigation UI to switch between events
+
+3. **User Experience:**
+   - Show user's approval status across all events they've applied to
+   - Allow users to apply for multiple events easily
+   - Store user's event memberships/preferences
+
+4. **Admin Experience:**
+   - Provide event-specific approval dashboards
+   - Show approval statistics per event
+   - Notify admins when users apply for their events
+
+5. **Shift Management:**
+   - Update user status change logic to clear shifts only for the specific event where status changed
+   - Consider implementing event-specific multiShift settings
