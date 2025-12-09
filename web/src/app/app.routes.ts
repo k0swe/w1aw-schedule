@@ -55,7 +55,7 @@ export const routes: Routes = [
     canActivate: [AuthenticationGuard, AdminGuard],
   },
   {
-    path: 'approvals/:slug',
+    path: 'events/:slug/approvals',
     loadComponent: () =>
       import('./approval-tabs/approval-tabs.component').then(
         (m) => m.ApprovalTabsComponent,
