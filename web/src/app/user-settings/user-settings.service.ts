@@ -6,6 +6,7 @@ import {
   collection,
   collectionData,
   collectionGroup,
+  collectionSnapshots,
   deleteDoc,
   doc,
   docData,
@@ -15,7 +16,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, from, mergeMap, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -158,33 +159,33 @@ export class UserSettingsService {
     eventId: string,
     status: string,
   ): Observable<UserSettings[]> {
-    // Use collection group query to get all users' approvals for this event
+    // Use collection group query to get all users' approvals
     const approvalsGroup = collectionGroup(this.firestore, 'eventApprovals');
     const q = query(approvalsGroup, where('status', '==', status));
 
-    return collectionData(q, { idField: 'approvalId' }).pipe(
-      switchMap((approvals: any[]) => {
-        // Filter for this specific event and get user details
-        const eventApprovals = approvals.filter(
-          (approval) => approval.eventId === eventId,
-        );
+    return collectionSnapshots(q).pipe(
+      switchMap((snapshots) => {
+        // Filter for this specific event and extract user IDs
+        const userIds = snapshots
+          .filter((snapshot) => snapshot.id === eventId)
+          .map((snapshot) => {
+            // Extract userId from the path: users/{userId}/eventApprovals/{eventId}
+            const pathParts = snapshot.ref.path.split('/');
+            return pathParts[1]; // users/{userId}/eventApprovals/{eventId}
+          });
 
-        if (eventApprovals.length === 0) {
+        if (userIds.length === 0) {
           return of([]);
         }
 
-        // Get user details for each approval
-        const userObservables = eventApprovals.map((approval) => {
-          // Extract userId from the approval document path
-          const userId = approval.approvalId.split('/')[0];
+        // Get user details for each userId
+        const userObservables = userIds.map((userId) => {
           const userDocRef = doc(this.firestore, 'users', userId);
           return docData(userDocRef).pipe(
-            switchMap((userData) =>
-              of({
-                ...(userData as UserSettings),
-                id: userId,
-              } as UserSettings),
-            ),
+            map((userData) => ({
+              ...(userData as UserSettings),
+              id: userId,
+            })),
           );
         });
 
