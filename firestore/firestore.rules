@@ -30,6 +30,26 @@ service cloud.firestore {
       allow read:   if loggedIn() && (usersOwnDoc() || isAdmin());
       allow update: if loggedIn() && (usersOwnDoc() && notUpdatingStatus()) || isAdmin();
       allow delete: if loggedIn() && usersOwnDoc();
+      
+      // Per-event approval subcollection
+      match /eventApprovals/{eventId} {
+        function usersOwnApproval() {
+          return request.auth.uid == userId;
+        }
+        function notUpdatingApprovalFields() {
+          return !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['status', 'approvedBy', 'declinedBy', 'statusChangedAt']);
+        }
+        
+        // Users can create their own approval application for an event
+        allow create: if loggedIn() && usersOwnApproval();
+        // Users can read their own approval status
+        allow read:   if loggedIn() && (usersOwnApproval() || isAdminForEvent(eventId));
+        // Users can update their approval (e.g., appliedAt) but not status fields
+        allow update: if loggedIn() && ((usersOwnApproval() && notUpdatingApprovalFields()) || isAdminForEvent(eventId));
+        // Users can withdraw their application
+        allow delete: if loggedIn() && usersOwnApproval();
+      }
     }
 
     match /events/{eventId} {

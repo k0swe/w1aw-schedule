@@ -36,6 +36,14 @@ export interface EventInfoWithId extends EventInfo {
   id: string;
 }
 
+export interface EventApproval {
+  status: 'Applied' | 'Approved' | 'Declined';
+  approvedBy?: string;
+  declinedBy?: string;
+  appliedAt: Timestamp;
+  statusChangedAt?: Timestamp;
+}
+
 export interface Shift {
   time: Timestamp;
   band: string;
