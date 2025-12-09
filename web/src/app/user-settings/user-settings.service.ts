@@ -15,7 +15,14 @@ import {
   updateDoc,
   where,
 } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable, from, mergeMap, of } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  firstValueFrom,
+  from,
+  mergeMap,
+  of,
+} from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
@@ -157,7 +164,7 @@ export class UserSettingsService {
   // Admin only - Query event approvals by status for a specific event
   private getEventApprovalsByStatus(
     eventId: string,
-    status: string,
+    status: 'Applied' | 'Approved' | 'Declined',
   ): Observable<UserSettings[]> {
     // Use collection group query to get all users' approvals
     const approvalsGroup = collectionGroup(this.firestore, 'eventApprovals');
@@ -171,7 +178,15 @@ export class UserSettingsService {
           .map((snapshot) => {
             // Extract userId from the path: users/{userId}/eventApprovals/{eventId}
             const pathParts = snapshot.ref.path.split('/');
-            return pathParts[1]; // users/{userId}/eventApprovals/{eventId}
+            // Validate path structure
+            if (
+              pathParts.length !== 4 ||
+              pathParts[0] !== 'users' ||
+              pathParts[2] !== 'eventApprovals'
+            ) {
+              throw new Error(`Invalid approval document path: ${snapshot.ref.path}`);
+            }
+            return pathParts[1];
           });
 
         if (userIds.length === 0) {
@@ -192,9 +207,7 @@ export class UserSettingsService {
         // Combine all user observables
         return from(
           Promise.all(
-            userObservables.map((obs) =>
-              obs.toPromise().then((val) => val as UserSettings),
-            ),
+            userObservables.map((obs) => firstValueFrom(obs)),
           ),
         );
       }),

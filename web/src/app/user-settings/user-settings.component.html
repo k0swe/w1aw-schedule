@@ -138,10 +138,12 @@
         <div class="event-row">
           <div class="event-info">
             <strong>{{ event.name }}</strong>
-            <span class="event-dates">
-              {{ event.startTime.toDate() | date: 'short' }} -
-              {{ event.endTime.toDate() | date: 'short' }}
-            </span>
+            @if (event.startTime && event.endTime) {
+              <span class="event-dates">
+                {{ event.startTime.toDate() | date: 'short' }} -
+                {{ event.endTime.toDate() | date: 'short' }}
+              </span>
+            }
           </div>
           <div class="event-status">
             @if (event.approvalStatus === 'Applied') {
