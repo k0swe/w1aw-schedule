@@ -63,6 +63,7 @@ export class ApprovalListComponent implements OnInit, OnDestroy {
   @Input() userList: Observable<UserSettings[]> = of([]);
   @Input() displayColumns = ['name', 'callsign', 'email'];
   @Input() emptyMessage = 'No users to display';
+  @Input() eventId?: string;
   userDataSource = new MatTableDataSource<UserSettings>();
   @ViewChild(MatSort, { static: true }) sort = new MatSort();
   userListSubscription: Subscription | null = null;
@@ -80,11 +81,11 @@ export class ApprovalListComponent implements OnInit, OnDestroy {
   }
 
   approve(id: string) {
-    this.userSettingsService.approve(id).subscribe();
+    this.userSettingsService.approve(id, this.eventId).subscribe();
   }
 
   decline(id: string) {
-    this.userSettingsService.decline(id).subscribe();
+    this.userSettingsService.decline(id, this.eventId).subscribe();
   }
 
   delete(id: string) {

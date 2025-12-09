@@ -1,12 +1,16 @@
 <mat-card>
   <mat-card-header>
     <mat-card-title>User Approvals</mat-card-title>
+    @if (eventInfo$ | async; as eventInfo) {
+      <mat-card-subtitle>{{ eventInfo.name }}</mat-card-subtitle>
+    }
   </mat-card-header>
   <mat-card-content>
     <mat-tab-group>
       <mat-tab label="Pending">
         <kel-approval-list
           [userList]="provisionalUsers$"
+          [eventId]="eventId()"
           [displayColumns]="[
             'name',
             'callsign',
@@ -23,6 +27,7 @@
       <mat-tab label="Approved">
         <kel-approval-list
           [userList]="approvedUsers$"
+          [eventId]="eventId()"
           [displayColumns]="[
             'name',
             'callsign',
@@ -39,6 +44,7 @@
       <mat-tab label="Declined">
         <kel-approval-list
           [userList]="declinedUsers$"
+          [eventId]="eventId()"
           [displayColumns]="[
             'name',
             'callsign',

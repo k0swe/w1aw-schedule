@@ -124,4 +124,51 @@
       </mat-card-actions>
     </mat-card>
   </form>
+
+  <mat-card appearance="outlined" class="events-card">
+    <mat-card-header>
+      <mat-card-title>Event Applications</mat-card-title>
+      <mat-card-subtitle>
+        Apply for events to reserve shifts and participate
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @for (event of eventsWithStatus(); track event.id) {
+        <div class="event-row">
+          <div class="event-info">
+            <strong>{{ event.name }}</strong>
+            <span class="event-dates">
+              {{ event.startTime.toDate() | date: 'short' }} -
+              {{ event.endTime.toDate() | date: 'short' }}
+            </span>
+          </div>
+          <div class="event-status">
+            @if (event.approvalStatus === 'Applied') {
+              <span class="status-badge pending">Pending Approval</span>
+              <button
+                mat-button
+                color="warn"
+                (click)="withdrawFromEvent(event.id)"
+              >
+                Withdraw
+              </button>
+            } @else if (event.approvalStatus === 'Approved') {
+              <span class="status-badge approved">Approved</span>
+            } @else if (event.approvalStatus === 'Declined') {
+              <span class="status-badge declined">Declined</span>
+            } @else {
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="applyForEvent(event.id)"
+              >
+                Apply
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
 </div>
