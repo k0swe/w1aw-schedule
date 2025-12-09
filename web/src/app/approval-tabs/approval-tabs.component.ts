@@ -54,10 +54,21 @@ export class ApprovalTabsComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   eventId = signal<string>(COLORADO_DOC_ID);
-  eventInfo$!: Observable<EventInfo | undefined>;
-  provisionalUsers$!: Observable<UserSettings[]>;
-  approvedUsers$!: Observable<UserSettings[]>;
-  declinedUsers$!: Observable<UserSettings[]>;
+  eventInfo$: Observable<EventInfo | undefined>;
+  provisionalUsers$: Observable<UserSettings[]>;
+  approvedUsers$: Observable<UserSettings[]>;
+  declinedUsers$: Observable<UserSettings[]>;
+
+  constructor() {
+    // Initialize observables with default Colorado event
+    this.eventInfo$ = this.eventInfoService.getEventInfo(COLORADO_DOC_ID);
+    this.provisionalUsers$ =
+      this.userSettingsService.getProvisionalUsers(COLORADO_DOC_ID);
+    this.approvedUsers$ =
+      this.userSettingsService.getApprovedUsers(COLORADO_DOC_ID);
+    this.declinedUsers$ =
+      this.userSettingsService.getDeclinedUsers(COLORADO_DOC_ID);
+  }
 
   ngOnInit(): void {
     // Get event ID from route parameter (slug) or default to Colorado
