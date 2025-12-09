@@ -10,7 +10,7 @@ service cloud.firestore {
       let admins = get(/databases/$(database)/documents/events/jZbFyscc23zjkEGRuPAI).data.admins;
       return request.auth.uid != null && admins != null && request.auth.uid in admins;
     }
-    
+
     function isAdminForEvent(eventId) {
       // Check admin status for a specific event
       let admins = get(/databases/$(database)/documents/events/$(eventId)).data.admins;
@@ -30,7 +30,7 @@ service cloud.firestore {
       allow read:   if loggedIn() && (usersOwnDoc() || isAdmin());
       allow update: if loggedIn() && (usersOwnDoc() && notUpdatingStatus()) || isAdmin();
       allow delete: if loggedIn() && usersOwnDoc();
-      
+
       // Per-event approval subcollection
       match /eventApprovals/{eventId} {
         function usersOwnApproval() {
@@ -43,10 +43,12 @@ service cloud.firestore {
         function isAdminForThisEvent() {
           // For collection group queries, check the eventId field in the document data
           // For direct queries, use the path parameter eventId
-          let docEventId = resource.data.eventId != null ? resource.data.eventId : eventId;
+          let docEventId = (resource != null && resource.data != null && 'eventId' in resource.data)
+            ? resource.data.eventId
+            : eventId;
           return isAdminForEvent(docEventId);
         }
-        
+
         // Users can create their own approval application for an event
         allow create: if loggedIn() && usersOwnApproval();
         // Users can read their own approval status
