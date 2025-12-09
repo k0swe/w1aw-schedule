@@ -22,7 +22,7 @@ The application is transitioning from a single global approval status per user t
   - (profile fields remain: callsign, email, name, etc.)
   
 /users/{userId}/eventApprovals/{eventId}
-  - status: 'Provisional' | 'Approved' | 'Declined'
+  - status: 'Applied' | 'Approved' | 'Declined'
   - approvedBy: string (admin uid)
   - declinedBy: string (admin uid)
   - appliedAt: Timestamp
@@ -72,6 +72,12 @@ The application is transitioning from a single global approval status per user t
    - `applyForEvent(eventId)` - Create new approval application
    - `withdrawFromEvent(eventId)` - Remove approval application
    - Modify `getProvisionalUsers()`, `getApprovedUsers()`, `getDeclinedUsers()` to accept eventId parameter
+   - **Note:** Admin queries will need to use collection group queries to get all users' approvals for a specific event:
+     ```typescript
+     collectionGroup(this.firestore, 'eventApprovals')
+       .where('status', '==', status)
+     ```
+   - This may require a composite index which Firestore will prompt to create on first query
 
 2. Update `ApprovalTabsComponent`:
    - Accept eventId as input (from route or event context)
@@ -136,7 +142,7 @@ The new rules ensure:
 
 ### Data Validation
 Frontend and backend should validate:
-- Status values are one of: 'Provisional', 'Approved', 'Declined'
+- Status values are one of: 'Applied', 'Approved', 'Declined'
 - appliedAt timestamp is always set
 - statusChangedAt is set when status changes
 - approvedBy is set when status is 'Approved'

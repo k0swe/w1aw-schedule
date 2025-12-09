@@ -150,7 +150,7 @@ describe("User profiles", () => {
         name: "Alice",
         callsign: "t3st",
         gridSquare: "DM33",
-        status: "Provisional",
+        status: "Applied",
       });
     });
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
@@ -173,7 +173,7 @@ it("should allow admins to write multi-shift status", async () => {
       name: "Alice",
       callsign: "t3st",
       gridSquare: "DM33",
-      status: "Provisional",
+      status: "Applied",
       multiShift: false,
     });
   });
@@ -448,7 +448,7 @@ describe("Per-event approval", () => {
 
     await assertSucceeds(
       setDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
-        status: "Provisional",
+        status: "Applied",
         appliedAt: new Date(),
       }),
     );
@@ -459,7 +459,7 @@ describe("Per-event approval", () => {
 
     await assertFails(
       setDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`), {
-        status: "Provisional",
+        status: "Applied",
         appliedAt: new Date(),
       }),
     );
@@ -473,7 +473,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -494,7 +494,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -515,7 +515,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -536,7 +536,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${newEvent}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -558,7 +558,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -581,7 +581,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -606,7 +606,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -631,7 +631,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${newEvent}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -657,7 +657,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date("2025-01-01"),
           notes: "Initial application",
         },
@@ -681,7 +681,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );
@@ -702,7 +702,7 @@ describe("Per-event approval", () => {
           `users/alice/eventApprovals/${colorado}`,
         ),
         {
-          status: "Provisional",
+          status: "Applied",
           appliedAt: new Date(),
         },
       );

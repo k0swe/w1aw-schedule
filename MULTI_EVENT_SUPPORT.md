@@ -68,7 +68,7 @@ User settings (profiles such as name, callsign, email, etc.) are global across a
 
 - **Collection:** `/users/{userId}/eventApprovals/{eventId}`
 - **Fields:**
-  - `status`: 'Provisional' | 'Approved' | 'Declined'
+  - `status`: 'Applied' | 'Approved' | 'Declined'
   - `approvedBy`: UID of admin who approved (optional)
   - `declinedBy`: UID of admin who declined (optional)
   - `appliedAt`: Timestamp when user applied

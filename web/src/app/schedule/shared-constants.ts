@@ -37,7 +37,7 @@ export interface EventInfoWithId extends EventInfo {
 }
 
 export interface EventApproval {
-  status: 'Provisional' | 'Approved' | 'Declined';
+  status: 'Applied' | 'Approved' | 'Declined';
   approvedBy?: string;
   declinedBy?: string;
   appliedAt: Timestamp;
