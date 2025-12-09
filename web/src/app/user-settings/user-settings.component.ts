@@ -149,16 +149,13 @@ export class UserSettingsComponent implements OnInit {
     this.settingsService.init();
 
     // Load all events and user's event approvals
-    this.settingsService
-      .getAllEvents()
-      .pipe(take(1))
-      .subscribe((events) => {
-        // Sort events chronologically by startTime
-        const sortedEvents = events.sort(
-          (a, b) => a.startTime.toMillis() - b.startTime.toMillis(),
-        );
-        this.events.set(sortedEvents);
-      });
+    this.settingsService.getAllEvents().subscribe((events) => {
+      // Sort events chronologically by startTime
+      const sortedEvents = events.sort(
+        (a, b) => a.startTime.toMillis() - b.startTime.toMillis(),
+      );
+      this.events.set(sortedEvents);
+    });
 
     this.settingsService.getUserEventApprovals().subscribe((approvals) => {
       this.userApprovals.set(approvals);
