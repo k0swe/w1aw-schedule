@@ -42,6 +42,7 @@ export interface EventApproval {
   declinedBy?: string;
   appliedAt: Timestamp;
   statusChangedAt?: Timestamp;
+  eventId?: string; // Added for collection group query filtering
 }
 
 export interface Shift {

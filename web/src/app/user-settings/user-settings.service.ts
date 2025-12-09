@@ -139,6 +139,7 @@ export class UserSettingsService {
           setDoc(docRef, {
             status: 'Applied',
             appliedAt: Timestamp.now(),
+            eventId: eventId, // Store eventId as a field for collection group queries
           }),
         );
       }),
@@ -166,28 +167,33 @@ export class UserSettingsService {
     eventId: string,
     status: 'Applied' | 'Approved' | 'Declined',
   ): Observable<UserSettings[]> {
-    // Use collection group query to get all users' approvals
+    // Use collection group query to get all users' approvals for a specific event
     const approvalsGroup = collectionGroup(this.firestore, 'eventApprovals');
-    const q = query(approvalsGroup, where('status', '==', status));
+    // Filter by eventId AND status to ensure we only access documents we have permission for
+    const q = query(
+      approvalsGroup,
+      where('eventId', '==', eventId),
+      where('status', '==', status),
+    );
 
     return collectionSnapshots(q).pipe(
       switchMap((snapshots) => {
-        // Filter for this specific event and extract user IDs
-        const userIds = snapshots
-          .filter((snapshot) => snapshot.id === eventId)
-          .map((snapshot) => {
-            // Extract userId from the path: users/{userId}/eventApprovals/{eventId}
-            const pathParts = snapshot.ref.path.split('/');
-            // Validate path structure
-            if (
-              pathParts.length !== 4 ||
-              pathParts[0] !== 'users' ||
-              pathParts[2] !== 'eventApprovals'
-            ) {
-              throw new Error(`Invalid approval document path: ${snapshot.ref.path}`);
-            }
-            return pathParts[1];
-          });
+        // Extract user IDs from the document paths
+        const userIds = snapshots.map((snapshot) => {
+          // Extract userId from the path: users/{userId}/eventApprovals/{eventId}
+          const pathParts = snapshot.ref.path.split('/');
+          // Validate path structure
+          if (
+            pathParts.length !== 4 ||
+            pathParts[0] !== 'users' ||
+            pathParts[2] !== 'eventApprovals'
+          ) {
+            throw new Error(
+              `Invalid approval document path: ${snapshot.ref.path}`,
+            );
+          }
+          return pathParts[1];
+        });
 
         if (userIds.length === 0) {
           return of([]);
