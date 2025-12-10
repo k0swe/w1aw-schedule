@@ -11,6 +11,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
@@ -41,22 +42,23 @@ export class ScheduleService {
     userDetails: UserSettings,
     eventId: string = COLORADO_DOC_ID,
   ): Observable<void> {
-    if (
-      !!shiftToUpdate.reservedBy &&
-      !this.authenticationService.userIsAdmin()
-    ) {
-      // trying to take someone else's shift?
-      return of(undefined);
-    }
-    const sid = shiftId({
-      time: shiftToUpdate.time,
-      band: shiftToUpdate.band,
-      mode: shiftToUpdate.mode,
-    });
-    const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
-    const updateData = { reservedBy: userId, reservedDetails: userDetails };
+    return this.authenticationService.userIsAdmin(eventId).pipe(
+      switchMap((isAdmin) => {
+        if (!!shiftToUpdate.reservedBy && !isAdmin) {
+          // trying to take someone else's shift?
+          return of(undefined);
+        }
+        const sid = shiftId({
+          time: shiftToUpdate.time,
+          band: shiftToUpdate.band,
+          mode: shiftToUpdate.mode,
+        });
+        const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
+        const updateData = { reservedBy: userId, reservedDetails: userDetails };
 
-    return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
+        return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
+      })
+    );
   }
 
   cancelShift(
@@ -64,22 +66,23 @@ export class ScheduleService {
     userId: string,
     eventId: string = COLORADO_DOC_ID,
   ): Observable<void> {
-    if (
-      shiftToUpdate.reservedBy != userId &&
-      !this.authenticationService.userIsAdmin()
-    ) {
-      // trying to cancel someone else's shift?
-      return of(undefined);
-    }
-    const sid = shiftId({
-      time: shiftToUpdate.time,
-      band: shiftToUpdate.band,
-      mode: shiftToUpdate.mode,
-    });
-    const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
-    const updateData = { reservedBy: null, reservedDetails: null };
+    return this.authenticationService.userIsAdmin(eventId).pipe(
+      switchMap((isAdmin) => {
+        if (shiftToUpdate.reservedBy !== userId && !isAdmin) {
+          // trying to cancel someone else's shift?
+          return of(undefined);
+        }
+        const sid = shiftId({
+          time: shiftToUpdate.time,
+          band: shiftToUpdate.band,
+          mode: shiftToUpdate.mode,
+        });
+        const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
+        const updateData = { reservedBy: null, reservedDetails: null };
 
-    return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
+        return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
+      })
+    );
   }
 
   findUserShifts(

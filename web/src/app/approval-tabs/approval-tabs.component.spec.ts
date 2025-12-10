@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { Firestore } from '@angular/fire/firestore';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
-import { ApprovalTabsComponent } from './approval-tabs.component';
-import { UserSettingsService } from '../user-settings/user-settings.service';
 import { EventInfoService } from '../event-info/event-info.service';
+import { UserSettingsService } from '../user-settings/user-settings.service';
+import { ApprovalTabsComponent } from './approval-tabs.component';
 
 describe('ApprovalTabsComponent', () => {
   let component: ApprovalTabsComponent;

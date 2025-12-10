@@ -17,12 +17,13 @@ import {
 import {
   BehaviorSubject,
   Observable,
+  combineLatest,
   firstValueFrom,
   from,
   mergeMap,
   of,
 } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -54,12 +55,20 @@ export class UserSettingsService {
           return docData(docRef) as Observable<UserSettings | undefined>;
         }),
       )
-      .subscribe((settings) => {
-        if (settings) {
-          this.settings$.next(settings);
-        } else {
-          this.createUserDocument();
-        }
+      .subscribe({
+        next: (settings) => {
+          if (settings) {
+            this.settings$.next(settings);
+          } else {
+            this.createUserDocument();
+          }
+        },
+        error: (error) => {
+          console.error(
+            '[UserSettingsService] Error loading user settings:',
+            error,
+          );
+        },
       });
   }
 
@@ -101,7 +110,9 @@ export class UserSettingsService {
   }
 
   // Get user's approval for a specific event
-  public getUserEventApproval(eventId: string): Observable<EventApproval | undefined> {
+  public getUserEventApproval(
+    eventId: string,
+  ): Observable<EventApproval | undefined> {
     return this.authService.user$.pipe(
       switchMap((user) => {
         if (user == null) {
@@ -111,7 +122,12 @@ export class UserSettingsService {
           this.firestore,
           `events/${eventId}/approvals/${user.uid}`,
         );
-        return docData(docRef) as Observable<EventApproval | undefined>;
+        return (docData(docRef) as Observable<EventApproval | undefined>).pipe(
+          catchError(() => {
+            // Handle permission errors gracefully (document doesn't exist or no access)
+            return of(undefined);
+          }),
+        );
       }),
     );
   }
@@ -150,17 +166,23 @@ export class UserSettingsService {
                   }
                   return null;
                 }),
+                catchError(() => {
+                  // Handle permission errors gracefully (document doesn't exist or no access)
+                  return of(null);
+                }),
               );
             });
-            // Combine all and filter out nulls
-            return from(
-              Promise.all(approvalObservables.map((obs) => firstValueFrom(obs))),
-            ).pipe(
-              map((approvals) =>
-                approvals.filter((a) => a !== null) as (EventApproval & {
+            // Combine all observables and filter out nulls
+            // Using combineLatest keeps the observable alive and reactive to changes
+            if (approvalObservables.length === 0) {
+              return of([]);
+            }
+            return combineLatest(approvalObservables).pipe(
+              map((approvals) => {
+                return approvals.filter((a) => a !== null) as (EventApproval & {
                   eventId: string;
-                })[],
-              ),
+                })[];
+              }),
             );
           }),
         );
@@ -179,11 +201,20 @@ export class UserSettingsService {
           this.firestore,
           `events/${eventId}/approvals/${user.uid}`,
         );
-        return from(
-          setDoc(docRef, {
-            status: 'Applied',
-            appliedAt: Timestamp.now(),
-            userId: user.uid, // Store userId as a field for easier querying
+        const approvalData = {
+          status: 'Applied',
+          appliedAt: Timestamp.now(),
+          userId: user.uid, // Store userId as a field for easier querying
+        };
+        return from(setDoc(docRef, approvalData)).pipe(
+          map(() => undefined),
+          catchError((error) => {
+            console.error(
+              '[UserSettingsService] Error applying for event:',
+              eventId,
+              error,
+            );
+            throw error; // Re-throw so component can handle it
           }),
         );
       }),
@@ -201,7 +232,17 @@ export class UserSettingsService {
           this.firestore,
           `events/${eventId}/approvals/${user.uid}`,
         );
-        return from(deleteDoc(docRef));
+        return from(deleteDoc(docRef)).pipe(
+          map(() => undefined),
+          catchError((error) => {
+            console.error(
+              '[UserSettingsService] Error withdrawing from event:',
+              eventId,
+              error,
+            );
+            throw error; // Re-throw so component can handle it
+          }),
+        );
       }),
     );
   }
@@ -265,10 +306,7 @@ export class UserSettingsService {
   public approve(userId: string, eventId: string): Observable<void> {
     const adminId = this.authService.user$.getValue()!.uid;
 
-    const docRef = doc(
-      this.firestore,
-      `events/${eventId}/approvals/${userId}`,
-    );
+    const docRef = doc(this.firestore, `events/${eventId}/approvals/${userId}`);
     return from(
       updateDoc(docRef, {
         status: 'Approved',
@@ -282,10 +320,7 @@ export class UserSettingsService {
   public decline(userId: string, eventId: string): Observable<void> {
     const adminId = this.authService.user$.getValue()!.uid;
 
-    const docRef = doc(
-      this.firestore,
-      `events/${eventId}/approvals/${userId}`,
-    );
+    const docRef = doc(this.firestore, `events/${eventId}/approvals/${userId}`);
     return from(
       updateDoc(docRef, {
         status: 'Declined',

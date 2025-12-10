@@ -1,11 +1,11 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
 import { Auth } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { UserSettingsService } from './user-settings.service';
 import { AuthenticationService } from '../authentication/authentication.service';
+import { UserSettingsService } from './user-settings.service';
 
 describe('UserSettingsService', () => {
   let service: UserSettingsService;
