@@ -16,85 +16,72 @@ The application is transitioning from a single global approval status per user t
   - declinedBy: string (admin uid)
 ```
 
-### After (New)
+### After (New - Implemented)
 ```
 /users/{userId}
   - (profile fields remain: callsign, email, name, etc.)
+  - (status field deprecated but still present)
   
-/users/{userId}/eventApprovals/{eventId}
+/events/{eventId}/approvals/{userId}
   - status: 'Applied' | 'Approved' | 'Declined'
   - approvedBy: string (admin uid)
   - declinedBy: string (admin uid)
   - appliedAt: Timestamp
   - statusChangedAt: Timestamp
+  - userId: string (for easier querying)
 ```
 
 ## Migration Phases
 
-### Phase 1: Foundation (COMPLETED)
-**Status:** ✅ Completed in this PR
+### Phase 1: Foundation and Frontend (COMPLETED)
+**Status:** ✅ Completed
 
 **Changes:**
-- Added `EventApproval` interface to `functions/src/shared-constants.ts`
-- Updated Firestore security rules to support per-event approvals
-- Added comprehensive test suite for new rules
-- Updated MULTI_EVENT_SUPPORT.md documentation
+- Added `EventApproval` interface to both `functions/src/shared-constants.ts` and `web/src/app/schedule/shared-constants.ts`
+- Updated Firestore security rules to support per-event approvals at `/events/{eventId}/approvals/{userId}`
+- Updated all test cases for new rules and structure
+- Implemented frontend service changes in `UserSettingsService`
+- Updated `ApprovalTabsComponent` and `ApprovalListComponent` to require eventId
+- Removed backward compatibility - eventId is now required
 
-**Backward Compatibility:**
-- Legacy global `status` field remains in place
-- Existing code continues to work unchanged
-- Both structures can coexist
+**Breaking Changes:**
+- No backward compatibility with old structure
+- All approval operations now require explicit eventId
+- Admin queries simplified (no collection group needed)
 
 ### Phase 2: Backend Functions (TODO)
 **Status:** 🔜 Future PR
 
 **Required Changes:**
 1. Update `userStatusChanged.ts` to handle per-event approvals
-   - Listen for changes to `/users/{userId}/eventApprovals/{eventId}`
+   - Listen for changes to `/events/{eventId}/approvals/{userId}` (new path)
    - Clear shifts only for the specific event where status changed
    - Send approval emails per event
 
 2. Update any other functions that read approval status
    - Modify to accept and use eventId parameter
-   - Query eventApprovals subcollection instead of user document
+   - Query approvals collection under events instead of user document
 
-3. Add new functions as needed:
-   - `createEventApproval` - Initialize approval when user applies
-   - `queryEventApprovals` - Admin function to list approvals per event
+3. Consider new functions as needed:
+   - Function to batch migrate old approval data to new structure
+   - Function to sync legacy status field (if keeping for compatibility)
 
-### Phase 3: Frontend Services (TODO)
+### Phase 3: Additional Frontend Updates (TODO)
 **Status:** 🔜 Future PR
 
 **Required Changes:**
-1. Update `UserSettingsService`:
-   - Add methods to read/write event-specific approvals
-   - `getEventApproval(eventId)` - Get user's approval for an event
-   - `applyForEvent(eventId)` - Create new approval application
-   - `withdrawFromEvent(eventId)` - Remove approval application
-   - Modify `getProvisionalUsers()`, `getApprovedUsers()`, `getDeclinedUsers()` to accept eventId parameter
-   - **Note:** Admin queries will need to use collection group queries to get all users' approvals for a specific event:
-     ```typescript
-     collectionGroup(this.firestore, 'eventApprovals')
-       .where('status', '==', status)
-     ```
-   - This may require a composite index which Firestore will prompt to create on first query
-
-2. Update `ApprovalTabsComponent`:
-   - Accept eventId as input (from route or event context)
-   - Pass eventId to service methods
-   - Display event-specific approval lists
-
-3. Update `ScheduleCellComponent`:
+1. Update `ScheduleCellComponent`:
    - Check event-specific approval status for the current event
-   - Update line 113: `this.userSettings$.getValue()?.status` to check event approval
+   - Update line 113: `this.userSettings$.getValue()?.status` to check event approval using `getUserEventApproval(eventId)`
 
-4. Update `UserSettingsComponent`:
+2. Update `UserSettingsComponent`:
    - Show all events user has applied to
    - Allow user to apply for new events
    - Display approval status per event
+   - Use the new `getUserEventApprovals()` method
 
-### Phase 4: Data Migration (TODO)
-**Status:** 🔜 Future PR
+### Phase 4: Data Migration (CRITICAL - TODO)
+**Status:** 🔜 URGENT - Required for production
 
 **Required Changes:**
 1. Create migration script/function:
@@ -102,18 +89,22 @@ The application is transitioning from a single global approval status per user t
    async function migrateUserApprovals() {
      // For each user with a status field:
      //   1. Get user's status
-     //   2. Create eventApproval for Colorado event (default)
-     //   3. Set appliedAt to user account creation date (or current date)
-     //   4. Set statusChangedAt to user account creation date (or current date)
-     //   5. Copy approvedBy/declinedBy fields
+     //   2. For Colorado event (or determine which event(s) they applied to):
+     //      a. Create approval at /events/{eventId}/approvals/{userId}
+     //      b. Set status based on old status ('Provisional' -> 'Applied')
+     //      c. Set appliedAt to user account creation date (or current date)
+     //      d. Set statusChangedAt to user account creation date (or current date)
+     //      e. Copy approvedBy/declinedBy fields
+     //      f. Set userId field
    }
    ```
 
 2. Testing strategy:
-   - Test migration on development database
-   - Verify all users have corresponding eventApprovals
+   - Test migration on development database first
+   - Verify all users have corresponding approvals in new location
    - Verify no data loss
    - Run in production during low-traffic period
+   - Keep old status field temporarily for rollback
 
 ### Phase 5: Cleanup (TODO)
 **Status:** 🔜 Future PR
@@ -184,27 +175,32 @@ If issues are discovered after deployment:
 
 ## Timeline
 
-Suggested timeline:
-- **Phase 1:** ✅ Completed
+Updated timeline:
+- **Phase 1:** ✅ Completed (Foundation + Frontend)
 - **Phase 2:** 1-2 weeks (backend functions)
-- **Phase 3:** 2-3 weeks (frontend components)
-- **Phase 4:** 1 week (data migration + testing)
+- **Phase 3:** 1 week (remaining frontend updates)
+- **Phase 4:** 1 week (URGENT - data migration + testing)
 - **Phase 5:** 1 week (cleanup)
 
-Total estimated time: 5-7 weeks
+Total remaining time: 3-4 weeks
+
+**IMPORTANT:** Phase 4 (data migration) is critical and should be done soon after Phase 2.
 
 ## Questions & Decisions
 
 ### Decided:
-- ✅ Use subcollection `/users/{userId}/eventApprovals/{eventId}` for per-event data
-- ✅ Keep backward compatibility during migration
+- ✅ Use collection `/events/{eventId}/approvals/{userId}` for per-event data
+- ✅ Remove backward compatibility - require explicit eventId
 - ✅ Use event-specific admin checks in Firestore rules
+- ✅ Simplify admin queries by placing approvals under events (no collection group needed)
+- ✅ Users must create approvals with status='Applied' only
 
 ### To Decide:
-- Should multiShift be per-event or global?
-- Should we auto-create eventApproval when user first views an event schedule?
+- Should multiShift be per-event or global? (Currently global)
+- Should we auto-create approval when user first views an event schedule?
 - Should we send notifications when user applies for an event?
 - Should we allow admins to batch-approve users?
+- How to handle users who were approved for old Colorado event in migration?
 
 ## References
 

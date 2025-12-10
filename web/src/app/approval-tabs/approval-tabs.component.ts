@@ -15,7 +15,7 @@ import {
 } from '@angular/material/card';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { EventInfoService } from '../event-info/event-info.service';
