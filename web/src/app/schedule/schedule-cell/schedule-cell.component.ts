@@ -20,7 +20,7 @@ import {
   UserSettingsService,
 } from '../../user-settings/user-settings.service';
 import { ScheduleService } from '../schedule.service';
-import { Shift } from '../shared-constants';
+import { EventApproval, Shift } from '../shared-constants';
 
 @Component({
   selector: 'kel-schedule-cell',
@@ -53,9 +53,11 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   userSettings$ = new BehaviorSubject<UserSettings>({});
   isAdmin$ = new BehaviorSubject<boolean>(false);
   approvedUsers$ = new BehaviorSubject<UserSettings[]>([]);
+  eventApproval$ = new BehaviorSubject<EventApproval | undefined>(undefined);
   private shiftSubscription: Subscription | null = null;
   private adminSubscription: Subscription | null = null;
   private approvedUsersSubscription: Subscription | null = null;
+  private eventApprovalSubscription: Subscription | null = null;
 
   ngOnInit(): void {
     this.userSettingsService.init();
@@ -75,12 +77,16 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
         ),
       )
       .subscribe(this.approvedUsers$);
+    this.eventApprovalSubscription = this.userSettingsService
+      .getUserEventApproval(this.eventId)
+      .subscribe((approval) => this.eventApproval$.next(approval));
   }
 
   ngOnDestroy() {
     this.shiftSubscription?.unsubscribe();
     this.adminSubscription?.unsubscribe();
     this.approvedUsersSubscription?.unsubscribe();
+    this.eventApprovalSubscription?.unsubscribe();
   }
 
   toggleShift() {
@@ -117,8 +123,8 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       // The user hasn't filled out their user profile
       return true;
     }
-    if (this.userSettings$.getValue()?.status != 'Approved') {
-      // The user is not yet approved by the VOTA coordinators
+    if (this.eventApproval$.getValue()?.status != 'Approved') {
+      // The user is not yet approved for this specific event
       return true;
     }
     if (
