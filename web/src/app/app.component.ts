@@ -14,7 +14,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { filter, map, startWith, switchMap } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -59,38 +59,32 @@ export class AppComponent {
   constructor() {
     this.titleService.setTitle(this.appName);
     
-    // Check admin status on initial load
-    this.checkAdminStatus();
-    
     // Subscribe to router events to dynamically check admin status based on current route
+    // Using startWith to trigger on initial load
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
-        takeUntilDestroyed(),
-      )
-      .subscribe(() => {
-        this.checkAdminStatus();
-      });
-  }
-
-  private checkAdminStatus(): void {
-    // Extract slug from current route
-    let route = this.router.routerState.root;
-    while (route.firstChild) {
-      route = route.firstChild;
-    }
-    const slug = route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
-    
-    // Resolve slug to eventId and check admin status
-    this.eventInfoService
-      .getEventBySlug(slug)
-      .pipe(
-        map((eventInfo) => eventInfo?.id || COLORADO_DOC_ID),
-        switchMap((eventId) => this.authService.userIsAdmin(eventId)),
+        startWith(null), // Trigger on initial load
+        map(() => this.getEventSlugFromRoute()),
+        switchMap((slug) =>
+          this.eventInfoService.getEventBySlug(slug).pipe(
+            map((eventInfo) => eventInfo?.id || COLORADO_DOC_ID),
+            switchMap((eventId) => this.authService.userIsAdmin(eventId)),
+          ),
+        ),
         takeUntilDestroyed(),
       )
       .subscribe((isAdmin) => {
         this.userIsAdmin$.next(isAdmin);
       });
+  }
+
+  private getEventSlugFromRoute(): string {
+    // Extract slug from current route
+    let route = this.router.routerState.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
   }
 }
