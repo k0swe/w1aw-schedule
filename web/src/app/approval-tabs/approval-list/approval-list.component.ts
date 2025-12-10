@@ -81,18 +81,10 @@ export class ApprovalListComponent implements OnInit, OnDestroy {
   }
 
   approve(id: string) {
-    if (!this.eventId) {
-      console.error('Cannot approve: eventId is required');
-      return;
-    }
     this.userSettingsService.approve(id, this.eventId).subscribe();
   }
 
   decline(id: string) {
-    if (!this.eventId) {
-      console.error('Cannot decline: eventId is required');
-      return;
-    }
     this.userSettingsService.decline(id, this.eventId).subscribe();
   }
 

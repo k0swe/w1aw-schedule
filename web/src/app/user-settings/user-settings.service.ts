@@ -117,6 +117,9 @@ export class UserSettingsService {
   }
 
   // Get all events where the user has applied/been approved
+  // Note: This performs N+1 queries (1 for events, N for approvals) which is acceptable
+  // for the expected small number of events. Alternative would be to maintain a
+  // separate index collection, but that adds complexity and data duplication.
   public getUserEventApprovals(): Observable<
     (EventApproval & { eventId: string })[]
   > {
