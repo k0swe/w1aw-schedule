@@ -155,31 +155,9 @@ export class ScheduleComponent implements OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((eventInfo) => {
         if (eventInfo) {
-          // Normalize to start/end of day for consistent date comparisons
-          const startDate = eventInfo.startTime.toDate();
-          const endDate = eventInfo.endTime.toDate();
-          this.eventStartTime = new Date(
-            Date.UTC(
-              startDate.getUTCFullYear(),
-              startDate.getUTCMonth(),
-              startDate.getUTCDate(),
-              0,
-              0,
-              0,
-              0,
-            ),
-          );
-          this.eventEndTime = new Date(
-            Date.UTC(
-              endDate.getUTCFullYear(),
-              endDate.getUTCMonth(),
-              endDate.getUTCDate(),
-              23,
-              59,
-              59,
-              999,
-            ),
-          );
+          // Use exact times from event info (no normalization)
+          this.eventStartTime = eventInfo.startTime.toDate();
+          this.eventEndTime = eventInfo.endTime.toDate();
           // Recalculate prevDay and nextDay with the loaded event times
           this.updatePrevNextDays();
         }
@@ -222,6 +200,19 @@ export class ScheduleComponent implements OnDestroy {
   private updatePrevNextDays() {
     this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
     this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+  }
+
+  isPrevDayBeforeEvent(): boolean {
+    // Disable if prevDay is entirely before the event starts
+    // A day is entirely before the event if its end is before event start
+    const endOfPrevDay = new Date(this.prevDay.getTime() + this.ONE_DAY_IN_MS);
+    return endOfPrevDay <= this.eventStartTime;
+  }
+
+  isNextDayAfterEvent(): boolean {
+    // Disable if nextDay is entirely after the event ends
+    // A day is entirely after the event if its start is after event end
+    return this.nextDay > this.eventEndTime;
   }
 
   changeParams() {
