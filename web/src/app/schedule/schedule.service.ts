@@ -68,7 +68,7 @@ export class ScheduleService {
   ): Observable<void> {
     return this.authenticationService.userIsAdmin(eventId).pipe(
       switchMap((isAdmin) => {
-        if (shiftToUpdate.reservedBy != userId && !isAdmin) {
+        if (shiftToUpdate.reservedBy !== userId && !isAdmin) {
           // trying to cancel someone else's shift?
           return of(undefined);
         }
