@@ -42,24 +42,15 @@ export class UserSettingsService {
 
   public init(): void {
     if (this.started) {
-      console.log('[UserSettingsService] Already initialized, skipping');
       return;
     }
-    console.log(
-      '[UserSettingsService] Initializing user settings subscription...',
-    );
     this.started = true;
     this.authService.user$
       .pipe(
         switchMap((user) => {
           if (user == null) {
-            console.log('[UserSettingsService] No user logged in');
             return of(undefined);
           }
-          console.log(
-            '[UserSettingsService] Querying user document for:',
-            user.uid,
-          );
           const docRef = doc(this.firestore, 'users', user.uid);
           return docData(docRef) as Observable<UserSettings | undefined>;
         }),
@@ -67,14 +58,8 @@ export class UserSettingsService {
       .subscribe({
         next: (settings) => {
           if (settings) {
-            console.log(
-              '[UserSettingsService] Successfully loaded user settings',
-            );
             this.settings$.next(settings);
           } else {
-            console.log(
-              '[UserSettingsService] No settings found, creating user document',
-            );
             this.createUserDocument();
           }
         },
@@ -118,17 +103,10 @@ export class UserSettingsService {
 
   // Get all events from Firestore
   public getAllEvents(): Observable<EventInfoWithId[]> {
-    console.log('[UserSettingsService] Querying events collection...');
     const eventsCol = collection(this.firestore, 'events');
-    return collectionData(eventsCol, { idField: 'id' }).pipe(
-      map((events) => {
-        console.log(
-          '[UserSettingsService] Events query successful:',
-          events.length,
-        );
-        return events as EventInfoWithId[];
-      }),
-    );
+    return collectionData(eventsCol, { idField: 'id' }) as Observable<
+      EventInfoWithId[]
+    >;
   }
 
   // Get user's approval for a specific event
@@ -145,11 +123,8 @@ export class UserSettingsService {
           `events/${eventId}/approvals/${user.uid}`,
         );
         return (docData(docRef) as Observable<EventApproval | undefined>).pipe(
-          catchError((error) => {
-            console.log(
-              `[UserSettingsService] No access to approval for event ${eventId}:`,
-              error.code || error.message,
-            );
+          catchError(() => {
+            // Handle permission errors gracefully (document doesn't exist or no access)
             return of(undefined);
           }),
         );
@@ -164,32 +139,19 @@ export class UserSettingsService {
   public getUserEventApprovals(): Observable<
     (EventApproval & { eventId: string })[]
   > {
-    console.log('[UserSettingsService] Starting getUserEventApprovals...');
     return this.authService.user$.pipe(
       switchMap((user) => {
         if (user == null) {
-          console.log(
-            '[UserSettingsService] No user logged in, returning empty array',
-          );
           return of([]);
         }
-        console.log('[UserSettingsService] User ID:', user.uid);
         // Get all events
         return this.getAllEvents().pipe(
           switchMap((events) => {
-            console.log(
-              '[UserSettingsService] Fetched',
-              events.length,
-              'events',
-            );
             if (events.length === 0) {
               return of([]);
             }
             // For each event, try to get the user's approval
             const approvalObservables = events.map((event) => {
-              console.log(
-                `[UserSettingsService] Querying approval for event ${event.id}...`,
-              );
               const docRef = doc(
                 this.firestore,
                 `events/${event.id}/approvals/${user.uid}`,
@@ -197,25 +159,15 @@ export class UserSettingsService {
               return docData(docRef).pipe(
                 map((approval) => {
                   if (approval) {
-                    console.log(
-                      `[UserSettingsService] Found approval for event ${event.id}`,
-                    );
                     return {
                       ...(approval as EventApproval),
                       eventId: event.id,
                     };
                   }
-                  console.log(
-                    `[UserSettingsService] No approval found for event ${event.id}`,
-                  );
                   return null;
                 }),
-                catchError((error) => {
+                catchError(() => {
                   // Handle permission errors gracefully (document doesn't exist or no access)
-                  console.log(
-                    `[UserSettingsService] No access to approval for event ${event.id}:`,
-                    error.code || error.message,
-                  );
                   return of(null);
                 }),
               );
@@ -227,17 +179,9 @@ export class UserSettingsService {
             }
             return combineLatest(approvalObservables).pipe(
               map((approvals) => {
-                const filtered = approvals.filter(
-                  (a) => a !== null,
-                ) as (EventApproval & {
+                return approvals.filter((a) => a !== null) as (EventApproval & {
                   eventId: string;
                 })[];
-                console.log(
-                  '[UserSettingsService] Found',
-                  filtered.length,
-                  'total approvals',
-                );
-                return filtered;
               }),
             );
           }),
@@ -248,54 +192,27 @@ export class UserSettingsService {
 
   // Apply for an event (create approval document)
   public applyForEvent(eventId: string): Observable<void> {
-    console.log('[UserSettingsService] Applying for event:', eventId);
     return this.authService.user$.pipe(
       switchMap((user) => {
         if (user == null) {
-          console.error(
-            '[UserSettingsService] Cannot apply - no user logged in',
-          );
           return of(undefined);
         }
-        console.log('[UserSettingsService] User ID:', user.uid);
-        console.log(
-          '[UserSettingsService] Creating approval document at path:',
-          `events/${eventId}/approvals/${user.uid}`,
-        );
         const docRef = doc(
           this.firestore,
           `events/${eventId}/approvals/${user.uid}`,
         );
-        const timestamp = Timestamp.now();
         const approvalData = {
           status: 'Applied',
-          appliedAt: timestamp,
+          appliedAt: Timestamp.now(),
           userId: user.uid, // Store userId as a field for easier querying
         };
-        console.log('[UserSettingsService] Approval data:', approvalData);
-        console.log(
-          '[UserSettingsService] Timestamp seconds:',
-          timestamp.seconds,
-          'nanoseconds:',
-          timestamp.nanoseconds,
-        );
         return from(setDoc(docRef, approvalData)).pipe(
-          map(() => {
-            console.log(
-              '[UserSettingsService] Successfully applied for event:',
-              eventId,
-            );
-          }),
+          map(() => undefined),
           catchError((error) => {
             console.error(
               '[UserSettingsService] Error applying for event:',
               eventId,
               error,
-            );
-            console.error('[UserSettingsService] Error code:', error.code);
-            console.error(
-              '[UserSettingsService] Error message:',
-              error.message,
             );
             throw error; // Re-throw so component can handle it
           }),
@@ -306,41 +223,22 @@ export class UserSettingsService {
 
   // Withdraw from an event (delete approval document)
   public withdrawFromEvent(eventId: string): Observable<void> {
-    console.log('[UserSettingsService] Withdrawing from event:', eventId);
     return this.authService.user$.pipe(
       switchMap((user) => {
         if (user == null) {
-          console.error(
-            '[UserSettingsService] Cannot withdraw - no user logged in',
-          );
           return of(undefined);
         }
-        console.log('[UserSettingsService] User ID:', user.uid);
-        console.log(
-          '[UserSettingsService] Deleting approval document at path:',
-          `events/${eventId}/approvals/${user.uid}`,
-        );
         const docRef = doc(
           this.firestore,
           `events/${eventId}/approvals/${user.uid}`,
         );
         return from(deleteDoc(docRef)).pipe(
-          map(() => {
-            console.log(
-              '[UserSettingsService] Successfully withdrew from event:',
-              eventId,
-            );
-          }),
+          map(() => undefined),
           catchError((error) => {
             console.error(
               '[UserSettingsService] Error withdrawing from event:',
               eventId,
               error,
-            );
-            console.error('[UserSettingsService] Error code:', error.code);
-            console.error(
-              '[UserSettingsService] Error message:',
-              error.message,
             );
             throw error; // Re-throw so component can handle it
           }),
