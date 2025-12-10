@@ -32,7 +32,7 @@ describe('newUser', () => {
     await (test.wrap(newUser as any) as any)({ data: user });
   });
 
-  it('should set the user approval to provisional', async () => {
+  it('should create a user document', async () => {
     let testComplete = false;
     await admin
       .firestore()
@@ -40,7 +40,8 @@ describe('newUser', () => {
       .doc(user.uid)
       .get()
       .then((userDoc) => {
-        assert.equal(userDoc.data()?.status, 'Provisional');
+        assert.equal(userDoc.exists, true);
+        assert.equal(userDoc.data()?.emailVerified, false);
         testComplete = true;
       });
     assert.equal(testComplete, true);
