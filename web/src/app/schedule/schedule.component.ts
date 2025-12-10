@@ -181,8 +181,7 @@ export class ScheduleComponent implements OnDestroy {
             ),
           );
           // Recalculate prevDay and nextDay with the loaded event times
-          this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
-          this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+          this.updatePrevNextDays();
         }
       });
 
@@ -201,8 +200,7 @@ export class ScheduleComponent implements OnDestroy {
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe((shifts) => this.userShifts$.next(shifts));
-    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
-    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+    this.updatePrevNextDays();
     this.changeParams();
   }
 
@@ -221,6 +219,11 @@ export class ScheduleComponent implements OnDestroy {
     this.changeParams();
   }
 
+  private updatePrevNextDays() {
+    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
+    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+  }
+
   changeParams() {
     this.columnsToDisplay = ['utc', 'localTime', 'localTimeIcon'];
     for (let band of this.bandGroups.get(this.viewBandGroup)!) {
@@ -236,8 +239,7 @@ export class ScheduleComponent implements OnDestroy {
       },
     });
     this.timeSlots = [];
-    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
-    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+    this.updatePrevNextDays();
     for (
       let timeSlot = this.viewDay;
       timeSlot < this.nextDay;
