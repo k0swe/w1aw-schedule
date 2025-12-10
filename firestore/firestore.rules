@@ -41,12 +41,10 @@ service cloud.firestore {
             .hasAny(['status', 'approvedBy', 'declinedBy', 'statusChangedAt']);
         }
         function isAdminForThisEvent() {
-          // For collection group queries, check the eventId field in the document data
-          // For direct queries, use the path parameter eventId
-          let docEventId = (resource != null && resource.data != null && 'eventId' in resource.data)
-            ? resource.data.eventId
-            : eventId;
-          return isAdminForEvent(docEventId);
+          // For collection group queries, the eventId must be in the document data
+          // For direct document access, we can use the path parameter eventId
+          // Use the path parameter as the primary source since it's always available
+          return isAdminForEvent(eventId);
         }
 
         // Users can create their own approval application for an event

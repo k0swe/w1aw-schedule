@@ -27,10 +27,7 @@ import { map, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
-import {
-  EventApproval,
-  EventInfoWithId,
-} from '../schedule/shared-constants';
+import { EventApproval, EventInfoWithId } from '../schedule/shared-constants';
 
 @Injectable({
   providedIn: 'root',
@@ -117,9 +114,9 @@ export class UserSettingsService {
           this.firestore,
           `users/${user.uid}/eventApprovals`,
         );
-        return collectionData(approvalsCol, { idField: 'eventId' }) as Observable<
-          (EventApproval & { eventId: string })[]
-        >;
+        return collectionData(approvalsCol, {
+          idField: 'eventId',
+        }) as Observable<(EventApproval & { eventId: string })[]>;
       }),
     );
   }
@@ -212,9 +209,7 @@ export class UserSettingsService {
 
         // Combine all user observables
         return from(
-          Promise.all(
-            userObservables.map((obs) => firstValueFrom(obs)),
-          ),
+          Promise.all(userObservables.map((obs) => firstValueFrom(obs))),
         );
       }),
     );
@@ -265,6 +260,7 @@ export class UserSettingsService {
       );
       return from(
         updateDoc(docRef, {
+          eventId: eventId, // Ensure eventId field exists for collection group queries
           status: 'Approved',
           approvedBy: adminId,
           statusChangedAt: Timestamp.now(),
@@ -294,6 +290,7 @@ export class UserSettingsService {
       );
       return from(
         updateDoc(docRef, {
+          eventId: eventId, // Ensure eventId field exists for collection group queries
           status: 'Declined',
           declinedBy: adminId,
           statusChangedAt: Timestamp.now(),
