@@ -15,8 +15,8 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { environment } from '../environments/environment';
-import { AuthenticationService } from './authentication/authentication.service';
 import { AvatarComponent } from './avatar/avatar.component';
+import { COLORADO_SLUG } from './schedule/shared-constants';
 
 @Component({
   selector: 'kel-root',
@@ -42,18 +42,14 @@ import { AvatarComponent } from './avatar/avatar.component';
   ],
 })
 export class AppComponent {
-  private authenticationService = inject(AuthenticationService);
   private titleService = inject(Title);
 
   appName = environment.appName;
   // Default slug for the Colorado event - should be dynamic based on user's selected event in the future
-  defaultEventSlug = 'usa250-co-may';
+  defaultEventSlug = COLORADO_SLUG;
   userIsAdmin$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
-    this.authenticationService
-      .userIsAdmin()
-      .subscribe((isAdmin) => this.userIsAdmin$.next(isAdmin));
     this.titleService.setTitle(this.appName);
   }
 }

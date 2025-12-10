@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Firestore } from '@angular/fire/firestore';
 import { of } from 'rxjs';
 
-import { ApprovalListComponent } from './approval-list.component';
 import { UserSettingsService } from '../../user-settings/user-settings.service';
+import { ApprovalListComponent } from './approval-list.component';
 
 describe('ApprovalListComponent', () => {
   let component: ApprovalListComponent;

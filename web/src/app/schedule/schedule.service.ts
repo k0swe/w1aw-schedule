@@ -43,7 +43,7 @@ export class ScheduleService {
   ): Observable<void> {
     if (
       !!shiftToUpdate.reservedBy &&
-      !this.authenticationService.userIsAdmin()
+      !this.authenticationService.userIsAdmin(eventId)
     ) {
       // trying to take someone else's shift?
       return of(undefined);
@@ -66,7 +66,7 @@ export class ScheduleService {
   ): Observable<void> {
     if (
       shiftToUpdate.reservedBy != userId &&
-      !this.authenticationService.userIsAdmin()
+      !this.authenticationService.userIsAdmin(eventId)
     ) {
       // trying to cancel someone else's shift?
       return of(undefined);

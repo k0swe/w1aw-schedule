@@ -34,8 +34,8 @@ import {
 } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventApproval, EventInfoWithId } from '../schedule/shared-constants';
@@ -139,26 +139,61 @@ export class UserSettingsComponent implements OnInit {
       this.arrlMemberNumber.setValue(settings.arrlMemberNumber || '');
       this.discordUsername.setValue(settings.discordUsername || '');
       this.discordConnected.set(
-        !!(settings.discordId && settings.discordUsername)
+        !!(settings.discordId && settings.discordUsername),
       );
       this.status.next(settings.status || '');
     });
   }
 
   ngOnInit(): void {
+    console.log('[UserSettings] Initializing component');
     this.settingsService.init();
 
     // Load all events and user's event approvals
-    this.settingsService.getAllEvents().subscribe((events) => {
-      // Sort events chronologically by startTime
-      const sortedEvents = events.sort(
-        (a, b) => a.startTime.toMillis() - b.startTime.toMillis(),
-      );
-      this.events.set(sortedEvents);
+    console.log('[UserSettings] Loading all events...');
+    this.settingsService.getAllEvents().subscribe({
+      next: (events) => {
+        console.log(
+          '[UserSettings] Successfully loaded events:',
+          events.length,
+        );
+        // Sort events chronologically by startTime
+        const sortedEvents = events.sort(
+          (a, b) => a.startTime.toMillis() - b.startTime.toMillis(),
+        );
+        this.events.set(sortedEvents);
+      },
+      error: (error) => {
+        console.error('[UserSettings] Error loading events:', error);
+        this.snackBarService.open(
+          'Failed to load events: ' + error.message,
+          undefined,
+          {
+            duration: 5000,
+          },
+        );
+      },
     });
 
-    this.settingsService.getUserEventApprovals().subscribe((approvals) => {
-      this.userApprovals.set(approvals);
+    console.log('[UserSettings] Loading user event approvals...');
+    this.settingsService.getUserEventApprovals().subscribe({
+      next: (approvals) => {
+        console.log(
+          '[UserSettings] Successfully loaded approvals:',
+          approvals.length,
+        );
+        this.userApprovals.set(approvals);
+      },
+      error: (error) => {
+        console.error('[UserSettings] Error loading approvals:', error);
+        this.snackBarService.open(
+          'Failed to load your event applications: ' + error.message,
+          undefined,
+          {
+            duration: 5000,
+          },
+        );
+      },
     });
 
     // Check for Discord OAuth callback
@@ -302,11 +337,28 @@ export class UserSettingsComponent implements OnInit {
   }
 
   applyForEvent(eventId: string): void {
+    console.log('[UserSettings] Apply button clicked for event:', eventId);
+
+    // Check if profile is complete
+    if (!this.settingsForm.valid) {
+      console.warn('[UserSettings] Profile incomplete, cannot apply');
+      this.snackBarService.open(
+        'Please complete your profile before applying for events',
+        undefined,
+        {
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
+    console.log('[UserSettings] Profile is valid, proceeding with application');
     this.settingsService
       .applyForEvent(eventId)
       .pipe(take(1))
       .subscribe({
         next: () => {
+          console.log('[UserSettings] Application successful');
           this.snackBarService.open(
             'Application submitted successfully',
             undefined,
@@ -316,6 +368,7 @@ export class UserSettingsComponent implements OnInit {
           );
         },
         error: (error) => {
+          console.error('[UserSettings] Application failed:', error);
           this.snackBarService.open(
             'Failed to apply for event: ' + error.message,
             undefined,
@@ -328,11 +381,13 @@ export class UserSettingsComponent implements OnInit {
   }
 
   withdrawFromEvent(eventId: string): void {
+    console.log('[UserSettings] Withdraw button clicked for event:', eventId);
     this.settingsService
       .withdrawFromEvent(eventId)
       .pipe(take(1))
       .subscribe({
         next: () => {
+          console.log('[UserSettings] Withdrawal successful');
           this.snackBarService.open(
             'Application withdrawn successfully',
             undefined,
@@ -342,6 +397,7 @@ export class UserSettingsComponent implements OnInit {
           );
         },
         error: (error) => {
+          console.error('[UserSettings] Withdrawal failed:', error);
           this.snackBarService.open(
             'Failed to withdraw from event: ' + error.message,
             undefined,

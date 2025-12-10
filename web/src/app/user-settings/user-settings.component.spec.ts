@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { Firestore } from '@angular/fire/firestore';
+import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 
+import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettingsComponent } from './user-settings.component';
 import { UserSettingsService } from './user-settings.service';
-import { AuthenticationService } from '../authentication/authentication.service';
 
 describe('UserSettingsComponent', () => {
   let component: UserSettingsComponent;

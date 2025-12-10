@@ -37,7 +37,9 @@
       </mat-list-item>
       <mat-divider></mat-divider>
       @if (userIsAdmin$ | async) {
-        <mat-list-item [routerLink]="'/events/' + defaultEventSlug + '/approvals'">
+        <mat-list-item
+          [routerLink]="'/events/' + defaultEventSlug + '/approvals'"
+        >
           <mat-icon matListItemIcon>verified</mat-icon>
           Approve Users
         </mat-list-item>

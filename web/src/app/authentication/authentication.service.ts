@@ -89,7 +89,7 @@ export class AuthenticationService {
     return from(sendEmailVerification(user));
   }
 
-  public userIsAdmin(eventId?: string): Observable<boolean> {
+  public userIsAdmin(eventId: string): Observable<boolean> {
     const adminList$ = this.eventInfoService.getAdminList(eventId);
     return this.user$.pipe(
       switchMap((user) =>

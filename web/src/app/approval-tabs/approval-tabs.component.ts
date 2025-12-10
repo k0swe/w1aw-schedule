@@ -85,17 +85,22 @@ export class ApprovalTabsComponent implements OnInit {
           console.error('No event found for the given slug');
           return;
         }
-        
+
         this.eventId.set(eventInfo.id);
 
         // Load event info
         this.eventInfo$ = this.eventInfoService.getEventInfo(eventInfo.id);
 
         // Load approval lists for this event
-        this.provisionalUsers$ =
-          this.userSettingsService.getProvisionalUsers(eventInfo.id);
-        this.approvedUsers$ = this.userSettingsService.getApprovedUsers(eventInfo.id);
-        this.declinedUsers$ = this.userSettingsService.getDeclinedUsers(eventInfo.id);
+        this.provisionalUsers$ = this.userSettingsService.getProvisionalUsers(
+          eventInfo.id,
+        );
+        this.approvedUsers$ = this.userSettingsService.getApprovedUsers(
+          eventInfo.id,
+        );
+        this.declinedUsers$ = this.userSettingsService.getDeclinedUsers(
+          eventInfo.id,
+        );
       });
   }
 }
