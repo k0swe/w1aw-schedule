@@ -155,8 +155,31 @@ export class ScheduleComponent implements OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((eventInfo) => {
         if (eventInfo) {
-          this.eventStartTime = eventInfo.startTime.toDate();
-          this.eventEndTime = eventInfo.endTime.toDate();
+          // Normalize to start/end of day for consistent date comparisons
+          const startDate = eventInfo.startTime.toDate();
+          const endDate = eventInfo.endTime.toDate();
+          this.eventStartTime = new Date(
+            Date.UTC(
+              startDate.getUTCFullYear(),
+              startDate.getUTCMonth(),
+              startDate.getUTCDate(),
+              0,
+              0,
+              0,
+              0,
+            ),
+          );
+          this.eventEndTime = new Date(
+            Date.UTC(
+              endDate.getUTCFullYear(),
+              endDate.getUTCMonth(),
+              endDate.getUTCDate(),
+              23,
+              59,
+              59,
+              999,
+            ),
+          );
           // Recalculate prevDay and nextDay with the loaded event times
           this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
           this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
