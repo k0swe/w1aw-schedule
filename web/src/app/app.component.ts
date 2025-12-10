@@ -14,7 +14,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { filter, map, startWith, switchMap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -60,12 +60,13 @@ export class AppComponent {
     this.titleService.setTitle(this.appName);
     
     // Subscribe to router events to dynamically check admin status based on current route
-    // Using startWith to trigger on initial load
+    // startWith(null) emits an initial value to trigger the admin check immediately on component initialization
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
-        startWith(null), // Trigger on initial load
+        startWith(null), // Emit initial value to trigger admin check on component load
         map(() => this.getEventSlugFromRoute()),
+        distinctUntilChanged(), // Prevent redundant API calls when navigating within the same event
         switchMap((slug) =>
           this.eventInfoService.getEventBySlug(slug).pipe(
             map((eventInfo) => eventInfo?.id || COLORADO_DOC_ID),
