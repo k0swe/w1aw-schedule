@@ -14,39 +14,42 @@ export interface EventApproval {
   declinedBy?: string;
   appliedAt: Timestamp;
   statusChangedAt?: Timestamp;
+  userId?: string; // User ID for whom this approval is for (useful for queries)
 }
 ```
 
 **New Collection Structure:**
 ```
-/users/{userId}/eventApprovals/{eventId}
+/events/{eventId}/approvals/{userId}
   - status
   - approvedBy
   - declinedBy
   - appliedAt
   - statusChangedAt
+  - userId
 ```
 
 ### 2. Firestore Security Rules
-Added new rules for the `eventApprovals` subcollection in `firestore/firestore.rules`:
+Added new rules for the `approvals` subcollection under `events/{eventId}` in `firestore/firestore.rules`:
 
 **Users can:**
-- Create their own event approval applications
+- Create their own event approval applications (status must be 'Applied')
 - Read their own approval status
 - Update non-protected fields (not status, approvedBy, declinedBy, statusChangedAt)
 - Delete (withdraw) their own applications
 
 **Event admins can:**
-- Read approval status for their event
+- Read all approval statuses for their event
 - Update approval status (approve/decline) for their event
 - Cannot access approvals for other events
 
 ### 3. Tests
-Added 14 new test cases in `firestore/firestore.spec.js`:
+Updated test cases in `firestore/firestore.spec.js`:
 - User CRUD operations on their own approvals
 - Admin read/write operations for their events
 - Cross-event isolation (admins cannot access other events)
 - Protection of status fields from user modification
+- Enforcement of 'Applied' status on user creation
 
 ### 4. Documentation
 - **APPROVAL_MIGRATION.md**: Comprehensive migration guide with 5 phases
@@ -55,59 +58,56 @@ Added 14 new test cases in `firestore/firestore.spec.js`:
 
 ## Backward Compatibility
 
-✅ **Fully backward compatible**
-- Legacy global `status` field remains in `/users/{userId}`
-- Existing code continues to work unchanged
-- Old and new structures coexist during migration
+⚠️ **Breaking Changes - No Backward Compatibility**
+- Removed default Colorado event fallbacks
+- `eventId` parameter is now required for all approval operations
+- Legacy global `status` field in `/users/{userId}` is no longer used for approvals
+- Approvals are now stored under `/events/{eventId}/approvals/{userId}`
 
-## What's NOT Changed (Yet)
+## What's Changed
 
-The following will be updated in future PRs:
+✅ **Frontend:**
+- `UserSettingsService` now queries `/events/{eventId}/approvals` collection
+- `ApprovalTabsComponent` is event-aware and requires event from route
+- Admin queries simplified - no collection group needed
+- Methods require explicit eventId (no defaults)
 
-❌ **Frontend:**
-- Components still use global status field
-- `UserSettingsService` queries still use `/users` collection
-- `ApprovalTabsComponent` not yet event-aware
+⚠️ **Backend:**
+- `userStatusChanged` function still uses old structure (needs update)
+- Functions still clear shifts only for Colorado event (needs update)
 
-❌ **Backend:**
-- `userStatusChanged` function still uses global status
-- Functions still clear shifts only for Colorado event
-- No collection group queries for per-event approvals yet
-
-❌ **Data:**
-- No migration of existing data yet
-- Users' current approval status not yet copied to eventApprovals
+⚠️ **Data:**
+- Existing approval data needs migration from old to new structure
+- Users' current approval status not yet migrated to new location
 
 ## Quick Start for Future PRs
 
-### Phase 2: Backend Functions
+### Phase 2: Backend Functions (TODO)
 ```typescript
 // Listen for per-event approval changes
 export const eventApprovalChanged = onDocumentUpdated(
-  'users/{userId}/eventApprovals/{eventId}',
+  'events/{eventId}/approvals/{userId}',
   async (event) => {
     const eventId = event.params.eventId;
+    const userId = event.params.userId;
     // Clear shifts only for this specific event
   }
 );
 ```
 
-### Phase 3: Frontend Services
+### Frontend Services (Already Implemented)
 ```typescript
-// Query approvals for an event (admin)
+// Query approvals for an event (admin) - simplified!
 getAppliedUsersForEvent(eventId: string): Observable<UserSettings[]> {
-  const q = query(
-    collectionGroup(this.firestore, 'eventApprovals'),
-    where('status', '==', 'Applied')
-  );
-  // Note: This requires a composite index (auto-created on first use)
+  const approvalsCol = collection(this.firestore, `events/${eventId}/approvals`);
+  const q = query(approvalsCol, where('status', '==', 'Applied'));
   return collectionData(q, { idField: 'id' });
 }
 
 // Get user's own approval for an event
-getEventApproval(eventId: string): Observable<EventApproval> {
+getUserEventApproval(eventId: string): Observable<EventApproval> {
   const userId = this.authService.user$.getValue()!.uid;
-  const docRef = doc(this.firestore, `users/${userId}/eventApprovals/${eventId}`);
+  const docRef = doc(this.firestore, `events/${eventId}/approvals/${userId}`);
   return docData(docRef);
 }
 ```

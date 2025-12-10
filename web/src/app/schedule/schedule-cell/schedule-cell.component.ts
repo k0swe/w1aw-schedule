@@ -61,7 +61,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       .subscribe((isAdmin) => this.isAdmin$.next(isAdmin));
     this.userSettings$ = this.userSettingsService.settings$;
     this.approvedUsersSubscription = this.userSettingsService
-      .getApprovedUsers()
+      .getApprovedUsers(this.eventId)
       .pipe(
         map((users: UserSettings[]) =>
           users.sort((a, b) => a.callsign!.localeCompare(b.callsign!)),

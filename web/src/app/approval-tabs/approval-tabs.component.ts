@@ -15,7 +15,7 @@ import {
 } from '@angular/material/card';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { EventInfoService } from '../event-info/event-info.service';
@@ -53,44 +53,49 @@ export class ApprovalTabsComponent implements OnInit {
   private eventInfoService = inject(EventInfoService);
   private route = inject(ActivatedRoute);
 
-  eventId = signal<string>(COLORADO_DOC_ID);
+  eventId = signal<string | undefined>(undefined);
   eventInfo$: Observable<EventInfo | undefined>;
   provisionalUsers$: Observable<UserSettings[]>;
   approvedUsers$: Observable<UserSettings[]>;
   declinedUsers$: Observable<UserSettings[]>;
 
   constructor() {
-    // Initialize observables with default Colorado event
-    this.eventInfo$ = this.eventInfoService.getEventInfo(COLORADO_DOC_ID);
-    this.provisionalUsers$ =
-      this.userSettingsService.getProvisionalUsers(COLORADO_DOC_ID);
-    this.approvedUsers$ =
-      this.userSettingsService.getApprovedUsers(COLORADO_DOC_ID);
-    this.declinedUsers$ =
-      this.userSettingsService.getDeclinedUsers(COLORADO_DOC_ID);
+    // Initialize with empty observables - will be set in ngOnInit based on route
+    this.eventInfo$ = of(undefined);
+    this.provisionalUsers$ = of([]);
+    this.approvedUsers$ = of([]);
+    this.declinedUsers$ = of([]);
   }
 
   ngOnInit(): void {
-    // Get event ID from route parameter (slug) or default to Colorado
+    // Get event ID from route parameter (slug) - required, no default
     this.route.paramMap
       .pipe(
         switchMap((params) => {
-          const slug = params.get('slug') || COLORADO_SLUG;
+          const slug = params.get('slug');
+          if (!slug) {
+            // If no slug, try defaulting to Colorado for backward compatibility
+            return this.eventInfoService.getEventBySlug(COLORADO_SLUG);
+          }
           return this.eventInfoService.getEventBySlug(slug);
         }),
       )
       .subscribe((eventInfo) => {
-        const id = eventInfo?.id || COLORADO_DOC_ID;
-        this.eventId.set(id);
+        if (!eventInfo) {
+          console.error('No event found for the given slug');
+          return;
+        }
+        
+        this.eventId.set(eventInfo.id);
 
         // Load event info
-        this.eventInfo$ = this.eventInfoService.getEventInfo(id);
+        this.eventInfo$ = this.eventInfoService.getEventInfo(eventInfo.id);
 
         // Load approval lists for this event
         this.provisionalUsers$ =
-          this.userSettingsService.getProvisionalUsers(id);
-        this.approvedUsers$ = this.userSettingsService.getApprovedUsers(id);
-        this.declinedUsers$ = this.userSettingsService.getDeclinedUsers(id);
+          this.userSettingsService.getProvisionalUsers(eventInfo.id);
+        this.approvedUsers$ = this.userSettingsService.getApprovedUsers(eventInfo.id);
+        this.declinedUsers$ = this.userSettingsService.getDeclinedUsers(eventInfo.id);
       });
   }
 }

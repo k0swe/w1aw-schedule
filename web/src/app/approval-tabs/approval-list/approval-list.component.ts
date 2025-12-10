@@ -63,7 +63,7 @@ export class ApprovalListComponent implements OnInit, OnDestroy {
   @Input() userList: Observable<UserSettings[]> = of([]);
   @Input() displayColumns = ['name', 'callsign', 'email'];
   @Input() emptyMessage = 'No users to display';
-  @Input() eventId?: string;
+  @Input({ required: true }) eventId!: string;
   userDataSource = new MatTableDataSource<UserSettings>();
   @ViewChild(MatSort, { static: true }) sort = new MatSort();
   userListSubscription: Subscription | null = null;
