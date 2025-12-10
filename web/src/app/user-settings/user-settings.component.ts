@@ -76,9 +76,8 @@ export class UserSettingsComponent implements OnInit {
 
   user$: Observable<User | null>;
 
-  // email and status are read-only
+  // email is read-only
   email: BehaviorSubject<string>;
-  status: BehaviorSubject<string>;
 
   // Event approvals
   events = signal<EventInfoWithId[]>([]);
@@ -127,7 +126,6 @@ export class UserSettingsComponent implements OnInit {
     this.email = new BehaviorSubject<string>(
       this.authService.user$.getValue()?.email || '',
     );
-    this.status = new BehaviorSubject<string>('Provisional');
     this.settingsService.settings$.subscribe((settings) => {
       // when settings are loaded (or changed), re-bind values
       this.name.setValue(
@@ -141,7 +139,6 @@ export class UserSettingsComponent implements OnInit {
       this.discordConnected.set(
         !!(settings.discordId && settings.discordUsername),
       );
-      this.status.next(settings.status || '');
     });
   }
 
@@ -237,7 +234,6 @@ export class UserSettingsComponent implements OnInit {
   save(): void {
     const formValue: UserSettings = {
       email: this.email.value || '',
-      status: this.status.value || '',
       callsign: this.callsign.value?.toUpperCase() || '',
       gridSquare: this.gridSquare.value || '',
       name: this.name.value || '',

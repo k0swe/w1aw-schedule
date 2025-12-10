@@ -43,7 +43,6 @@ export interface UserSettings {
   gridSquare?: string;
   name?: string;
   phone?: string;
-  status?: string;
   approvedBy?: string;
   declinedBy?: string;
   multiShift?: boolean;

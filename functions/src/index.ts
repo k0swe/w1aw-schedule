@@ -6,6 +6,6 @@ export { discordOAuthCallback, discordOAuthInitiate } from './discordOAuth';
 export { initShifts } from './initShifts';
 export { newUser } from './newUser';
 export { syncEmailVerification } from './syncEmailVerification';
-export { userStatusChanged } from './userStatusChanged';
+// userStatusChanged function removed - approval is now handled per-event via /events/{eventId}/approvals/{userId}
 
 admin.initializeApp();
