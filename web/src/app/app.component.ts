@@ -1,5 +1,6 @@
 import { AsyncPipe, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import {
@@ -63,7 +64,10 @@ export class AppComponent {
     
     // Subscribe to router events to dynamically check admin status based on current route
     this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
       .subscribe(() => {
         this.checkAdminStatus();
       });
@@ -83,6 +87,7 @@ export class AppComponent {
       .pipe(
         map((eventInfo) => eventInfo?.id || COLORADO_DOC_ID),
         switchMap((eventId) => this.authService.userIsAdmin(eventId)),
+        takeUntilDestroyed(),
       )
       .subscribe((isAdmin) => {
         this.userIsAdmin$.next(isAdmin);
