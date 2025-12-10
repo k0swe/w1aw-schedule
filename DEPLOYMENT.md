@@ -70,6 +70,21 @@ gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
 gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
   --member="serviceAccount:github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com" \
   --role="roles/datastore.user"
+
+# Firebase Extensions Admin (for extensions management)
+gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
+  --member="serviceAccount:github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com" \
+  --role="roles/firebaseextensions.admin"
+
+# Secret Manager Secret Accessor (to read secret values)
+gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
+  --member="serviceAccount:github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+# Secret Manager Viewer (to read secret metadata)
+gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
+  --member="serviceAccount:github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.viewer"
 ```
 
 ### 4. Create Workload Identity Pool
@@ -158,6 +173,13 @@ Add the following secrets to your GitHub repository (`Settings` → `Secrets and
    ```
    github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com
    ```
+
+**Required Repository Variables** (Settings → Secrets and variables → Actions → Variables tab):
+
+1. **DISCORD_REDIRECT_URI**: The OAuth redirect URI for Discord authentication
+2. **FINAL_REDIRECT_URI**: The final redirect URI after authentication completes
+
+These are not sensitive and should be configured as variables (not secrets) so they're visible in logs for debugging.
 
 ### 9. Remove Old Secret (Optional)
 
