@@ -108,8 +108,8 @@ export class ScheduleComponent implements OnDestroy {
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   columnsToDisplay: string[] = [];
   eventId: string = COLORADO_DOC_ID;
-  eventStartTime: Date = new Date('2026-05-27T00:00:00Z');
-  eventEndTime: Date = new Date('2026-06-02T23:59:59Z');
+  eventStartTime: Date = new Date('2026-05-27T00:00:00Z'); // Default, updated from event info
+  eventEndTime: Date = new Date('2026-06-02T23:59:59Z'); // Default, updated from event info
 
   viewDay: Date = new Date();
   viewBandGroup: string = 'Hi HF';
@@ -155,8 +155,11 @@ export class ScheduleComponent implements OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((eventInfo) => {
         if (eventInfo) {
+          // Use exact times from event info (no normalization)
           this.eventStartTime = eventInfo.startTime.toDate();
           this.eventEndTime = eventInfo.endTime.toDate();
+          // Recalculate prevDay and nextDay with the loaded event times
+          this.updatePrevNextDays();
         }
       });
 
@@ -175,8 +178,7 @@ export class ScheduleComponent implements OnDestroy {
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe((shifts) => this.userShifts$.next(shifts));
-    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
-    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+    this.updatePrevNextDays();
     this.changeParams();
   }
 
@@ -195,6 +197,24 @@ export class ScheduleComponent implements OnDestroy {
     this.changeParams();
   }
 
+  private updatePrevNextDays() {
+    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
+    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+  }
+
+  isPrevDayBeforeEvent(): boolean {
+    // Disable if prevDay is entirely before the event starts
+    // A day is entirely before the event if its end is before event start
+    const endOfPrevDay = new Date(this.prevDay.getTime() + this.ONE_DAY_IN_MS);
+    return endOfPrevDay <= this.eventStartTime;
+  }
+
+  isNextDayAfterEvent(): boolean {
+    // Disable if nextDay is entirely after the event ends
+    // A day is entirely after the event if its start is after event end
+    return this.nextDay > this.eventEndTime;
+  }
+
   changeParams() {
     this.columnsToDisplay = ['utc', 'localTime', 'localTimeIcon'];
     for (let band of this.bandGroups.get(this.viewBandGroup)!) {
@@ -210,8 +230,7 @@ export class ScheduleComponent implements OnDestroy {
       },
     });
     this.timeSlots = [];
-    this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
-    this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+    this.updatePrevNextDays();
     for (
       let timeSlot = this.viewDay;
       timeSlot < this.nextDay;
