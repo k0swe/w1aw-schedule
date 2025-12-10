@@ -714,4 +714,109 @@ describe("Per-event approval", () => {
       deleteDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`)),
     );
   });
+
+  it("should allow creating approval with eventId field for collection group queries", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+    await assertSucceeds(
+      setDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+        status: "Applied",
+        appliedAt: new Date(),
+        eventId: colorado,
+      }),
+    );
+  });
+
+  it("should allow event admin to read approval with eventId field via direct access", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Applied",
+          appliedAt: new Date(),
+          eventId: colorado,
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      getDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`)),
+    );
+  });
+
+  it("should allow event admin to update approval with eventId field", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Applied",
+          appliedAt: new Date(),
+          eventId: colorado,
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`), {
+        status: "Approved",
+        approvedBy: "amanda",
+        statusChangedAt: new Date(),
+      }),
+    );
+  });
+
+  it("should not allow admin from one event to access approval for another event even with eventId field", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${newEvent}`,
+        ),
+        {
+          status: "Applied",
+          appliedAt: new Date(),
+          eventId: newEvent,
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    // Amanda is admin for Colorado but not for newEvent
+
+    await assertFails(
+      getDoc(doc(amandaDb, `users/alice/eventApprovals/${newEvent}`)),
+    );
+  });
+
+  it("should maintain backward compatibility - read approval without eventId field", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          `users/alice/eventApprovals/${colorado}`,
+        ),
+        {
+          status: "Applied",
+          appliedAt: new Date(),
+          // No eventId field - backward compatibility test
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      getDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`)),
+    );
+  });
 });

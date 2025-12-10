@@ -1,9 +1,10 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
   ViewChild,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -33,10 +34,11 @@ import {
 } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { map, take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
+import { EventApproval, EventInfoWithId } from '../schedule/shared-constants';
 import { UserSettings, UserSettingsService } from './user-settings.service';
 
 @Component({
@@ -62,6 +64,7 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
     MatButton,
     MatIconButton,
     AsyncPipe,
+    DatePipe,
   ],
 })
 export class UserSettingsComponent implements OnInit {
@@ -76,6 +79,22 @@ export class UserSettingsComponent implements OnInit {
   // email and status are read-only
   email: BehaviorSubject<string>;
   status: BehaviorSubject<string>;
+
+  // Event approvals
+  events = signal<EventInfoWithId[]>([]);
+  userApprovals = signal<(EventApproval & { eventId: string })[]>([]);
+  eventsWithStatus = computed(() => {
+    const allEvents = this.events();
+    const approvals = this.userApprovals();
+    return allEvents.map((event) => {
+      const approval = approvals.find((a) => a.eventId === event.id);
+      return {
+        ...event,
+        approvalStatus: approval?.status || null,
+        appliedAt: approval?.appliedAt || null,
+      };
+    });
+  });
 
   callsign = new FormControl('', [
     Validators.required,
@@ -128,6 +147,19 @@ export class UserSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.settingsService.init();
+
+    // Load all events and user's event approvals
+    this.settingsService.getAllEvents().subscribe((events) => {
+      // Sort events chronologically by startTime
+      const sortedEvents = events.sort(
+        (a, b) => a.startTime.toMillis() - b.startTime.toMillis(),
+      );
+      this.events.set(sortedEvents);
+    });
+
+    this.settingsService.getUserEventApprovals().subscribe((approvals) => {
+      this.userApprovals.set(approvals);
+    });
 
     // Check for Discord OAuth callback
     this.route.queryParams.pipe(take(1)).subscribe((qp) => {
@@ -260,6 +292,58 @@ export class UserSettingsComponent implements OnInit {
         error: (error) => {
           this.snackBarService.open(
             'Failed to disconnect Discord: ' + error.message,
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
+      });
+  }
+
+  applyForEvent(eventId: string): void {
+    this.settingsService
+      .applyForEvent(eventId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.snackBarService.open(
+            'Application submitted successfully',
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
+        error: (error) => {
+          this.snackBarService.open(
+            'Failed to apply for event: ' + error.message,
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
+      });
+  }
+
+  withdrawFromEvent(eventId: string): void {
+    this.settingsService
+      .withdrawFromEvent(eventId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.snackBarService.open(
+            'Application withdrawn successfully',
+            undefined,
+            {
+              duration: 5000,
+            },
+          );
+        },
+        error: (error) => {
+          this.snackBarService.open(
+            'Failed to withdraw from event: ' + error.message,
             undefined,
             {
               duration: 5000,

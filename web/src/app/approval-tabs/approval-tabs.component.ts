@@ -1,13 +1,29 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   MatCard,
   MatCardContent,
   MatCardHeader,
+  MatCardSubtitle,
   MatCardTitle,
 } from '@angular/material/card';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
+import { EventInfoService } from '../event-info/event-info.service';
+import {
+  COLORADO_DOC_ID,
+  COLORADO_SLUG,
+  EventInfo,
+} from '../schedule/shared-constants';
 import {
   UserSettings,
   UserSettingsService,
@@ -24,19 +40,57 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
     MatCard,
     MatCardHeader,
     MatCardTitle,
+    MatCardSubtitle,
     MatCardContent,
     MatTabGroup,
     MatTab,
     ApprovalListComponent,
+    AsyncPipe,
   ],
 })
-export class ApprovalTabsComponent {
+export class ApprovalTabsComponent implements OnInit {
   private userSettingsService = inject(UserSettingsService);
+  private eventInfoService = inject(EventInfoService);
+  private route = inject(ActivatedRoute);
 
-  provisionalUsers$: Observable<UserSettings[]> =
-    this.userSettingsService.getProvisionalUsers();
-  approvedUsers$: Observable<UserSettings[]> =
-    this.userSettingsService.getApprovedUsers();
-  declinedUsers$: Observable<UserSettings[]> =
-    this.userSettingsService.getDeclinedUsers();
+  eventId = signal<string>(COLORADO_DOC_ID);
+  eventInfo$: Observable<EventInfo | undefined>;
+  provisionalUsers$: Observable<UserSettings[]>;
+  approvedUsers$: Observable<UserSettings[]>;
+  declinedUsers$: Observable<UserSettings[]>;
+
+  constructor() {
+    // Initialize observables with default Colorado event
+    this.eventInfo$ = this.eventInfoService.getEventInfo(COLORADO_DOC_ID);
+    this.provisionalUsers$ =
+      this.userSettingsService.getProvisionalUsers(COLORADO_DOC_ID);
+    this.approvedUsers$ =
+      this.userSettingsService.getApprovedUsers(COLORADO_DOC_ID);
+    this.declinedUsers$ =
+      this.userSettingsService.getDeclinedUsers(COLORADO_DOC_ID);
+  }
+
+  ngOnInit(): void {
+    // Get event ID from route parameter (slug) or default to Colorado
+    this.route.paramMap
+      .pipe(
+        switchMap((params) => {
+          const slug = params.get('slug') || COLORADO_SLUG;
+          return this.eventInfoService.getEventBySlug(slug);
+        }),
+      )
+      .subscribe((eventInfo) => {
+        const id = eventInfo?.id || COLORADO_DOC_ID;
+        this.eventId.set(id);
+
+        // Load event info
+        this.eventInfo$ = this.eventInfoService.getEventInfo(id);
+
+        // Load approval lists for this event
+        this.provisionalUsers$ =
+          this.userSettingsService.getProvisionalUsers(id);
+        this.approvedUsers$ = this.userSettingsService.getApprovedUsers(id);
+        this.declinedUsers$ = this.userSettingsService.getDeclinedUsers(id);
+      });
+  }
 }

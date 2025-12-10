@@ -2,8 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import {
   Firestore,
+  Timestamp,
   collection,
   collectionData,
+  collectionGroup,
+  collectionSnapshots,
+  deleteDoc,
   doc,
   docData,
   query,
@@ -11,11 +15,19 @@ import {
   updateDoc,
   where,
 } from '@angular/fire/firestore';
-import { BehaviorSubject, Observable, from, mergeMap, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  Observable,
+  firstValueFrom,
+  from,
+  mergeMap,
+  of,
+} from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
+import { EventApproval, EventInfoWithId } from '../schedule/shared-constants';
 
 @Injectable({
   providedIn: 'root',
@@ -81,18 +93,152 @@ export class UserSettingsService {
     );
   }
 
+  // Get all events from Firestore
+  public getAllEvents(): Observable<EventInfoWithId[]> {
+    const eventsCol = collection(this.firestore, 'events');
+    return collectionData(eventsCol, { idField: 'id' }) as Observable<
+      EventInfoWithId[]
+    >;
+  }
+
+  // Get user's event approvals across all events
+  public getUserEventApprovals(): Observable<
+    (EventApproval & { eventId: string })[]
+  > {
+    return this.authService.user$.pipe(
+      switchMap((user) => {
+        if (user == null) {
+          return of([]);
+        }
+        const approvalsCol = collection(
+          this.firestore,
+          `users/${user.uid}/eventApprovals`,
+        );
+        return collectionData(approvalsCol, {
+          idField: 'eventId',
+        }) as Observable<(EventApproval & { eventId: string })[]>;
+      }),
+    );
+  }
+
+  // Apply for an event (create eventApproval document)
+  public applyForEvent(eventId: string): Observable<void> {
+    return this.authService.user$.pipe(
+      switchMap((user) => {
+        if (user == null) {
+          return of(undefined);
+        }
+        const docRef = doc(
+          this.firestore,
+          `users/${user.uid}/eventApprovals/${eventId}`,
+        );
+        return from(
+          setDoc(docRef, {
+            status: 'Applied',
+            appliedAt: Timestamp.now(),
+            eventId: eventId, // Store eventId as a field for collection group queries
+          }),
+        );
+      }),
+    );
+  }
+
+  // Withdraw from an event (delete eventApproval document)
+  public withdrawFromEvent(eventId: string): Observable<void> {
+    return this.authService.user$.pipe(
+      switchMap((user) => {
+        if (user == null) {
+          return of(undefined);
+        }
+        const docRef = doc(
+          this.firestore,
+          `users/${user.uid}/eventApprovals/${eventId}`,
+        );
+        return from(deleteDoc(docRef));
+      }),
+    );
+  }
+
+  // Admin only - Query event approvals by status for a specific event
+  private getEventApprovalsByStatus(
+    eventId: string,
+    status: 'Applied' | 'Approved' | 'Declined',
+  ): Observable<UserSettings[]> {
+    // Use collection group query to get all users' approvals for a specific event
+    const approvalsGroup = collectionGroup(this.firestore, 'eventApprovals');
+    // Filter by eventId AND status to ensure we only access documents we have permission for
+    const q = query(
+      approvalsGroup,
+      where('eventId', '==', eventId),
+      where('status', '==', status),
+    );
+
+    return collectionSnapshots(q).pipe(
+      switchMap((snapshots) => {
+        // Extract user IDs from the document paths
+        const userIds = snapshots.map((snapshot) => {
+          // Extract userId from the path: users/{userId}/eventApprovals/{eventId}
+          const pathParts = snapshot.ref.path.split('/');
+          // Validate path structure
+          if (
+            pathParts.length !== 4 ||
+            pathParts[0] !== 'users' ||
+            pathParts[2] !== 'eventApprovals'
+          ) {
+            throw new Error(
+              `Invalid approval document path: ${snapshot.ref.path}`,
+            );
+          }
+          return pathParts[1];
+        });
+
+        if (userIds.length === 0) {
+          return of([]);
+        }
+
+        // Get user details for each userId
+        const userObservables = userIds.map((userId) => {
+          const userDocRef = doc(this.firestore, 'users', userId);
+          return docData(userDocRef).pipe(
+            map((userData) => ({
+              ...(userData as UserSettings),
+              id: userId,
+            })),
+          );
+        });
+
+        // Combine all user observables
+        return from(
+          Promise.all(userObservables.map((obs) => firstValueFrom(obs))),
+        );
+      }),
+    );
+  }
+
   // Admin only
-  public getProvisionalUsers(): Observable<UserSettings[]> {
+  public getProvisionalUsers(eventId?: string): Observable<UserSettings[]> {
+    if (eventId) {
+      return this.getEventApprovalsByStatus(eventId, 'Applied');
+    }
+    // Legacy: fallback to global status for backward compatibility
     return this.getUsersByStatus('Provisional');
   }
 
   // Admin only
-  public getApprovedUsers(): Observable<UserSettings[]> {
+  public getApprovedUsers(eventId?: string): Observable<UserSettings[]> {
+    if (eventId) {
+      return this.getEventApprovalsByStatus(eventId, 'Approved');
+    }
+    // Legacy: fallback to global status for backward compatibility
     return this.getUsersByStatus('Approved');
   }
 
   // Admin only
-  public getDeclinedUsers(): Observable<UserSettings[]> {
+  public getDeclinedUsers(eventId?: string): Observable<UserSettings[]> {
+    if (eventId) {
+      return this.getEventApprovalsByStatus(eventId, 'Declined');
+    }
+    // Legacy: fallback to global status for backward compatibility
     return this.getUsersByStatus('Declined');
   }
 
@@ -102,9 +248,27 @@ export class UserSettingsService {
     return collectionData(q, { idField: 'id' }) as Observable<UserSettings[]>;
   }
 
-  // Admin only
-  public approve(userId: string): Observable<void> {
+  // Admin only - Approve user for a specific event
+  public approve(userId: string, eventId?: string): Observable<void> {
     const adminId = this.authService.user$.getValue()!.uid;
+
+    if (eventId) {
+      // Per-event approval
+      const docRef = doc(
+        this.firestore,
+        `users/${userId}/eventApprovals/${eventId}`,
+      );
+      return from(
+        updateDoc(docRef, {
+          eventId: eventId, // Ensure eventId field exists for collection group queries
+          status: 'Approved',
+          approvedBy: adminId,
+          statusChangedAt: Timestamp.now(),
+        }),
+      );
+    }
+
+    // Legacy: global approval for backward compatibility
     const docRef = doc(this.firestore, 'users', userId);
     return from(
       updateDoc(docRef, {
@@ -114,9 +278,27 @@ export class UserSettingsService {
     );
   }
 
-  // Admin only
-  public decline(userId: string): Observable<void> {
+  // Admin only - Decline user for a specific event
+  public decline(userId: string, eventId?: string): Observable<void> {
     const adminId = this.authService.user$.getValue()!.uid;
+
+    if (eventId) {
+      // Per-event decline
+      const docRef = doc(
+        this.firestore,
+        `users/${userId}/eventApprovals/${eventId}`,
+      );
+      return from(
+        updateDoc(docRef, {
+          eventId: eventId, // Ensure eventId field exists for collection group queries
+          status: 'Declined',
+          declinedBy: adminId,
+          statusChangedAt: Timestamp.now(),
+        }),
+      );
+    }
+
+    // Legacy: global decline for backward compatibility
     const docRef = doc(this.firestore, 'users', userId);
     return from(
       updateDoc(docRef, {
