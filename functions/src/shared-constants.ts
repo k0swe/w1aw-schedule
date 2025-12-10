@@ -57,6 +57,7 @@ export interface EventApproval {
   declinedBy?: string;
   appliedAt: Timestamp;
   statusChangedAt?: Timestamp;
+  userId?: string; // User ID for whom this approval is for (useful for queries)
 }
 
 export interface Shift {

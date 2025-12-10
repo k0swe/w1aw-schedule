@@ -30,36 +30,33 @@ service cloud.firestore {
       allow read:   if loggedIn() && (usersOwnDoc() || isAdmin());
       allow update: if loggedIn() && (usersOwnDoc() && notUpdatingStatus()) || isAdmin();
       allow delete: if loggedIn() && usersOwnDoc();
+    }
 
-      // Per-event approval subcollection
-      match /eventApprovals/{eventId} {
+    match /events/{eventId} {
+      allow read: if true;
+
+      // Per-event approval collection
+      match /approvals/{userId} {
         function usersOwnApproval() {
           return request.auth.uid == userId;
+        }
+        function creatingAppliedStatus() {
+          return request.resource.data.status == 'Applied';
         }
         function notUpdatingApprovalFields() {
           return !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['status', 'approvedBy', 'declinedBy', 'statusChangedAt']);
         }
-        function isAdminForThisEvent() {
-          // For collection group queries, the eventId must be in the document data
-          // For direct document access, we can use the path parameter eventId
-          // Use the path parameter as the primary source since it's always available
-          return isAdminForEvent(eventId);
-        }
 
-        // Users can create their own approval application for an event
-        allow create: if loggedIn() && usersOwnApproval();
-        // Users can read their own approval status
-        allow read:   if loggedIn() && (usersOwnApproval() || isAdminForThisEvent());
-        // Users can update their approval (e.g., appliedAt) but not status fields
-        allow update: if loggedIn() && ((usersOwnApproval() && notUpdatingApprovalFields()) || isAdminForThisEvent());
+        // Users can create their own approval application (status must be 'Applied')
+        allow create: if loggedIn() && usersOwnApproval() && creatingAppliedStatus();
+        // Users can read their own approval status, admins can read all approvals for their event
+        allow read:   if loggedIn() && (usersOwnApproval() || isAdminForEvent(eventId));
+        // Users can update non-protected fields, admins can update all fields
+        allow update: if loggedIn() && ((usersOwnApproval() && notUpdatingApprovalFields()) || isAdminForEvent(eventId));
         // Users can withdraw their application
         allow delete: if loggedIn() && usersOwnApproval();
       }
-    }
-
-    match /events/{eventId} {
-      allow read: if true;
 
       match /shifts/{shiftId} {
         function onlyChangingReservation() {

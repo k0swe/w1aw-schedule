@@ -6,58 +6,62 @@
     }
   </mat-card-header>
   <mat-card-content>
-    <mat-tab-group>
-      <mat-tab label="Pending">
-        <kel-approval-list
-          [userList]="provisionalUsers$"
-          [eventId]="eventId()"
-          [displayColumns]="[
-            'name',
-            'callsign',
-            'email',
-            'phone',
-            'arrlMemberNumber',
-            'discordUsername',
-            'approve',
-            'decline',
-          ]"
-        >
-        </kel-approval-list>
-      </mat-tab>
-      <mat-tab label="Approved">
-        <kel-approval-list
-          [userList]="approvedUsers$"
-          [eventId]="eventId()"
-          [displayColumns]="[
-            'name',
-            'callsign',
-            'email',
-            'phone',
-            'arrlMemberNumber',
-            'discordUsername',
-            'multi-shift',
-            'decline',
-          ]"
-        >
-        </kel-approval-list>
-      </mat-tab>
-      <mat-tab label="Declined">
-        <kel-approval-list
-          [userList]="declinedUsers$"
-          [eventId]="eventId()"
-          [displayColumns]="[
-            'name',
-            'callsign',
-            'email',
-            'phone',
-            'arrlMemberNumber',
-            'discordUsername',
-            'approve',
-            'delete',
-          ]"
-        >
-        </kel-approval-list>
-      </mat-tab>
-    </mat-tab-group>
+    @if (eventId(); as evtId) {
+      <mat-tab-group>
+        <mat-tab label="Pending">
+          <kel-approval-list
+            [userList]="provisionalUsers$"
+            [eventId]="evtId"
+            [displayColumns]="[
+              'name',
+              'callsign',
+              'email',
+              'phone',
+              'arrlMemberNumber',
+              'discordUsername',
+              'approve',
+              'decline',
+            ]"
+          >
+          </kel-approval-list>
+        </mat-tab>
+        <mat-tab label="Approved">
+          <kel-approval-list
+            [userList]="approvedUsers$"
+            [eventId]="evtId"
+            [displayColumns]="[
+              'name',
+              'callsign',
+              'email',
+              'phone',
+              'arrlMemberNumber',
+              'discordUsername',
+              'multi-shift',
+              'decline',
+            ]"
+          >
+          </kel-approval-list>
+        </mat-tab>
+        <mat-tab label="Declined">
+          <kel-approval-list
+            [userList]="declinedUsers$"
+            [eventId]="evtId"
+            [displayColumns]="[
+              'name',
+              'callsign',
+              'email',
+              'phone',
+              'arrlMemberNumber',
+              'discordUsername',
+              'approve',
+              'delete',
+            ]"
+          >
+          </kel-approval-list>
+        </mat-tab>
+      </mat-tab-group>
+    } @else {
+      <p>Loading event information...</p>
+    }
   </mat-card-content>
 </mat-card>

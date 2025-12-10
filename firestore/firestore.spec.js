@@ -447,9 +447,10 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      setDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+      setDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
         status: "Applied",
         appliedAt: new Date(),
+        userId: "alice",
       }),
     );
   });
@@ -458,9 +459,10 @@ describe("Per-event approval", () => {
     const bobDb = testEnv.authenticatedContext("bob").firestore();
 
     await assertFails(
-      setDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`), {
+      setDoc(doc(bobDb, `events/${colorado}/approvals/alice`), {
         status: "Applied",
         appliedAt: new Date(),
+        userId: "alice",
       }),
     );
   });
@@ -470,11 +472,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -482,7 +485,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      getDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`)),
+      getDoc(doc(aliceDb, `events/${colorado}/approvals/alice`)),
     );
   });
 
@@ -491,11 +494,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -503,7 +507,7 @@ describe("Per-event approval", () => {
     const bobDb = testEnv.authenticatedContext("bob").firestore();
 
     await assertFails(
-      getDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`)),
+      getDoc(doc(bobDb, `events/${colorado}/approvals/alice`)),
     );
   });
 
@@ -512,11 +516,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -524,7 +529,7 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      getDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`)),
+      getDoc(doc(amandaDb, `events/${colorado}/approvals/alice`)),
     );
   });
 
@@ -533,11 +538,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${newEvent}`,
+          `events/${newEvent}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -546,7 +552,7 @@ describe("Per-event approval", () => {
     // Amanda is admin for Colorado but not for newEvent
 
     await assertFails(
-      getDoc(doc(amandaDb, `users/alice/eventApprovals/${newEvent}`)),
+      getDoc(doc(amandaDb, `events/${newEvent}/approvals/alice`)),
     );
   });
 
@@ -555,11 +561,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -567,7 +574,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertFails(
-      updateDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
         status: "Approved",
       }),
     );
@@ -578,11 +585,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -590,7 +598,7 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`), {
+      updateDoc(doc(amandaDb, `events/${colorado}/approvals/alice`), {
         status: "Approved",
         approvedBy: "amanda",
         statusChangedAt: new Date(),
@@ -603,11 +611,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -615,7 +624,7 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`), {
+      updateDoc(doc(amandaDb, `events/${colorado}/approvals/alice`), {
         status: "Declined",
         declinedBy: "amanda",
         statusChangedAt: new Date(),
@@ -628,11 +637,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${newEvent}`,
+          `events/${newEvent}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -641,7 +651,7 @@ describe("Per-event approval", () => {
     // Amanda is admin for Colorado but not for newEvent
 
     await assertFails(
-      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${newEvent}`), {
+      updateDoc(doc(amandaDb, `events/${newEvent}/approvals/alice`), {
         status: "Approved",
         approvedBy: "amanda",
         statusChangedAt: new Date(),
@@ -654,11 +664,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date("2025-01-01"),
+          userId: "alice",
           notes: "Initial application",
         },
       );
@@ -667,7 +678,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+      updateDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
         notes: "Updated notes",
       }),
     );
@@ -678,11 +689,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -690,7 +702,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      deleteDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`)),
+      deleteDoc(doc(aliceDb, `events/${colorado}/approvals/alice`)),
     );
   });
 
@@ -699,11 +711,12 @@ describe("Per-event approval", () => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
+          userId: "alice",
         },
       );
     });
@@ -711,33 +724,33 @@ describe("Per-event approval", () => {
     const bobDb = testEnv.authenticatedContext("bob").firestore();
 
     await assertFails(
-      deleteDoc(doc(bobDb, `users/alice/eventApprovals/${colorado}`)),
+      deleteDoc(doc(bobDb, `events/${colorado}/approvals/alice`)),
     );
   });
 
-  it("should allow creating approval with eventId field for collection group queries", async function () {
+  it("should allow creating approval with userId field for queries", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      setDoc(doc(aliceDb, `users/alice/eventApprovals/${colorado}`), {
+      setDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
         status: "Applied",
         appliedAt: new Date(),
-        eventId: colorado,
+        userId: "alice",
       }),
     );
   });
 
-  it("should allow event admin to read approval with eventId field via direct access", async function () {
+  it("should allow event admin to read approval with userId field via direct access", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
-          eventId: colorado,
+          userId: "alice",
         },
       );
     });
@@ -745,21 +758,21 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      getDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`)),
+      getDoc(doc(amandaDb, `events/${colorado}/approvals/alice`)),
     );
   });
 
-  it("should allow event admin to update approval with eventId field", async function () {
+  it("should allow event admin to update approval with userId field", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
+          `events/${colorado}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
-          eventId: colorado,
+          userId: "alice",
         },
       );
     });
@@ -767,7 +780,7 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`), {
+      updateDoc(doc(amandaDb, `events/${colorado}/approvals/alice`), {
         status: "Approved",
         approvedBy: "amanda",
         statusChangedAt: new Date(),
@@ -775,17 +788,17 @@ describe("Per-event approval", () => {
     );
   });
 
-  it("should not allow admin from one event to access approval for another event even with eventId field", async function () {
+  it("should not allow admin from one event to access approval for another event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
         doc(
           context.firestore(),
-          `users/alice/eventApprovals/${newEvent}`,
+          `events/${newEvent}/approvals/alice`,
         ),
         {
           status: "Applied",
           appliedAt: new Date(),
-          eventId: newEvent,
+          userId: "alice",
         },
       );
     });
@@ -794,29 +807,19 @@ describe("Per-event approval", () => {
     // Amanda is admin for Colorado but not for newEvent
 
     await assertFails(
-      getDoc(doc(amandaDb, `users/alice/eventApprovals/${newEvent}`)),
+      getDoc(doc(amandaDb, `events/${newEvent}/approvals/alice`)),
     );
   });
 
-  it("should maintain backward compatibility - read approval without eventId field", async function () {
-    await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(
-        doc(
-          context.firestore(),
-          `users/alice/eventApprovals/${colorado}`,
-        ),
-        {
-          status: "Applied",
-          appliedAt: new Date(),
-          // No eventId field - backward compatibility test
-        },
-      );
-    });
+  it("should not allow user to create approval with non-Applied status", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
-    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
-
-    await assertSucceeds(
-      getDoc(doc(amandaDb, `users/alice/eventApprovals/${colorado}`)),
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
+        status: "Approved",
+        appliedAt: new Date(),
+        userId: "alice",
+      }),
     );
   });
 });

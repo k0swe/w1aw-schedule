@@ -63,7 +63,7 @@ export class ApprovalListComponent implements OnInit, OnDestroy {
   @Input() userList: Observable<UserSettings[]> = of([]);
   @Input() displayColumns = ['name', 'callsign', 'email'];
   @Input() emptyMessage = 'No users to display';
-  @Input() eventId?: string;
+  @Input({ required: true }) eventId!: string;
   userDataSource = new MatTableDataSource<UserSettings>();
   @ViewChild(MatSort, { static: true }) sort = new MatSort();
   userListSubscription: Subscription | null = null;
@@ -81,10 +81,18 @@ export class ApprovalListComponent implements OnInit, OnDestroy {
   }
 
   approve(id: string) {
+    if (!this.eventId) {
+      console.error('Cannot approve: eventId is required');
+      return;
+    }
     this.userSettingsService.approve(id, this.eventId).subscribe();
   }
 
   decline(id: string) {
+    if (!this.eventId) {
+      console.error('Cannot decline: eventId is required');
+      return;
+    }
     this.userSettingsService.decline(id, this.eventId).subscribe();
   }
 
