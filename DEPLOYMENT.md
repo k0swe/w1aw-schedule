@@ -94,8 +94,17 @@ gcloud iam workload-identity-pools providers create-oidc "github-provider" \
   --workload-identity-pool="github-actions" \
   --display-name="GitHub Provider" \
   --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
+  --attribute-condition="assertion.repository_owner=='k0swe'" \
   --issuer-uri="https://token.actions.githubusercontent.com"
 ```
+
+**What does `--attribute-condition` do?**
+
+The `--attribute-condition` parameter is a security requirement that validates claims from the GitHub OIDC token. In this case, `assertion.repository_owner=='k0swe'` ensures that only repositories owned by the `k0swe` user/organization can use this identity provider. This prevents other GitHub users from potentially impersonating your service account.
+
+**Why is this parameter required?**
+
+Google Cloud requires an attribute condition when you use certain attribute mappings (like `attribute.repository_owner`). Without this condition, the command will fail with an error stating that "The attribute condition must reference one of the provider's claims." This is a security best practice to ensure you explicitly define which tokens are acceptable.
 
 ### 6. Allow GitHub Actions to Impersonate the Service Account
 
@@ -174,6 +183,25 @@ When a deployment workflow runs:
 - **Easier key rotation**: No manual key rotation needed
 
 ## Troubleshooting
+
+### INVALID_ARGUMENT: The attribute condition must reference one of the provider's claims
+
+If you encounter this error when creating the Workload Identity Provider in step 5:
+
+```
+ERROR: (gcloud.iam.workload-identity-pools.providers.create-oidc) INVALID_ARGUMENT: 
+The attribute condition must reference one of the provider's claims.
+```
+
+This means you need to add the `--attribute-condition` parameter to your command. Google Cloud requires this security measure when using attribute mappings like `attribute.repository_owner`. 
+
+**Solution:** Make sure your command includes the `--attribute-condition` parameter as shown in step 5:
+
+```bash
+--attribute-condition="assertion.repository_owner=='k0swe'"
+```
+
+This condition restricts the provider to only accept tokens from repositories owned by `k0swe`, improving security.
 
 ### Authentication Errors
 
