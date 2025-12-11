@@ -130,7 +130,7 @@ export class AppComponent {
 
   onEventChange(event: EventInfoWithId): void {
     this.selectedEvent$.next(event);
-    
+
     // Navigate to the corresponding page in the new event if we're on an event-specific page
     const currentUrl = this.router.url;
     const scheduleMatch = currentUrl.match(/\/events\/[^/]+\/schedule/);
