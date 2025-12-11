@@ -9,6 +9,15 @@ The deployment process uses GitHub Actions to automatically deploy to Firebase H
 using long-lived service account keys, the deployment uses **Workload Identity Federation**, which
 allows GitHub Actions to authenticate directly with Google Cloud using short-lived OIDC tokens.
 
+The repository includes two types of deployments:
+
+1. **Production Deployment** (`.github/workflows/deploy.yml`): Deploys to production when code is
+   merged to the `main` branch. Includes hosting, Firestore rules/indexes, and Cloud Functions.
+
+2. **Preview Channel Deployment** (`.github/workflows/preview.yml`): Deploys to a temporary preview
+   channel when a pull request is opened. Only includes the web application for quick testing.
+   Preview channels expire after 7 days and are automatically cleaned up when PRs are closed.
+
 ## Prerequisites
 
 - A Firebase project (this project uses `w1aw-schedule-76a82`)
@@ -250,8 +259,57 @@ If you see "provider not found" errors:
 2. Verify the workload identity pool and provider were created successfully
 3. Check that you're using the correct project ID
 
+## Preview Channels for Pull Requests
+
+Firebase Hosting preview channels allow you to test changes before merging to production. This
+repository includes automated preview channel deployments for all pull requests.
+
+### How It Works
+
+1. When a PR is opened against the `main` branch, the `.github/workflows/preview.yml` workflow runs
+2. The web application is built using `npm run build:prod`
+3. A unique preview channel is created based on the PR number (e.g., `pr-123`)
+4. The built application is deployed to the preview channel
+5. A comment is automatically posted on the PR with the preview URL
+6. When the PR is closed or merged, the `.github/workflows/cleanup-preview.yml` workflow deletes
+   the preview channel
+
+### Preview Channel Features
+
+- **Unique URLs**: Each PR gets its own preview URL like
+  `https://w1aw-schedule-76a82--pr-123-RANDOM.web.app`
+- **Automatic Expiration**: Preview channels expire after 7 days
+- **Web Only**: Preview deployments only include the web application, not Firestore rules or Cloud
+  Functions. The preview will connect to the production Firebase services.
+- **No Manual Cleanup Needed**: Channels are automatically deleted when PRs are closed
+
+### Security Considerations
+
+Since preview channels connect to the production Firebase project:
+
+- Firestore security rules still apply
+- Authentication is required for protected features
+- Preview deployments cannot modify Firestore rules or deploy new Cloud Functions
+- Test data created in previews will be in the production database (use with care)
+
+### Manual Preview Channel Management
+
+If needed, you can manually manage preview channels using the Firebase CLI:
+
+```bash
+# List all preview channels
+firebase hosting:channel:list --project w1aw-schedule-76a82
+
+# Create a preview channel manually
+firebase hosting:channel:deploy CHANNEL_NAME --project w1aw-schedule-76a82
+
+# Delete a preview channel
+firebase hosting:channel:delete CHANNEL_NAME --project w1aw-schedule-76a82 --force
+```
+
 ## Additional Resources
 
 - [Google Cloud Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)
 - [GitHub Actions OIDC Integration](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
 - [Firebase Deployment with GitHub Actions](https://firebase.google.com/docs/hosting/github-integration)
+- [Firebase Hosting Preview Channels](https://firebase.google.com/docs/hosting/test-preview-deploy)
