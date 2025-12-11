@@ -104,4 +104,47 @@ describe('AppComponent', () => {
 
     expect(app.selectedEvent$.value).toEqual(newEvent);
   });
+
+  it('should receive events sorted chronologically from service', (done) => {
+    // Create events with different start times
+    const now = Date.now();
+    const event1: EventInfoWithId = {
+      id: 'event-1',
+      slug: 'event-1-slug',
+      name: 'First Event',
+      coordinatorName: 'Coordinator 1',
+      coordinatorCallsign: 'CALL1',
+      admins: [],
+      startTime: Timestamp.fromMillis(now),
+      endTime: Timestamp.fromMillis(now + 86400000),
+      timeZoneId: 'America/Denver',
+    };
+
+    const event2: EventInfoWithId = {
+      id: 'event-2',
+      slug: 'event-2-slug',
+      name: 'Second Event',
+      coordinatorName: 'Coordinator 2',
+      coordinatorCallsign: 'CALL2',
+      admins: [],
+      startTime: Timestamp.fromMillis(now + 172800000), // 2 days later
+      endTime: Timestamp.fromMillis(now + 259200000),
+      timeZoneId: 'America/Denver',
+    };
+
+    // Return events already sorted by startTime (as getAllEvents should do)
+    mockEventInfoService.getAllEvents.and.returnValue(of([event1, event2]));
+
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    fixture.detectChanges();
+
+    setTimeout(() => {
+      const events = app.events$.value;
+      expect(events.length).toBe(2);
+      // Verify events are in chronological order
+      expect(events[0].startTime.toMillis()).toBeLessThan(events[1].startTime.toMillis());
+      done();
+    }, 100);
+  });
 });
