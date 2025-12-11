@@ -48,4 +48,60 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
+
+  it('should load all events on initialization', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(mockEventInfoService.getAllEvents).toHaveBeenCalled();
+    expect(app.events$.value.length).toBe(1);
+  });
+
+  it('should set Colorado event as default when available', (done) => {
+    const coloradoEvent: EventInfoWithId = {
+      id: 'jZbFyscc23zjkEGRuPAI',
+      slug: 'usa250-co-may',
+      name: 'Colorado Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
+    mockEventInfoService.getAllEvents.and.returnValue(of([coloradoEvent]));
+
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    fixture.detectChanges();
+
+    setTimeout(() => {
+      expect(app.selectedEvent$.value?.slug).toBe('usa250-co-may');
+      done();
+    }, 100);
+  });
+
+  it('should change selected event when onEventChange is called', () => {
+    const newEvent: EventInfoWithId = {
+      id: 'new-id',
+      slug: 'new-slug',
+      name: 'New Event',
+      coordinatorName: 'New Coordinator',
+      coordinatorCallsign: 'NEW',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    fixture.detectChanges();
+
+    app.onEventChange(newEvent);
+
+    expect(app.selectedEvent$.value).toEqual(newEvent);
+  });
 });

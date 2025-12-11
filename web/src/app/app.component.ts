@@ -65,7 +65,7 @@ export class AppComponent {
 
   constructor() {
     this.titleService.setTitle(this.appName);
-    
+
     // Fetch all events
     this.eventInfoService
       .getAllEvents()
@@ -78,7 +78,7 @@ export class AppComponent {
           this.selectedEvent$.next(coloradoEvent || events[0]);
         }
       });
-    
+
     // Subscribe to router events to dynamically check admin status based on current route
     // startWith(null) emits an initial value to trigger the admin check immediately on component initialization
     this.router.events
