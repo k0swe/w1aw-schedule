@@ -60,10 +60,10 @@ jobs:
           firebase --version
           
           # Deploy to preview channel with JSON output for reliable parsing
+          # Note: Not using --only hosting because firebase.json uses "source": "web" (web frameworks)
           firebase hosting:channel:deploy $CHANNEL_ID \
             --expires 7d \
             --project w1aw-schedule-76a82 \
-            --only hosting \
             --json > deploy-output.json 2>&1
           
           DEPLOY_EXIT_CODE=$?
