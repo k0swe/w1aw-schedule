@@ -86,13 +86,14 @@ jobs:
           fi
           
           # Extract the preview URL from JSON output
+          # The file contains build output followed by JSON, so grep from first { onwards
           # The URL is nested under the project ID key
-          PREVIEW_URL=$(jq -r '.result | to_entries | .[0].value.url // empty' deploy-output.json 2>/dev/null || echo "")
+          PREVIEW_URL=$(grep -A 100 '^{' deploy-output.json | jq -r '.result | to_entries | .[0].value.url // empty' 2>/dev/null || echo "")
           
           if [ -z "$PREVIEW_URL" ]; then
             echo "Error: Could not extract preview URL from Firebase output"
-            echo "JSON structure:"
-            jq '.' deploy-output.json 2>/dev/null || echo "Not valid JSON"
+            echo "Attempting to parse JSON:"
+            grep -A 100 '^{' deploy-output.json | jq '.' 2>/dev/null || echo "Not valid JSON"
             exit 1
           fi
           
