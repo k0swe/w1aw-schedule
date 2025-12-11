@@ -6,6 +6,7 @@ import {
   doc,
   docData,
   limit,
+  orderBy,
   query,
   where,
 } from '@angular/fire/firestore';
@@ -38,5 +39,13 @@ export class EventInfoService {
     return collectionData(eventsQuery, { idField: 'id' }).pipe(
       map((events) => events[0] as EventInfoWithId | undefined),
     );
+  }
+
+  public getAllEvents(): Observable<EventInfoWithId[]> {
+    const eventsCol = collection(this.firestore, 'events');
+    const eventsQuery = query(eventsCol, orderBy('startTime', 'asc'));
+    return collectionData(eventsQuery, { idField: 'id' }) as Observable<
+      EventInfoWithId[]
+    >;
   }
 }
