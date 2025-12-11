@@ -57,30 +57,36 @@ export class AgendaComponent implements OnDestroy {
   eventId: string = COLORADO_DOC_ID;
 
   constructor() {
-    // Get slug from route parameter, default to Colorado slug
-    const slug = this.route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
+    // React to route parameter changes
+    this.route.paramMap
+      .pipe(
+        takeUntil(this.destroy$),
+      )
+      .subscribe((params) => {
+        const slug = params.get('slug') || COLORADO_SLUG;
 
-    // Resolve slug to eventId
-    if (slug === COLORADO_SLUG) {
-      // Optimization: use default Colorado event ID without query
-      this.eventId = COLORADO_DOC_ID;
-      this.initializeComponent();
-    } else {
-      // Query Firestore to find event by slug
-      this.eventInfoService
-        .getEventBySlug(slug)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((eventInfo) => {
-          if (eventInfo?.id) {
-            this.eventId = eventInfo.id;
-            this.initializeComponent();
-          } else {
-            // Fallback to Colorado event if slug not found
-            this.eventId = COLORADO_DOC_ID;
-            this.initializeComponent();
-          }
-        });
-    }
+        // Resolve slug to eventId
+        if (slug === COLORADO_SLUG) {
+          // Optimization: use default Colorado event ID without query
+          this.eventId = COLORADO_DOC_ID;
+          this.initializeComponent();
+        } else {
+          // Query Firestore to find event by slug
+          this.eventInfoService
+            .getEventBySlug(slug)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((eventInfo) => {
+              if (eventInfo?.id) {
+                this.eventId = eventInfo.id;
+                this.initializeComponent();
+              } else {
+                // Fallback to Colorado event if slug not found
+                this.eventId = COLORADO_DOC_ID;
+                this.initializeComponent();
+              }
+            });
+        }
+      });
   }
 
   private initializeComponent() {

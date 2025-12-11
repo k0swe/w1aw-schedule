@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Timestamp } from 'firebase/firestore';
 import { of } from 'rxjs';
@@ -192,6 +193,122 @@ describe('AppComponent', () => {
     app.onEventChange(newEvent);
 
     expect(app.selectedEvent$.value).toEqual(newEvent);
+  });
+
+  it('should navigate to schedule page when switching events on schedule page', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+    
+    // Simulate being on schedule page
+    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/schedule');
+
+    const newEvent: EventInfoWithId = {
+      id: 'new-id',
+      slug: 'new-slug',
+      name: 'New Event',
+      coordinatorName: 'New Coordinator',
+      coordinatorCallsign: 'NEW',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
+    app.onEventChange(newEvent);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'schedule']);
+  });
+
+  it('should navigate to agenda page when switching events on agenda page', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+    
+    // Simulate being on agenda page
+    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/agenda');
+
+    const newEvent: EventInfoWithId = {
+      id: 'new-id',
+      slug: 'new-slug',
+      name: 'New Event',
+      coordinatorName: 'New Coordinator',
+      coordinatorCallsign: 'NEW',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
+    app.onEventChange(newEvent);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'agenda']);
+  });
+
+  it('should navigate to approvals page when switching events on approvals page if user is admin', (done) => {
+    mockAuthService.userIsAdmin.and.returnValue(of(true));
+    
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+    
+    // Simulate being on approvals page
+    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/approvals');
+
+    const newEvent: EventInfoWithId = {
+      id: 'new-id',
+      slug: 'new-slug',
+      name: 'New Event',
+      coordinatorName: 'New Coordinator',
+      coordinatorCallsign: 'NEW',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
+    app.onEventChange(newEvent);
+
+    setTimeout(() => {
+      expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
+      expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'approvals']);
+      done();
+    }, 100);
+  });
+
+  it('should navigate to schedule page when switching events on approvals page if user is not admin', (done) => {
+    mockAuthService.userIsAdmin.and.returnValue(of(false));
+    
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    const router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
+    
+    // Simulate being on approvals page
+    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/approvals');
+
+    const newEvent: EventInfoWithId = {
+      id: 'new-id',
+      slug: 'new-slug',
+      name: 'New Event',
+      coordinatorName: 'New Coordinator',
+      coordinatorCallsign: 'NEW',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
+    app.onEventChange(newEvent);
+
+    setTimeout(() => {
+      expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
+      expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'schedule']);
+      done();
+    }, 100);
   });
 
   it('should receive events sorted chronologically from service', (done) => {
