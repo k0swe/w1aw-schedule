@@ -16,7 +16,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, startWith, switchMap, take } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -143,7 +143,7 @@ export class AppComponent {
       this.router.navigate(['/events', event.slug, 'agenda']);
     } else if (approvalsMatch) {
       // Check if user is admin for the new event before navigating to approvals
-      this.authService.userIsAdmin(event.id).subscribe((isAdmin) => {
+      this.authService.userIsAdmin(event.id).pipe(take(1)).subscribe((isAdmin) => {
         if (isAdmin) {
           this.router.navigate(['/events', event.slug, 'approvals']);
         } else {
