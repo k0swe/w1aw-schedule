@@ -4,5 +4,9 @@ build/
 # Node.js dependency directory
 node_modules/
 
+# Environment variables
+.env
+.env.*
+
 creds.json
 *.log
