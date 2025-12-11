@@ -42,3 +42,16 @@ firebase functions:config:get > functions/.runtimeconfig.json
 The application is automatically deployed to Firebase Hosting using GitHub Actions with Workload
 Identity Federation for secure, keyless authentication. See [DEPLOYMENT.md](DEPLOYMENT.md) for
 detailed setup instructions.
+
+### Preview Channels
+
+Pull requests are automatically deployed to Firebase Hosting preview channels for testing before
+merging. When you open a PR:
+
+- A unique preview channel is created (e.g., `pr-123`)
+- The web application is built and deployed to the preview URL
+- A comment is automatically added to the PR with the preview URL
+- Preview channels expire after 7 days
+- Preview channels are automatically deleted when the PR is closed
+
+Note: Preview deployments only include the web application, not Firestore rules or Cloud Functions.
