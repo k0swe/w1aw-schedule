@@ -39,4 +39,11 @@ export class EventInfoService {
       map((events) => events[0] as EventInfoWithId | undefined),
     );
   }
+
+  public getAllEvents(): Observable<EventInfoWithId[]> {
+    const eventsCol = collection(this.firestore, 'events');
+    return collectionData(eventsCol, { idField: 'id' }) as Observable<
+      EventInfoWithId[]
+    >;
+  }
 }

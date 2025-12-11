@@ -30,8 +30,9 @@ describe('AppComponent', () => {
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService = jasmine.createSpyObj('EventInfoService', ['getEventBySlug']);
+    mockEventInfoService = jasmine.createSpyObj('EventInfoService', ['getEventBySlug', 'getAllEvents']);
     mockEventInfoService.getEventBySlug.and.returnValue(of(mockEventInfo));
+    mockEventInfoService.getAllEvents.and.returnValue(of([mockEventInfo]));
 
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule, AppComponent],

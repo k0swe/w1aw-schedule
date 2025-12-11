@@ -2,6 +2,8 @@ import { AsyncPipe, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatOption, MatSelect } from '@angular/material/select';
 import { MatIcon } from '@angular/material/icon';
 import {
   MatDivider,
@@ -20,7 +22,7 @@ import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
 import { AvatarComponent } from './avatar/avatar.component';
 import { EventInfoService } from './event-info/event-info.service';
-import { COLORADO_DOC_ID, COLORADO_SLUG } from './schedule/shared-constants';
+import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfoWithId } from './schedule/shared-constants';
 
 @Component({
   selector: 'kel-root',
@@ -41,6 +43,9 @@ import { COLORADO_DOC_ID, COLORADO_SLUG } from './schedule/shared-constants';
     MatListItem,
     MatListItemIcon,
     MatDivider,
+    MatCard,
+    MatSelect,
+    MatOption,
     RouterOutlet,
     AsyncPipe,
   ],
@@ -52,12 +57,27 @@ export class AppComponent {
   private eventInfoService = inject(EventInfoService);
 
   appName = environment.appName;
-  // Default slug for the Colorado event - should be dynamic based on user's selected event in the future
-  defaultEventSlug = COLORADO_SLUG;
+  // Track the currently selected event
+  selectedEvent$ = new BehaviorSubject<EventInfoWithId | undefined>(undefined);
+  // List of all available events
+  events$ = new BehaviorSubject<EventInfoWithId[]>([]);
   userIsAdmin$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
     this.titleService.setTitle(this.appName);
+    
+    // Fetch all events
+    this.eventInfoService
+      .getAllEvents()
+      .pipe(takeUntilDestroyed())
+      .subscribe((events) => {
+        this.events$.next(events);
+        // Set default selected event to Colorado if no event is selected
+        if (!this.selectedEvent$.value && events.length > 0) {
+          const coloradoEvent = events.find((e) => e.slug === COLORADO_SLUG);
+          this.selectedEvent$.next(coloradoEvent || events[0]);
+        }
+      });
     
     // Subscribe to router events to dynamically check admin status based on current route
     // startWith(null) emits an initial value to trigger the admin check immediately on component initialization
@@ -87,5 +107,9 @@ export class AppComponent {
       route = route.firstChild;
     }
     return route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
+  }
+
+  onEventChange(event: EventInfoWithId): void {
+    this.selectedEvent$.next(event);
   }
 }

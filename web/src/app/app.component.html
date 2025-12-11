@@ -27,24 +27,38 @@
         <mat-icon matListItemIcon>person</mat-icon>
         My Settings
       </mat-list-item>
-      <mat-list-item [routerLink]="'/events/' + defaultEventSlug + '/schedule'">
-        <mat-icon matListItemIcon>calendar_month</mat-icon>
-        Full Schedule
-      </mat-list-item>
-      <mat-list-item [routerLink]="'/events/' + defaultEventSlug + '/agenda'">
-        <mat-icon matListItemIcon>event_available</mat-icon>
-        My Agenda
-      </mat-list-item>
       <mat-divider></mat-divider>
-      @if (userIsAdmin$ | async) {
-        <mat-list-item
-          [routerLink]="'/events/' + defaultEventSlug + '/approvals'"
+      <mat-card class="event-selector-card">
+        <mat-select
+          class="event-selector"
+          [value]="selectedEvent$ | async"
+          (selectionChange)="onEventChange($event.value)"
+          placeholder="Select Event"
         >
-          <mat-icon matListItemIcon>verified</mat-icon>
-          Approve Users
-        </mat-list-item>
-        <mat-divider></mat-divider>
-      }
+          @for (event of events$ | async; track event.id) {
+            <mat-option [value]="event">{{ event.name }}</mat-option>
+          }
+        </mat-select>
+        @if (selectedEvent$ | async; as selectedEvent) {
+          <mat-list-item [routerLink]="'/events/' + selectedEvent.slug + '/schedule'">
+            <mat-icon matListItemIcon>calendar_month</mat-icon>
+            Full Schedule
+          </mat-list-item>
+          <mat-list-item [routerLink]="'/events/' + selectedEvent.slug + '/agenda'">
+            <mat-icon matListItemIcon>event_available</mat-icon>
+            My Agenda
+          </mat-list-item>
+          @if (userIsAdmin$ | async) {
+            <mat-list-item
+              [routerLink]="'/events/' + selectedEvent.slug + '/approvals'"
+            >
+              <mat-icon matListItemIcon>verified</mat-icon>
+              Approve Users
+            </mat-list-item>
+          }
+        }
+      </mat-card>
+      <mat-divider></mat-divider>
       <a
         mat-list-item
         href="https://github.com/k0swe/w1aw-schedule/issues"
