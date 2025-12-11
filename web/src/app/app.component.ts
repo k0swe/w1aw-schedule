@@ -72,10 +72,12 @@ export class AppComponent {
       .pipe(takeUntilDestroyed())
       .subscribe((events) => {
         this.events$.next(events);
-        // Set default selected event to Colorado if no event is selected
-        if (!this.selectedEvent$.value && events.length > 0) {
-          const coloradoEvent = events.find((e) => e.slug === COLORADO_SLUG);
-          this.selectedEvent$.next(coloradoEvent || events[0]);
+        // Set default selected event to next/current event if no event is selected
+        if (!this.selectedEvent$.value) {
+          const defaultEvent = this.selectDefaultEvent(events);
+          if (defaultEvent) {
+            this.selectedEvent$.next(defaultEvent);
+          }
         }
       });
 
@@ -107,6 +109,23 @@ export class AppComponent {
       route = route.firstChild;
     }
     return route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
+  }
+
+  private selectDefaultEvent(events: EventInfoWithId[]): EventInfoWithId | undefined {
+    if (events.length === 0) {
+      return undefined;
+    }
+
+    // Events are already sorted by startTime (ascending)
+    // Find the first event that hasn't ended yet (current or future)
+    const now = Date.now();
+    const currentOrFutureEvent = events.find(
+      (event) => event.endTime.toMillis() > now
+    );
+
+    // If found a current/future event, use it
+    // Otherwise, use the last event (most recent past event)
+    return currentOrFutureEvent || events[events.length - 1];
   }
 
   onEventChange(event: EventInfoWithId): void {

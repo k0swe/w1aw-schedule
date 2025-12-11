@@ -58,27 +58,116 @@ describe('AppComponent', () => {
     expect(app.events$.value.length).toBe(1);
   });
 
-  it('should set Colorado event as default when available', (done) => {
-    const coloradoEvent: EventInfoWithId = {
-      id: 'jZbFyscc23zjkEGRuPAI',
-      slug: 'usa250-co-may',
-      name: 'Colorado Event',
+  it('should set current event as default when available', (done) => {
+    const now = Date.now();
+    const pastEvent: EventInfoWithId = {
+      id: 'past-event-id',
+      slug: 'past-event-slug',
+      name: 'Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
       admins: [],
-      startTime: Timestamp.now(),
-      endTime: Timestamp.now(),
+      startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
+      endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService.getAllEvents.and.returnValue(of([coloradoEvent]));
+    const currentEvent: EventInfoWithId = {
+      id: 'current-event-id',
+      slug: 'current-event-slug',
+      name: 'Current Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      admins: [],
+      startTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
+      endTime: Timestamp.fromMillis(now + 86400000), // 1 day from now
+      timeZoneId: 'America/Denver',
+    };
+
+    mockEventInfoService.getAllEvents.and.returnValue(of([pastEvent, currentEvent]));
 
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
     setTimeout(() => {
-      expect(app.selectedEvent$.value?.slug).toBe('usa250-co-may');
+      expect(app.selectedEvent$.value?.slug).toBe('current-event-slug');
+      done();
+    }, 100);
+  });
+
+  it('should set next future event as default when no current event', (done) => {
+    const now = Date.now();
+    const pastEvent: EventInfoWithId = {
+      id: 'past-event-id',
+      slug: 'past-event-slug',
+      name: 'Past Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      admins: [],
+      startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
+      endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
+      timeZoneId: 'America/Denver',
+    };
+
+    const futureEvent: EventInfoWithId = {
+      id: 'future-event-id',
+      slug: 'future-event-slug',
+      name: 'Future Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      admins: [],
+      startTime: Timestamp.fromMillis(now + 86400000), // 1 day from now
+      endTime: Timestamp.fromMillis(now + 172800000), // 2 days from now
+      timeZoneId: 'America/Denver',
+    };
+
+    mockEventInfoService.getAllEvents.and.returnValue(of([pastEvent, futureEvent]));
+
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    fixture.detectChanges();
+
+    setTimeout(() => {
+      expect(app.selectedEvent$.value?.slug).toBe('future-event-slug');
+      done();
+    }, 100);
+  });
+
+  it('should set last event as default when all events are in the past', (done) => {
+    const now = Date.now();
+    const olderPastEvent: EventInfoWithId = {
+      id: 'older-past-event-id',
+      slug: 'older-past-event-slug',
+      name: 'Older Past Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      admins: [],
+      startTime: Timestamp.fromMillis(now - 259200000), // 3 days ago
+      endTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
+      timeZoneId: 'America/Denver',
+    };
+
+    const recentPastEvent: EventInfoWithId = {
+      id: 'recent-past-event-id',
+      slug: 'recent-past-event-slug',
+      name: 'Recent Past Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      admins: [],
+      startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
+      endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
+      timeZoneId: 'America/Denver',
+    };
+
+    mockEventInfoService.getAllEvents.and.returnValue(of([olderPastEvent, recentPastEvent]));
+
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    fixture.detectChanges();
+
+    setTimeout(() => {
+      expect(app.selectedEvent$.value?.slug).toBe('recent-past-event-slug');
       done();
     }, 100);
   });
