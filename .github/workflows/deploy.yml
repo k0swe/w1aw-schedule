@@ -52,8 +52,6 @@ jobs:
       - name: Deploy to Firebase
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
-          DISCORD_REDIRECT_URI: ${{ vars.DISCORD_REDIRECT_URI }}
-          FINAL_REDIRECT_URI: ${{ vars.FINAL_REDIRECT_URI }}
         run: firebase deploy --only hosting,firestore:rules,firestore:indexes,functions --project w1aw-schedule-76a82
 
       - name: Tag as deployed
