@@ -53,20 +53,21 @@ jobs:
         run: |
           CHANNEL_ID="pr-${{ github.event.pull_request.number }}"
           
-          # Deploy to preview channel and capture output
+          # Deploy to preview channel with JSON output for reliable parsing
           firebase hosting:channel:deploy $CHANNEL_ID \
             --expires 7d \
             --project w1aw-schedule-76a82 \
-            --only hosting 2>&1 | tee deploy-output.txt
+            --only hosting \
+            --json > deploy-output.json
           
-          # Extract the preview URL from the output
-          PREVIEW_URL=$(grep -oP 'https://[^\s]+' deploy-output.txt | head -1)
+          # Extract the preview URL from JSON output
+          PREVIEW_URL=$(jq -r '.result.url // .result."w1aw-schedule".url // empty' deploy-output.json 2>/dev/null || echo "")
           
           if [ -z "$PREVIEW_URL" ]; then
-            echo "Warning: Could not extract preview URL from output"
+            echo "Error: Could not extract preview URL from Firebase output"
             echo "Deploy output:"
-            cat deploy-output.txt
-            PREVIEW_URL="Deploy completed but URL not found in output"
+            cat deploy-output.json
+            exit 1
           fi
           
           echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
