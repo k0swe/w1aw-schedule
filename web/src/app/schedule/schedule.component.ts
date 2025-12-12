@@ -2,6 +2,7 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   inject,
@@ -93,6 +94,7 @@ export class ScheduleComponent implements OnDestroy {
   private eventInfoService = inject(EventInfoService);
   private clipboard = inject(Clipboard);
   private snackBarService = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -152,6 +154,11 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   private initializeComponent() {
+    this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
+    this.viewBandGroup =
+      this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
+    this.viewMode = this.route.snapshot.queryParams['mode'] || 'phone';
+
     // Get event info to use startTime and endTime
     this.eventInfoService
       .getEventInfo(this.eventId)
@@ -173,13 +180,12 @@ export class ScheduleComponent implements OnDestroy {
           // Recalculate prevDay and nextDay with the loaded event times
           this.updatePrevNextDays();
           this.changeParams();
+
+          // Trigger change detection to update the view
+          this.cdr.markForCheck();
         }
       });
 
-    this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
-    this.viewBandGroup =
-      this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
-    this.viewMode = this.route.snapshot.queryParams['mode'] || 'phone';
     this.scheduleService
       .findUserShifts(
         this.authenticationService.user$.getValue()!.uid,
