@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
+  SimpleChanges,
   ViewChild,
   inject,
 } from '@angular/core';
@@ -57,7 +59,7 @@ import {
     MatNoDataRow,
   ],
 })
-export class ApprovalListComponent implements OnInit, OnDestroy {
+export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
   private userSettingsService = inject(UserSettingsService);
 
   @Input() userList: Observable<UserSettings[]> = of([]);
@@ -70,6 +72,20 @@ export class ApprovalListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.sort.sort({ id: 'callsign', start: 'asc', disableClear: false });
+    this.subscribeToUserList();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // When userList input changes, resubscribe to the new observable
+    if (changes['userList'] && !changes['userList'].firstChange) {
+      this.subscribeToUserList();
+    }
+  }
+
+  private subscribeToUserList() {
+    // Unsubscribe from previous subscription if it exists
+    this.userListSubscription?.unsubscribe();
+    // Subscribe to the new userList observable
     this.userListSubscription = this.userList.subscribe((users) => {
       this.userDataSource.data = users;
       this.userDataSource.sort = this.sort;

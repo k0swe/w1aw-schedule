@@ -16,7 +16,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, startWith, switchMap, take } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -130,5 +130,27 @@ export class AppComponent {
 
   onEventChange(event: EventInfoWithId): void {
     this.selectedEvent$.next(event);
+
+    // Navigate to the corresponding page in the new event if we're on an event-specific page
+    const currentUrl = this.router.url;
+    const scheduleMatch = currentUrl.match(/\/events\/[^/]+\/schedule/);
+    const agendaMatch = currentUrl.match(/\/events\/[^/]+\/agenda/);
+    const approvalsMatch = currentUrl.match(/\/events\/[^/]+\/approvals/);
+    
+    if (scheduleMatch) {
+      this.router.navigate(['/events', event.slug, 'schedule']);
+    } else if (agendaMatch) {
+      this.router.navigate(['/events', event.slug, 'agenda']);
+    } else if (approvalsMatch) {
+      // Check if user is admin for the new event before navigating to approvals
+      this.authService.userIsAdmin(event.id).pipe(take(1)).subscribe((isAdmin) => {
+        if (isAdmin) {
+          this.router.navigate(['/events', event.slug, 'approvals']);
+        } else {
+          // User is not admin for this event, default to schedule page
+          this.router.navigate(['/events', event.slug, 'schedule']);
+        }
+      });
+    }
   }
 }
