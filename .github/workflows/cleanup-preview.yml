@@ -35,25 +35,8 @@ jobs:
           CHANNEL_ID="pr-${{ github.event.pull_request.number }}"
           
           # Delete the preview channel
-          # Note: Firebase CLI does not automatically remove the preview URL from Firebase Auth
-          # authorized domains according to official Firebase docs. We handle this manually
-          # using gcloud commands after deletion.
+          # Note: The entire *.web.app domain is manually authorized in Firebase Auth,
+          # so no cleanup of Auth domains is needed for individual preview channels.
           firebase hosting:channel:delete $CHANNEL_ID \
             --project w1aw-schedule-76a82 \
             --force || echo "Channel may have already expired or been deleted"
-
-      - name: Remove Auth domain
-        run: |
-          # Construct the expected preview domain
-          CHANNEL_ID="pr-${{ github.event.pull_request.number }}"
-          PREVIEW_DOMAIN="${CHANNEL_ID}--w1aw-schedule-76a82.web.app"
-          
-          echo "Removing $PREVIEW_DOMAIN from Firebase Auth authorized domains..."
-          
-          # Remove the domain
-          gcloud alpha identity platform config update \
-            --project w1aw-schedule-76a82 \
-            --remove-authorized-domains="$PREVIEW_DOMAIN" \
-            || echo "Warning: Failed to remove Auth domain. It may have already been removed or never existed."
-          
-          echo "✅ Auth domain cleanup completed"
