@@ -129,7 +129,7 @@ describe('ScheduleComponent', () => {
 
       // Result should be today normalized to midnight UTC
       const expectedDate = new Date(
-        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
       );
       expect(result.getTime()).toBe(expectedDate.getTime());
     });
@@ -160,7 +160,7 @@ describe('ScheduleComponent', () => {
       setTimeout(() => {
         const expectedDate = new Date('2026-05-29');
         expect(component.viewDay.toISOString().split('T')[0]).toBe(
-          expectedDate.toISOString().split('T')[0]
+          expectedDate.toISOString().split('T')[0],
         );
         done();
       }, 100);

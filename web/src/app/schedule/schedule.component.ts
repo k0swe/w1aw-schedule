@@ -31,7 +31,7 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, of } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
@@ -161,7 +161,7 @@ export class ScheduleComponent implements OnDestroy {
           // Use exact times from event info (no normalization)
           this.eventStartTime = eventInfo.startTime.toDate();
           this.eventEndTime = eventInfo.endTime.toDate();
-          
+
           // Set viewDay based on query params or nearest day to today
           const dayParam = this.route.snapshot.queryParams['day'];
           if (dayParam) {
@@ -169,7 +169,7 @@ export class ScheduleComponent implements OnDestroy {
           } else {
             this.viewDay = this.getNearestDayInEventRange();
           }
-          
+
           // Recalculate prevDay and nextDay with the loaded event times
           this.updatePrevNextDays();
           this.changeParams();
@@ -216,30 +216,36 @@ export class ScheduleComponent implements OnDestroy {
   private getNearestDayInEventRange(): Date {
     // Get today's date at midnight UTC for comparison
     const now = new Date();
-    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    
+    const todayUTC = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
+
     // Normalize event start and end to midnight UTC for day-level comparison
-    const eventStart = new Date(Date.UTC(
-      this.eventStartTime.getUTCFullYear(),
-      this.eventStartTime.getUTCMonth(),
-      this.eventStartTime.getUTCDate()
-    ));
-    const eventEnd = new Date(Date.UTC(
-      this.eventEndTime.getUTCFullYear(),
-      this.eventEndTime.getUTCMonth(),
-      this.eventEndTime.getUTCDate()
-    ));
-    
+    const eventStart = new Date(
+      Date.UTC(
+        this.eventStartTime.getUTCFullYear(),
+        this.eventStartTime.getUTCMonth(),
+        this.eventStartTime.getUTCDate(),
+      ),
+    );
+    const eventEnd = new Date(
+      Date.UTC(
+        this.eventEndTime.getUTCFullYear(),
+        this.eventEndTime.getUTCMonth(),
+        this.eventEndTime.getUTCDate(),
+      ),
+    );
+
     // If today is before the event, use event start date
     if (todayUTC < eventStart) {
       return eventStart;
     }
-    
+
     // If today is after the event, use event end date
     if (todayUTC > eventEnd) {
       return eventEnd;
     }
-    
+
     // Today is during the event, use today's date
     return todayUTC;
   }
