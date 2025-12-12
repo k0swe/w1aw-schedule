@@ -55,6 +55,11 @@ gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
   --member="serviceAccount:github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com" \
   --role="roles/firebasehosting.admin"
 
+# Firebase Auth Admin (for managing authorized domains in preview channels)
+gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
+  --member="serviceAccount:github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com" \
+  --role="roles/firebaseauth.admin"
+
 # Cloud Functions Developer (if deploying functions)
 gcloud projects add-iam-policy-binding w1aw-schedule-76a82 \
   --member="serviceAccount:github-actions-deploy@w1aw-schedule-76a82.iam.gserviceaccount.com" \
@@ -291,6 +296,21 @@ Since preview channels connect to the production Firebase project:
 - Authentication is required for protected features
 - Preview deployments cannot modify Firestore rules or deploy new Cloud Functions
 - Test data created in previews will be in the production database (use with care)
+
+### Firebase Auth Authorized Domains
+
+Preview channels automatically manage Firebase Authentication authorized domains:
+
+- **During Deployment**: When a preview channel is deployed, Firebase CLI automatically adds the
+  preview URL to the list of authorized domains in Firebase Auth (e.g.,
+  `w1aw-schedule-76a82--pr-123-RANDOM.web.app`). This allows OAuth redirects and authentication
+  to work correctly in preview environments.
+- **During Cleanup**: When a preview channel is deleted (either manually or when a PR is closed),
+  the domain is automatically removed from Firebase Auth authorized domains.
+- **Permissions Required**: The service account must have the `firebaseauth.admin` role to manage
+  authorized domains. This is included in the setup instructions above.
+- **Manual Override**: If you want to prevent automatic domain management, use the
+  `--no-authorized-domains` flag with `firebase hosting:channel:deploy`.
 
 ### Manual Preview Channel Management
 

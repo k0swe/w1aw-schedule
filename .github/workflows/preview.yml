@@ -61,6 +61,9 @@ jobs:
           
           # Deploy to preview channel with JSON output for reliable parsing
           # Note: Not using --only hosting because firebase.json uses "source": "web" (web frameworks)
+          # Note: By default, Firebase CLI automatically adds the preview URL to Firebase Auth
+          #       authorized domains. This requires the service account to have firebaseauth.admin role.
+          #       If the deployment succeeds but Auth domain sync fails, check service account permissions.
           # Redirect stderr to a separate file to keep JSON clean
           firebase hosting:channel:deploy $CHANNEL_ID \
             --expires 7d \
