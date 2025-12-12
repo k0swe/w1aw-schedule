@@ -63,3 +63,5 @@ jobs:
           projectId: w1aw-schedule-76a82
           expires: 7d
           channelId: pr-${{ github.event.pull_request.number }}
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
