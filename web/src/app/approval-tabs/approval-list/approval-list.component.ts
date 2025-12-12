@@ -85,7 +85,6 @@ export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
   private subscribeToUserList() {
     // Unsubscribe from previous subscription if it exists
     this.userListSubscription?.unsubscribe();
-    
     // Subscribe to the new userList observable
     this.userListSubscription = this.userList.subscribe((users) => {
       this.userDataSource.data = users;
