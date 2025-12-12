@@ -61,9 +61,9 @@ jobs:
           
           # Deploy to preview channel with JSON output for reliable parsing
           # Note: Not using --only hosting because firebase.json uses "source": "web" (web frameworks)
-          # Note: By default, Firebase CLI automatically adds the preview URL to Firebase Auth
-          # authorized domains. This requires the service account to have firebaseauth.admin role.
-          # If the deployment succeeds but Auth domain sync fails, check service account permissions.
+          # Note: Firebase CLI does not automatically add the preview URL to Firebase Auth
+          # authorized domains according to official Firebase docs. We handle this manually
+          # using gcloud commands after deployment.
           # Redirect stderr to a separate file to keep JSON clean
           firebase hosting:channel:deploy $CHANNEL_ID \
             --expires 7d \
@@ -102,23 +102,75 @@ jobs:
           
           echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
           echo "✅ Preview URL: $PREVIEW_URL"
+          
+          # Extract the domain from the preview URL for Auth configuration
+          PREVIEW_DOMAIN=$(echo "$PREVIEW_URL" | sed -E 's|^https?://([^/]+).*|\1|')
+          echo "PREVIEW_DOMAIN=$PREVIEW_DOMAIN" >> $GITHUB_ENV
+          echo "Preview domain: $PREVIEW_DOMAIN"
+
+      - name: Add Auth domain
+        run: |
+          echo "Adding ${{ env.PREVIEW_DOMAIN }} to Firebase Auth authorized domains..."
+          
+          # Get current authorized domains
+          gcloud alpha identity platform config describe \
+            --project w1aw-schedule-76a82 \
+            --format="value(authorizedDomains)" > current-domains.txt
+          
+          # Check if domain is already added
+          if grep -q "${{ env.PREVIEW_DOMAIN }}" current-domains.txt; then
+            echo "Domain already authorized, skipping..."
+          else
+            # Add the new domain
+            gcloud alpha identity platform config update \
+              --project w1aw-schedule-76a82 \
+              --add-authorized-domains="${{ env.PREVIEW_DOMAIN }}" \
+              || echo "Warning: Failed to add Auth domain. Preview may not work with Firebase Auth."
+            echo "✅ Auth domain added successfully"
+          fi
 
       - name: Comment on PR
         uses: actions/github-script@v7
         with:
           script: |
             const previewUrl = process.env.PREVIEW_URL;
-            const body = `### 🔍 Preview Deploy
+            const commentMarker = '<!-- preview-deployment-comment -->';
+            const body = `${commentMarker}
+            ### 🔍 Preview Deploy
             
             Your preview deployment is ready!
             
-            **Preview URL:** ${previewUrl}
+            **Preview URL:** <a href="${previewUrl}" target="_blank">${previewUrl}</a>
             
             This preview will expire in 7 days.`;
             
-            github.rest.issues.createComment({
+            // Find existing preview comment
+            const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body
             });
+            
+            const existingComment = comments.find(comment => 
+              comment.body && comment.body.includes(commentMarker)
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              console.log('Updated existing preview comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              console.log('Created new preview comment');
+            }
