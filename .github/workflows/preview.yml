@@ -61,9 +61,8 @@ jobs:
           
           # Deploy to preview channel with JSON output for reliable parsing
           # Note: Not using --only hosting because firebase.json uses "source": "web" (web frameworks)
-          # Note: By default, Firebase CLI automatically adds the preview URL to Firebase Auth
-          # authorized domains. This requires the service account to have firebaseauth.admin role.
-          # If the deployment succeeds but Auth domain sync fails, check service account permissions.
+          # Note: The entire *.web.app domain is manually authorized in Firebase Auth,
+          # so all preview channels automatically work with Firebase Authentication.
           # Redirect stderr to a separate file to keep JSON clean
           firebase hosting:channel:deploy $CHANNEL_ID \
             --expires 7d \
@@ -108,17 +107,43 @@ jobs:
         with:
           script: |
             const previewUrl = process.env.PREVIEW_URL;
-            const body = `### 🔍 Preview Deploy
+            const commentMarker = '<!-- preview-deployment-comment -->';
+            const body = `${commentMarker}
+            ### 🔍 Preview Deploy
             
             Your preview deployment is ready!
             
-            **Preview URL:** ${previewUrl}
+            **Preview URL:** <a href="${previewUrl}" target="_blank">${previewUrl}</a>
             
             This preview will expire in 7 days.`;
             
-            github.rest.issues.createComment({
+            // Find existing preview comment
+            const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body
             });
+            
+            const existingComment = comments.find(comment => 
+              comment.body && comment.body.includes(commentMarker)
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              console.log('Updated existing preview comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+              console.log('Created new preview comment');
+            }

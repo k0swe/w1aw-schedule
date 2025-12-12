@@ -35,9 +35,8 @@ jobs:
           CHANNEL_ID="pr-${{ github.event.pull_request.number }}"
           
           # Delete the preview channel
-          # Note: This automatically removes the preview URL from Firebase Auth authorized domains
-          # if it was added during deployment. The service account must have firebaseauth.admin
-          # role for this to work properly.
+          # Note: The entire *.web.app domain is manually authorized in Firebase Auth,
+          # so no cleanup of Auth domains is needed for individual preview channels.
           firebase hosting:channel:delete $CHANNEL_ID \
             --project w1aw-schedule-76a82 \
             --force || echo "Channel may have already expired or been deleted"
