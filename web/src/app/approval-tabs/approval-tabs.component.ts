@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { MatBadge } from '@angular/material/badge';
 import {
   MatCard,
   MatCardContent,
@@ -14,9 +15,9 @@ import {
   MatCardTitle,
 } from '@angular/material/card';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 
 import { EventInfoService } from '../event-info/event-info.service';
 import {
@@ -44,6 +45,7 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
     MatCardContent,
     MatTabGroup,
     MatTab,
+    MatBadge,
     ApprovalListComponent,
     AsyncPipe,
   ],
@@ -52,12 +54,15 @@ export class ApprovalTabsComponent implements OnInit {
   private userSettingsService = inject(UserSettingsService);
   private eventInfoService = inject(EventInfoService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   eventId = signal<string | undefined>(undefined);
   eventInfo$: Observable<EventInfo | undefined>;
   provisionalUsers$: Observable<UserSettings[]>;
   approvedUsers$: Observable<UserSettings[]>;
   declinedUsers$: Observable<UserSettings[]>;
+  pendingCount$: Observable<number>;
+  selectedTabIndex = signal<number>(1); // Default to Approved tab (index 1)
 
   constructor() {
     // Initialize with empty observables - will be set in ngOnInit based on route
@@ -65,6 +70,7 @@ export class ApprovalTabsComponent implements OnInit {
     this.provisionalUsers$ = of([]);
     this.approvedUsers$ = of([]);
     this.declinedUsers$ = of([]);
+    this.pendingCount$ = of(0);
   }
 
   ngOnInit(): void {
@@ -101,6 +107,33 @@ export class ApprovalTabsComponent implements OnInit {
         this.declinedUsers$ = this.userSettingsService.getDeclinedUsers(
           eventInfo.id,
         );
+
+        // Count pending users for badge
+        this.pendingCount$ = this.provisionalUsers$.pipe(
+          map((users) => users.length),
+        );
       });
+
+    // Handle URL fragment for tab selection
+    this.route.fragment.subscribe((fragment) => {
+      if (fragment === 'pending') {
+        this.selectedTabIndex.set(0);
+      } else if (fragment === 'approved') {
+        this.selectedTabIndex.set(1);
+      } else if (fragment === 'declined') {
+        this.selectedTabIndex.set(2);
+      }
+      // If no fragment, default to Approved (index 1)
+    });
+  }
+
+  onTabChange(index: number): void {
+    // Update URL fragment when tab changes
+    const fragments = ['pending', 'approved', 'declined'];
+    this.router.navigate([], {
+      fragment: fragments[index],
+      relativeTo: this.route,
+      replaceUrl: true,
+    });
   }
 }
