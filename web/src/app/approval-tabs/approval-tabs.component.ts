@@ -1,35 +1,36 @@
 import { AsyncPipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { MatBadge } from '@angular/material/badge';
-import {
-  MatCard,
-  MatCardContent,
-  MatCardHeader,
-  MatCardSubtitle,
-  MatCardTitle,
-} from '@angular/material/card';
-import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { MatCard, MatCardContent, MatCardHeader, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
+import { MatTab, MatTabGroup, MatTabLabel } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
+
+
 import { EventInfoService } from '../event-info/event-info.service';
-import {
-  COLORADO_DOC_ID,
-  COLORADO_SLUG,
-  EventInfo,
-} from '../schedule/shared-constants';
-import {
-  UserSettings,
-  UserSettingsService,
-} from '../user-settings/user-settings.service';
+import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfo } from '../schedule/shared-constants';
+import { UserSettings, UserSettingsService } from '../user-settings/user-settings.service';
 import { ApprovalListComponent } from './approval-list/approval-list.component';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Component({
   selector: 'kel-approval-tabs',
@@ -48,6 +49,7 @@ import { ApprovalListComponent } from './approval-list/approval-list.component';
     MatBadge,
     ApprovalListComponent,
     AsyncPipe,
+    MatTabLabel,
   ],
 })
 export class ApprovalTabsComponent implements OnInit {
