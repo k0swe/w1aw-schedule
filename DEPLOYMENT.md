@@ -273,11 +273,23 @@ repository includes automated preview channel deployments for all pull requests.
 
 1. When a PR is opened against the `main` branch, the `.github/workflows/preview.yml` workflow runs
 2. The web application is built using `npm run build:prod`
-3. A unique preview channel is created based on the PR number (e.g., `pr-123`)
-4. The built application is deployed to the preview channel
-5. A comment is automatically posted on the PR with the preview URL
-6. When the PR is closed or merged, the `.github/workflows/cleanup-preview.yml` workflow deletes
+3. Workload Identity Federation authenticates with Google Cloud and generates temporary credentials
+4. The credentials are converted to a service account key format for the Firebase action
+5. The `FirebaseExtended/action-hosting-deploy` action deploys to a unique preview channel (e.g., `pr-123`)
+6. A comment is automatically posted on the PR with the preview URL
+7. When the PR is closed or merged, the `.github/workflows/cleanup-preview.yml` workflow deletes
    the preview channel
+
+### Technical Implementation
+
+The preview workflow uses the official `FirebaseExtended/action-hosting-deploy` GitHub Action, which
+provides several benefits over custom deployment scripts:
+
+- **Simplified Workflow**: The action handles Firebase CLI installation, deployment, and PR commenting
+- **WIF Integration**: Uses `google-github-actions/auth` with `create_credentials_file: true` to
+  generate temporary credentials, which are then converted to a service account key format
+- **Automatic PR Comments**: The action automatically posts preview URLs to PRs when `repoToken` is provided
+- **Built-in Error Handling**: Delegate error handling to the maintained Firebase action
 
 ### Preview Channel Features
 
