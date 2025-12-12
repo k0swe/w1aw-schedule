@@ -7,8 +7,23 @@
   </mat-card-header>
   <mat-card-content>
     @if (eventId(); as evtId) {
-      <mat-tab-group>
-        <mat-tab label="Pending">
+      <mat-tab-group
+        [selectedIndex]="selectedTabIndex()"
+        (selectedIndexChange)="onTabChange($event)"
+      >
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <div
+              [matBadge]="(pendingCount$ | async) || ''"
+              [matBadgeHidden]="
+                !((pendingCount$ | async) && (pendingCount$ | async)! > 0)
+              "
+              matBadgeColor="warn"
+              matBadgeOverlap="false"
+            >
+              Pending
+            </div>
+          </ng-template>
           <kel-approval-list
             [userList]="provisionalUsers$"
             [eventId]="evtId"
@@ -54,7 +69,6 @@
               'arrlMemberNumber',
               'discordUsername',
               'approve',
-              'delete',
             ]"
           >
           </kel-approval-list>
