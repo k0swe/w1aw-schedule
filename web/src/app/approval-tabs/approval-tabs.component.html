@@ -13,12 +13,16 @@
       >
         <mat-tab>
           <ng-template mat-tab-label>
-            <span
-              [matBadge]="(pendingCount$ | async) || 0"
-              [matBadgeHidden]="((pendingCount$ | async) || 0) === 0"
+            <div
+              [matBadge]="(pendingCount$ | async) || ''"
+              [matBadgeHidden]="
+                !((pendingCount$ | async) && (pendingCount$ | async)! > 0)
+              "
+              matBadgeSize="small"
+              matBadgeColor="warn"
             >
               Pending
-            </span>
+            </div>
           </ng-template>
           <kel-approval-list
             [userList]="provisionalUsers$"
