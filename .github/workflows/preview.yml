@@ -6,6 +6,10 @@ on:
       - main
     types: [opened, synchronize, reopened]
 
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   build-and-preview:
     name: Build and Preview
