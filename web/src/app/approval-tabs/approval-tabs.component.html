@@ -15,7 +15,7 @@
           <ng-template mat-tab-label>
             <span
               [matBadge]="(pendingCount$ | async) || 0"
-              matBadgeOverlap="false"
+              [matBadgeHidden]="((pendingCount$ | async) || 0) === 0"
             >
               Pending
             </span>
