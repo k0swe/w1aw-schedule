@@ -15,8 +15,8 @@ import { MatSidenav, MatSidenavContainer } from '@angular/material/sidenav';
 import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
-import { distinctUntilChanged, filter, map, startWith, switchMap, take } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { distinctUntilChanged, filter, map, startWith, switchMap, take, tap } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -82,19 +82,45 @@ export class AppComponent {
       });
 
     // Subscribe to router events to dynamically check admin status based on current route
-    // startWith(null) emits an initial value to trigger the admin check immediately on component initialization
-    this.router.events
-      .pipe(
+    // and update the selected event to match the route
+    // Combine with events$ to ensure we have the event list before trying to match
+    combineLatest([
+      this.router.events.pipe(
         filter((event) => event instanceof NavigationEnd),
-        startWith(null), // Emit initial value to trigger admin check on component load
+        startWith(null), // Emit initial value on component load
         map(() => this.getEventSlugFromRoute()),
-        distinctUntilChanged(), // Prevent redundant API calls when navigating within the same event
-        switchMap((slug) =>
-          this.eventInfoService.getEventBySlug(slug).pipe(
-            map((eventInfo) => eventInfo?.id || COLORADO_DOC_ID),
-            switchMap((eventId) => this.authService.userIsAdmin(eventId)),
-          ),
-        ),
+        distinctUntilChanged(), // Prevent redundant processing when slug doesn't change
+      ),
+      this.events$,
+    ])
+      .pipe(
+        filter(([slug, events]) => events.length > 0), // Wait for events to load
+        switchMap(([slug, events]) => {
+          // If we have a slug from the route, use it to get the event
+          if (slug) {
+            return this.eventInfoService.getEventBySlug(slug).pipe(
+              tap((eventInfo) => {
+                // Update selected event to match the route
+                // Use the event object from events$ array to ensure mat-select value binding works
+                if (eventInfo?.id) {
+                  const matchingEvent = events.find(e => e.id === eventInfo.id);
+                  // Update only if we found a match and it's different from current selection
+                  if (matchingEvent && matchingEvent.id !== this.selectedEvent$.value?.id) {
+                    this.selectedEvent$.next(matchingEvent);
+                  }
+                }
+              }),
+              switchMap((eventInfo) => {
+                const eventId = eventInfo?.id || COLORADO_DOC_ID;
+                return this.authService.userIsAdmin(eventId);
+              }),
+            );
+          } else {
+            // No slug in route, use Colorado default for admin check
+            // Don't update selectedEvent$ - let the default event logic handle it
+            return this.authService.userIsAdmin(COLORADO_DOC_ID);
+          }
+        }),
         takeUntilDestroyed(),
       )
       .subscribe((isAdmin) => {
@@ -102,13 +128,17 @@ export class AppComponent {
       });
   }
 
-  private getEventSlugFromRoute(): string {
+  /**
+   * Extracts the event slug from the current route.
+   * @returns The event slug if present in the route parameters, null otherwise.
+   */
+  private getEventSlugFromRoute(): string | null {
     // Extract slug from current route
     let route = this.router.routerState.root;
     while (route.firstChild) {
       route = route.firstChild;
     }
-    return route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
+    return route.snapshot.paramMap.get('slug');
   }
 
   private selectDefaultEvent(events: EventInfoWithId[]): EventInfoWithId | undefined {
