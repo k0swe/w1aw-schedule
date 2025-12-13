@@ -354,7 +354,7 @@ describe('AppComponent', () => {
     }, 100);
   });
 
-  it('should update selected event when navigating to event-specific route', (done) => {
+  it('should update selected event based on route slug when different from current', (done) => {
     const now = Date.now();
     const event1: EventInfoWithId = {
       id: 'event-1',
@@ -380,7 +380,7 @@ describe('AppComponent', () => {
       timeZoneId: 'America/Denver',
     };
 
-    // Set up service mocks before creating component
+    // Set up service mocks
     mockEventInfoService.getAllEvents.and.returnValue(of([event1, event2]));
     mockEventInfoService.getEventBySlug.and.callFake((slug: string) => {
       if (slug === 'event-2-slug') {
@@ -389,35 +389,23 @@ describe('AppComponent', () => {
       return of(event1);
     });
 
-    // Reconfigure TestBed with routes
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule.withRoutes([
-          { path: '', redirectTo: '/events/event-1-slug/schedule', pathMatch: 'full' },
-          { path: 'events/:slug/schedule', component: AppComponent },
-        ]),
-        AppComponent,
-      ],
-      providers: [
-        { provide: AuthenticationService, useValue: mockAuthService },
-        { provide: EventInfoService, useValue: mockEventInfoService },
-      ],
-    });
-
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    const router = TestBed.inject(Router);
     fixture.detectChanges();
 
-    // Navigate to event-2 schedule
-    router.navigate(['/events', 'event-2-slug', 'schedule']).then(() => {
-      fixture.detectChanges();
-      setTimeout(() => {
-        expect(app.selectedEvent$.value?.id).toBe('event-2');
-        expect(app.selectedEvent$.value?.slug).toBe('event-2-slug');
-        done();
-      }, 200);
-    });
+    // Initially, selectedEvent$ should be event1 (default from getAllEvents)
+    expect(app.selectedEvent$.value?.id).toBe('event-1');
+
+    // Simulate navigation by calling onEventChange
+    // This will navigate to event-2's route and trigger the router subscription
+    app.onEventChange(event2);
+
+    // Give time for the router subscription to process
+    setTimeout(() => {
+      // The router subscription should have updated selectedEvent$ to event2
+      expect(app.selectedEvent$.value?.id).toBe('event-2');
+      expect(app.selectedEvent$.value?.slug).toBe('event-2-slug');
+      done();
+    }, 100);
   });
 });

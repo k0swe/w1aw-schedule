@@ -118,6 +118,10 @@ export class AppComponent {
       });
   }
 
+  /**
+   * Extracts the event slug from the current route.
+   * @returns The event slug if present in the route parameters, null otherwise.
+   */
   private getEventSlugFromRoute(): string | null {
     // Extract slug from current route
     let route = this.router.routerState.root;
