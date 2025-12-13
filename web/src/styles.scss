@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@import './theme';
+@use './theme';
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 // Include the core styles for Material 3
@@ -7,7 +7,7 @@
 
 // Apply the theme at the root level to emit CSS custom properties
 html {
-  @include mat.all-component-themes($kel-theme);
+  @include mat.all-component-themes(theme.$kel-theme);
 }
 
 // Global styles.
