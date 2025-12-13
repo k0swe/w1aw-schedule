@@ -84,8 +84,9 @@ service cloud.firestore {
           let startMillis = event.data.startTime.toMillis();
           let shiftMillis = request.resource.data.time.toMillis();
           let twoHoursInMs = 7200000; // 2 * 60 * 60 * 1000
-          // Check if (shiftTime - startTime) is divisible by 2 hours
-          return (shiftMillis - startMillis) % twoHoursInMs == 0;
+          let timeDiff = shiftMillis - startMillis;
+          // Check if shift is on or after event start AND on a 2-hour boundary
+          return timeDiff >= 0 && timeDiff % twoHoursInMs == 0;
         }
         function validBandAndMode() {
           let validBands = ['2200', '630', '160', '80', '40', '30', '20', '17', '15', '12', '10', '6', '2', '1.25', '0.70', '0.33'];
@@ -101,10 +102,9 @@ service cloud.firestore {
 
         allow read: if loggedIn();
         allow create: if loggedIn() 
-          && ((userIsApprovedForEvent() 
-               && creatingValidShift() 
-               && shiftTimeWithinEventBounds() 
-               && shiftTimeOnValidBoundary())
+          && shiftTimeWithinEventBounds() 
+          && shiftTimeOnValidBoundary()
+          && ((userIsApprovedForEvent() && creatingValidShift())
               || isAdminForEvent(eventId));
         allow update: if onlyChangingReservation()
           && (userIsReservingForThemself() || userAlreadyReserved())

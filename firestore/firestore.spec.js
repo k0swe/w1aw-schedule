@@ -1039,12 +1039,12 @@ describe("Lazy shift creation", () => {
     );
   });
 
-  it("should allow admin to create shift outside time boundaries", async function () {
+  it("should not allow admin to create shift outside time boundaries", async function () {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
-    // Admins can create shifts outside boundaries if needed
+    // Admins must also respect time boundaries
     const shiftTime = new Date(eventEnd.getTime() + 2 * 60 * 60 * 1000);
 
-    await assertSucceeds(
+    await assertFails(
       setDoc(doc(amandaDb, `events/${newEvent}/shifts/testshift13`), {
         time: shiftTime,
         band: "20",
