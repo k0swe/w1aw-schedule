@@ -108,8 +108,13 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
 
   toggleShift() {
     let shift = this.shift$.getValue();
-    const userId = this.user$.getValue()?.uid!;
-    const userDetails = this.userSettings$.getValue()!;
+    const userId = this.user$.getValue()?.uid;
+    const userDetails = this.userSettings$.getValue();
+
+    if (!userId || !userDetails) {
+      console.error('Cannot toggle shift: user not authenticated or settings not loaded');
+      return;
+    }
 
     if (!shift) {
       // Lazy shift creation: shift doesn't exist yet, create minimal shift object
@@ -176,9 +181,12 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       // Lazy shift creation: shift doesn't exist yet, create minimal shift object
       shift = this.createMinimalShift();
     }
-    const userDetails = this.approvedUsers$
-      .getValue()
-      .find((u) => u.id == userId);
+    const approvedUsers = this.approvedUsers$.getValue();
+    if (!approvedUsers) {
+      console.error('Cannot reserve shift: approved users list not loaded');
+      return;
+    }
+    const userDetails = approvedUsers.find((u) => u.id == userId);
     if (!userDetails) {
       console.error(`User ${userId} not found in approved users list`);
       return;
