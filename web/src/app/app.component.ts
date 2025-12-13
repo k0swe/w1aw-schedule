@@ -102,9 +102,10 @@ export class AppComponent {
               tap((eventInfo) => {
                 // Update selected event to match the route
                 // Use the event object from events$ array to ensure mat-select value binding works
-                if (eventInfo) {
+                if (eventInfo?.id) {
                   const matchingEvent = events.find(e => e.id === eventInfo.id);
-                  if (matchingEvent && matchingEvent !== this.selectedEvent$.value) {
+                  // Update only if we found a match and it's different from current selection
+                  if (matchingEvent && matchingEvent.id !== this.selectedEvent$.value?.id) {
                     this.selectedEvent$.next(matchingEvent);
                   }
                 }
