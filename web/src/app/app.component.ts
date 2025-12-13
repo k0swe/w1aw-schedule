@@ -15,7 +15,7 @@ import { MatSidenav, MatSidenavContainer } from '@angular/material/sidenav';
 import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, filter, map, startWith, switchMap, take, tap } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
@@ -83,21 +83,30 @@ export class AppComponent {
 
     // Subscribe to router events to dynamically check admin status based on current route
     // and update the selected event to match the route
-    // startWith(null) emits an initial value to trigger the admin check immediately on component initialization
-    this.router.events
-      .pipe(
+    // Combine with events$ to ensure we have the event list before trying to match
+    combineLatest([
+      this.router.events.pipe(
         filter((event) => event instanceof NavigationEnd),
-        startWith(null), // Emit initial value to trigger admin check on component load
+        startWith(null), // Emit initial value on component load
         map(() => this.getEventSlugFromRoute()),
-        distinctUntilChanged(), // Prevent redundant API calls when navigating within the same event
-        switchMap((slug) => {
+        distinctUntilChanged(), // Prevent redundant processing when slug doesn't change
+      ),
+      this.events$,
+    ])
+      .pipe(
+        filter(([slug, events]) => events.length > 0), // Wait for events to load
+        switchMap(([slug, events]) => {
           // If we have a slug from the route, use it to get the event
           if (slug) {
             return this.eventInfoService.getEventBySlug(slug).pipe(
               tap((eventInfo) => {
                 // Update selected event to match the route
+                // Use the event object from events$ array to ensure mat-select value binding works
                 if (eventInfo && eventInfo.id !== this.selectedEvent$.value?.id) {
-                  this.selectedEvent$.next(eventInfo);
+                  const matchingEvent = events.find(e => e.id === eventInfo.id);
+                  if (matchingEvent) {
+                    this.selectedEvent$.next(matchingEvent);
+                  }
                 }
               }),
               switchMap((eventInfo) => {
