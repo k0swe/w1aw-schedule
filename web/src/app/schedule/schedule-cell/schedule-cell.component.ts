@@ -8,6 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { User } from '@angular/fire/auth';
+import { Timestamp } from '@angular/fire/firestore';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
@@ -90,11 +91,22 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   toggleShift() {
-    const shift = this.shift$.getValue()!;
+    let shift = this.shift$.getValue();
     const userId = this.user$.getValue()?.uid!;
     const userDetails = this.userSettings$.getValue()!;
 
-    if (!shift?.reservedBy) {
+    if (!shift) {
+      // Lazy shift creation: shift doesn't exist yet, create minimal shift object
+      shift = {
+        time: Timestamp.fromDate(this.timeslot),
+        band: this.band,
+        mode: this.mode,
+        reservedBy: null,
+        reservedDetails: null,
+      };
+    }
+
+    if (!shift.reservedBy) {
       // If it's open and we want to reserve
       this.scheduleService
         .reserveShift(shift, userId, userDetails, this.eventId)
@@ -149,7 +161,17 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   reserveFor(userId: string) {
-    const shift = this.shift$.getValue()!;
+    let shift = this.shift$.getValue();
+    if (!shift) {
+      // Lazy shift creation: shift doesn't exist yet, create minimal shift object
+      shift = {
+        time: Timestamp.fromDate(this.timeslot),
+        band: this.band,
+        mode: this.mode,
+        reservedBy: null,
+        reservedDetails: null,
+      };
+    }
     const userDetails = this.approvedUsers$
       .getValue()!
       .find((u) => u.id == userId)!;
