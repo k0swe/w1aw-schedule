@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@import '../../theme';
+@use '../../theme';
 
 .container {
   display: flex;
@@ -38,7 +38,7 @@ button {
 button.button-secondary-color {
   @include mat.button-overrides(
     (
-      filled-container-color: mat.get-theme-color($kel-theme, secondary),
+      filled-container-color: mat.get-theme-color(theme.$kel-theme, secondary),
     )
   );
 }
