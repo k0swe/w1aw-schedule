@@ -100,7 +100,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     }
 
     if (!shift) {
-      console.error('Cannot toggle shift: shift does not exist yet');
+      console.error('Cannot toggle shift: shift has not been created by an administrator');
       return;
     }
 
@@ -161,7 +161,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   reserveFor(userId: string) {
     const shift = this.shift$.getValue();
     if (!shift) {
-      console.error('Cannot reserve shift: shift does not exist yet');
+      console.error('Cannot reserve shift: shift has not been created by an administrator');
       return;
     }
     const approvedUsers = this.approvedUsers$.getValue();

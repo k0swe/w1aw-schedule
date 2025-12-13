@@ -11,7 +11,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
@@ -54,12 +54,17 @@ export class ScheduleService {
           mode: shiftToUpdate.mode,
         });
         const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
-        const updateData = {
+        const reservationUpdate = {
           reservedBy: userId,
           reservedDetails: userDetails,
         };
 
-        return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
+        return from(updateDoc(eventsDocRef, reservationUpdate).then(() => undefined)).pipe(
+          catchError((error) => {
+            console.error('Error reserving shift (shift may not exist):', error);
+            return of(undefined);
+          })
+        );
       })
     );
   }
