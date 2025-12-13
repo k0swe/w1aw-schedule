@@ -101,8 +101,11 @@ service cloud.firestore {
 
         allow read: if loggedIn();
         allow create: if loggedIn() 
-          && (userIsApprovedForEvent() && creatingValidShift() && shiftTimeWithinEventBounds() && shiftTimeOnValidBoundary())
-          || isAdminForEvent(eventId);
+          && ((userIsApprovedForEvent() 
+               && creatingValidShift() 
+               && shiftTimeWithinEventBounds() 
+               && shiftTimeOnValidBoundary())
+              || isAdminForEvent(eventId));
         allow update: if onlyChangingReservation()
           && (userIsReservingForThemself() || userAlreadyReserved())
           || isAdminForEvent(eventId);
