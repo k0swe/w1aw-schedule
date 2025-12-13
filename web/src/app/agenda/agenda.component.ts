@@ -22,6 +22,7 @@ import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
 import { ScheduleService } from '../schedule/schedule.service';
+import { getLocalTimeZoneLabel } from '../timezone-utils';
 import {
   COLORADO_DOC_ID,
   COLORADO_SLUG,
@@ -56,6 +57,7 @@ export class AgendaComponent implements OnDestroy {
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   icsLink = '';
   eventId: string = COLORADO_DOC_ID;
+  timeZoneLabel: string = ''; // Dynamic timezone label from event info
 
   constructor() {
     // React to route parameter changes
@@ -87,6 +89,19 @@ export class AgendaComponent implements OnDestroy {
   }
 
   private initializeComponent() {
+    // Get event info for reference date (to handle DST properly)
+    this.eventInfoService
+      .getEventInfo(this.eventId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((eventInfo) => {
+        if (eventInfo) {
+          // Get local timezone label (browser timezone, not event timezone)
+          this.timeZoneLabel = getLocalTimeZoneLabel(
+            eventInfo.startTime.toDate(),
+          );
+        }
+      });
+
     this.authenticationService.user$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {

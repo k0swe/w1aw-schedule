@@ -38,6 +38,7 @@ import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
+import { getLocalTimeZoneLabel } from '../timezone-utils';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleService } from './schedule.service';
 import {
@@ -113,6 +114,7 @@ export class ScheduleComponent implements OnDestroy {
   eventId: string = COLORADO_DOC_ID;
   eventStartTime: Date = new Date('2026-05-27T00:00:00Z'); // Default, updated from event info
   eventEndTime: Date = new Date('2026-06-02T23:59:59Z'); // Default, updated from event info
+  timeZoneLabel: string = ''; // Dynamic timezone label from event info
 
   viewDay: Date = new Date();
   viewBandGroup: string = 'Hi HF';
@@ -168,6 +170,9 @@ export class ScheduleComponent implements OnDestroy {
           // Use exact times from event info (no normalization)
           this.eventStartTime = eventInfo.startTime.toDate();
           this.eventEndTime = eventInfo.endTime.toDate();
+
+          // Get local timezone label (browser timezone, not event timezone)
+          this.timeZoneLabel = getLocalTimeZoneLabel(this.eventStartTime);
 
           // Set viewDay based on query params or nearest day to today
           const dayParam = this.route.snapshot.queryParams['day'];
@@ -295,10 +300,9 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   dayNightIcon(timeSlot: Date) {
-    const localHour = new Date(
-      timeSlot.toLocaleString('en-US', { timeZone: 'America/Denver' }),
-    ).getHours();
-    return localHour >= 6 && localHour < 20 ? 'light_mode' : 'dark_mode';
+    // Use browser's local time for sun/moon icons (6am-6pm = sun, 6pm-6am = moon)
+    const localHour = timeSlot.getHours();
+    return localHour >= 6 && localHour < 18 ? 'light_mode' : 'dark_mode';
   }
 
   copyIcsLink() {
