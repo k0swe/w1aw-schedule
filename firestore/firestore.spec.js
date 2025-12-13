@@ -823,3 +823,235 @@ describe("Per-event approval", () => {
     );
   });
 });
+
+describe("Lazy shift creation", () => {
+  const newEvent = "lazyShiftEvent";
+  const eventStart = new Date("2026-05-27T00:00:00Z");
+  const eventEnd = new Date("2026-06-02T23:59:59Z");
+
+  beforeEach(async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const fs = context.firestore();
+      // Setup event with alice as admin
+      await setDoc(doc(fs, `events/${newEvent}`), {
+        name: "Lazy Shift Test Event",
+        admins: ["amanda"],
+        startTime: eventStart,
+        endTime: eventEnd,
+      });
+      // Approve alice for this event
+      await setDoc(doc(fs, `events/${newEvent}/approvals/alice`), {
+        status: "Approved",
+        appliedAt: new Date(),
+        userId: "alice",
+      });
+      // Bob has applied but is not approved
+      await setDoc(doc(fs, `events/${newEvent}/approvals/bob`), {
+        status: "Applied",
+        appliedAt: new Date(),
+        userId: "bob",
+      });
+    });
+  });
+
+  it("should allow approved user to create shift within event boundaries on valid 2-hour boundary", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    // Create a shift at event start time (valid 2-hour boundary)
+    const shiftTime = eventStart;
+
+    await assertSucceeds(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift1`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should allow approved user to create shift at 2-hour intervals from event start", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    // Create a shift 4 hours after event start (valid 2-hour boundary)
+    const shiftTime = new Date(eventStart.getTime() + 4 * 60 * 60 * 1000);
+
+    await assertSucceeds(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift2`), {
+        time: shiftTime,
+        band: "40",
+        mode: "cw",
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should not allow approved user to create shift outside event time boundaries", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    // Try to create a shift after event end
+    const shiftTime = new Date(eventEnd.getTime() + 2 * 60 * 60 * 1000);
+
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift3`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should not allow approved user to create shift before event start", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    // Try to create a shift before event start
+    const shiftTime = new Date(eventStart.getTime() - 2 * 60 * 60 * 1000);
+
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift4`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should not allow approved user to create shift on invalid time boundary", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    // Try to create a shift 1 hour after event start (not on 2-hour boundary)
+    const shiftTime = new Date(eventStart.getTime() + 1 * 60 * 60 * 1000);
+
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift5`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should not allow approved user to create shift with invalid band", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    const shiftTime = eventStart;
+
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift6`), {
+        time: shiftTime,
+        band: "999", // Invalid band
+        mode: "phone",
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should not allow approved user to create shift with invalid mode", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    const shiftTime = eventStart;
+
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift7`), {
+        time: shiftTime,
+        band: "20",
+        mode: "invalid", // Invalid mode
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should not allow approved user to create shift for another user", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    const shiftTime = eventStart;
+
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift8`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: "bob", // Trying to reserve for someone else
+        reservedDetails: { callsign: "B0B" },
+      }),
+    );
+  });
+
+  it("should not allow unapproved user to create shift", async function () {
+    const bobDb = testEnv.authenticatedContext("bob").firestore();
+    const shiftTime = eventStart;
+
+    await assertFails(
+      setDoc(doc(bobDb, `events/${newEvent}/shifts/testshift9`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: "bob",
+        reservedDetails: { callsign: "B0B" },
+      }),
+    );
+  });
+
+  it("should not allow unauthenticated user to create shift", async function () {
+    const unauthedDb = testEnv.unauthenticatedContext().firestore();
+    const shiftTime = eventStart;
+
+    await assertFails(
+      setDoc(doc(unauthedDb, `events/${newEvent}/shifts/testshift10`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: null,
+        reservedDetails: null,
+      }),
+    );
+  });
+
+  it("should allow admin to create shift for another user", async function () {
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    const shiftTime = eventStart;
+
+    await assertSucceeds(
+      setDoc(doc(amandaDb, `events/${newEvent}/shifts/testshift11`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should not allow creating shift without required fields", async function () {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    const shiftTime = eventStart;
+
+    await assertFails(
+      setDoc(doc(aliceDb, `events/${newEvent}/shifts/testshift12`), {
+        time: shiftTime,
+        band: "20",
+        // Missing mode
+        reservedBy: "alice",
+        reservedDetails: { callsign: "AL1CE" },
+      }),
+    );
+  });
+
+  it("should allow admin to create shift outside time boundaries", async function () {
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+    // Admins can create shifts outside boundaries if needed
+    const shiftTime = new Date(eventEnd.getTime() + 2 * 60 * 60 * 1000);
+
+    await assertSucceeds(
+      setDoc(doc(amandaDb, `events/${newEvent}/shifts/testshift13`), {
+        time: shiftTime,
+        band: "20",
+        mode: "phone",
+        reservedBy: null,
+        reservedDetails: null,
+      }),
+    );
+  });
+});
