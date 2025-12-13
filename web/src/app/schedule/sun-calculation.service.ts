@@ -7,6 +7,8 @@ export interface GeolocationCoordinates {
   longitude: number;
 }
 
+const TWENTY_FOUR_HOURS_IN_MS = 24 * 60 * 60 * 1000;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -35,15 +37,15 @@ export class SunCalculationService {
             longitude: position.coords.longitude,
           });
         },
-        (error) => {
+        () => {
           // User denied permission or geolocation failed
           // Fall back to simple model (userLocation$ remains undefined)
-          console.info('Geolocation not available, using fallback model:', error.message);
+          console.info('Geolocation not available, using fallback day/night model');
         },
         {
           enableHighAccuracy: false, // Low precision is sufficient
           timeout: 5000,
-          maximumAge: 86400000, // Cache for 24 hours
+          maximumAge: TWENTY_FOUR_HOURS_IN_MS, // Cache for 24 hours
         },
       );
     }
