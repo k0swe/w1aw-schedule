@@ -8,6 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { User } from '@angular/fire/auth';
+import { Timestamp } from '@angular/fire/firestore';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
@@ -89,12 +90,38 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     this.eventApprovalSubscription?.unsubscribe();
   }
 
-  toggleShift() {
-    const shift = this.shift$.getValue()!;
-    const userId = this.user$.getValue()?.uid!;
-    const userDetails = this.userSettings$.getValue()!;
+  /**
+   * Creates a minimal shift object for lazy shift creation.
+   * Used when a shift doesn't exist in Firestore yet but needs to be created
+   * when an approved user tries to reserve it.
+   * @returns A Shift object with time, band, and mode from component inputs
+   */
+  private createMinimalShift(): Shift {
+    return {
+      time: Timestamp.fromDate(this.timeslot),
+      band: this.band,
+      mode: this.mode,
+      reservedBy: null,
+      reservedDetails: null,
+    };
+  }
 
-    if (!shift?.reservedBy) {
+  toggleShift() {
+    let shift = this.shift$.getValue();
+    const userId = this.user$.getValue()?.uid;
+    const userDetails = this.userSettings$.getValue();
+
+    if (!userId || !userDetails) {
+      console.error('Cannot toggle shift: user not authenticated or settings not loaded');
+      return;
+    }
+
+    if (!shift) {
+      // Lazy shift creation: shift doesn't exist yet, create minimal shift object
+      shift = this.createMinimalShift();
+    }
+
+    if (!shift.reservedBy) {
       // If it's open and we want to reserve
       this.scheduleService
         .reserveShift(shift, userId, userDetails, this.eventId)
@@ -149,18 +176,33 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   reserveFor(userId: string) {
-    const shift = this.shift$.getValue()!;
-    const userDetails = this.approvedUsers$
-      .getValue()!
-      .find((u) => u.id == userId)!;
+    let shift = this.shift$.getValue();
+    if (!shift) {
+      // Lazy shift creation: shift doesn't exist yet, create minimal shift object
+      shift = this.createMinimalShift();
+    }
+    const approvedUsers = this.approvedUsers$.getValue();
+    if (!approvedUsers) {
+      console.error('Cannot reserve shift: approved users list not loaded');
+      return;
+    }
+    const userDetails = approvedUsers.find((u) => u.id === userId);
+    if (!userDetails) {
+      console.error(`User ${userId} not found in approved users list`);
+      return;
+    }
     this.scheduleService
       .reserveShift(shift, userId, userDetails, this.eventId)
       .subscribe();
   }
 
   clearReservation() {
-    const shift = this.shift$.getValue()!;
-    const userId = this.user$.getValue()?.uid!;
+    const shift = this.shift$.getValue();
+    const userId = this.user$.getValue()?.uid;
+    if (!shift || !userId) {
+      console.error('Cannot clear reservation: shift not found or user not authenticated');
+      return;
+    }
     this.scheduleService.cancelShift(shift, userId, this.eventId).subscribe();
   }
 }
