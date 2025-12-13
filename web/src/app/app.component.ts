@@ -62,6 +62,7 @@ export class AppComponent {
   // List of all available events
   events$ = new BehaviorSubject<EventInfoWithId[]>([]);
   userIsAdmin$ = new BehaviorSubject<boolean>(false);
+  userIsSuperAdmin$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
     this.titleService.setTitle(this.appName);
@@ -125,6 +126,14 @@ export class AppComponent {
       )
       .subscribe((isAdmin) => {
         this.userIsAdmin$.next(isAdmin);
+      });
+
+    // Subscribe to super-admin status
+    this.authService
+      .userIsSuperAdmin()
+      .pipe(takeUntilDestroyed())
+      .subscribe((isSuperAdmin) => {
+        this.userIsSuperAdmin$.next(isSuperAdmin);
       });
   }
 

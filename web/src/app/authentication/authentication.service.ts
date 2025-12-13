@@ -105,6 +105,17 @@ export class AuthenticationService {
     );
   }
 
+  public userIsSuperAdmin(): Observable<boolean> {
+    return this.user$.pipe(
+      map((user) => {
+        if (!user) {
+          return false;
+        }
+        return user.uid === 'VAfZAw8GhJQodyTTCkXgilbqvoM2';
+      }),
+    );
+  }
+
   public logout(): Observable<void> {
     return from(signOut(this.auth));
   }

@@ -1,0 +1,35 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Initialize Shifts</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>
+      Select an event and click the button below to initialize shifts for that event.
+      This will create all shift slots for the event's time period.
+    </p>
+    <div class="init-shifts-container">
+      <mat-select
+        class="event-select"
+        [value]="selectedEventId()"
+        (selectionChange)="onEventChange($event.value)"
+        placeholder="Select Event"
+      >
+        @for (event of events$ | async; track event.id) {
+          <mat-option [value]="event.id">{{ event.name }}</mat-option>
+        }
+      </mat-select>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="initShifts()"
+        [disabled]="!selectedEventId() || isLoading()"
+      >
+        @if (isLoading()) {
+          Initializing...
+        } @else {
+          Initialize Shifts
+        }
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>
