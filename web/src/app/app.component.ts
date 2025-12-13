@@ -16,7 +16,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { distinctUntilChanged, filter, map, startWith, switchMap, take } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, startWith, switchMap, take, tap } from 'rxjs/operators';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -94,12 +94,14 @@ export class AppComponent {
           // If we have a slug from the route, use it to get the event
           if (slug) {
             return this.eventInfoService.getEventBySlug(slug).pipe(
-              switchMap((eventInfo) => {
-                const eventId = eventInfo?.id || COLORADO_DOC_ID;
-                // Update selected event if it matches the route
+              tap((eventInfo) => {
+                // Update selected event to match the route
                 if (eventInfo && eventInfo.id !== this.selectedEvent$.value?.id) {
                   this.selectedEvent$.next(eventInfo);
                 }
+              }),
+              switchMap((eventInfo) => {
+                const eventId = eventInfo?.id || COLORADO_DOC_ID;
                 return this.authService.userIsAdmin(eventId);
               }),
             );
