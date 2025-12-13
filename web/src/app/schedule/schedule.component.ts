@@ -53,6 +53,7 @@ import {
   TWO_HOURS_IN_MS,
   VHF_UHF_BANDS,
 } from './shared-constants';
+import { SunCalculationService } from './sun-calculation.service';
 
 @Component({
   selector: 'kel-schedule',
@@ -96,6 +97,7 @@ export class ScheduleComponent implements OnDestroy {
   private clipboard = inject(Clipboard);
   private snackBarService = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
+  private sunCalculationService = inject(SunCalculationService);
   private destroy$ = new Subject<void>();
 
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -300,9 +302,9 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   dayNightIcon(timeSlot: Date) {
-    // Use browser's local time for sun/moon icons (6am-6pm = sun, 6pm-6am = moon)
-    const localHour = timeSlot.getHours();
-    return localHour >= 6 && localHour < 18 ? 'light_mode' : 'dark_mode';
+    // Use suncalc with user's browser geolocation for accurate sunrise/sunset when available
+    // Falls back to browser's local time 6am-6pm model otherwise
+    return this.sunCalculationService.getDayNightIcon(timeSlot);
   }
 
   copyIcsLink() {
