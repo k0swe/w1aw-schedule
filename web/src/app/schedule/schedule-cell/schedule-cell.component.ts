@@ -186,7 +186,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       console.error('Cannot reserve shift: approved users list not loaded');
       return;
     }
-    const userDetails = approvedUsers.find((u) => u.id == userId);
+    const userDetails = approvedUsers.find((u) => u.id === userId);
     if (!userDetails) {
       console.error(`User ${userId} not found in approved users list`);
       return;
