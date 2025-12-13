@@ -197,8 +197,12 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   clearReservation() {
-    const shift = this.shift$.getValue()!;
-    const userId = this.user$.getValue()?.uid!;
+    const shift = this.shift$.getValue();
+    const userId = this.user$.getValue()?.uid;
+    if (!shift || !userId) {
+      console.error('Cannot clear reservation: shift not found or user not authenticated');
+      return;
+    }
     this.scheduleService.cancelShift(shift, userId, this.eventId).subscribe();
   }
 }
