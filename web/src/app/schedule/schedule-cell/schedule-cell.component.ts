@@ -90,6 +90,12 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     this.eventApprovalSubscription?.unsubscribe();
   }
 
+  /**
+   * Creates a minimal shift object for lazy shift creation.
+   * Used when a shift doesn't exist in Firestore yet but needs to be created
+   * when an approved user tries to reserve it.
+   * @returns A Shift object with time, band, and mode from component inputs
+   */
   private createMinimalShift(): Shift {
     return {
       time: Timestamp.fromDate(this.timeslot),
@@ -171,8 +177,12 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       shift = this.createMinimalShift();
     }
     const userDetails = this.approvedUsers$
-      .getValue()!
-      .find((u) => u.id == userId)!;
+      .getValue()
+      .find((u) => u.id == userId);
+    if (!userDetails) {
+      console.error(`User ${userId} not found in approved users list`);
+      return;
+    }
     this.scheduleService
       .reserveShift(shift, userId, userDetails, this.eventId)
       .subscribe();
