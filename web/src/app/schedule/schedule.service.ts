@@ -7,6 +7,7 @@ import {
   doc,
   docData,
   query,
+  setDoc,
   updateDoc,
   where,
 } from '@angular/fire/firestore';
@@ -54,9 +55,17 @@ export class ScheduleService {
           mode: shiftToUpdate.mode,
         });
         const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
-        const updateData = { reservedBy: userId, reservedDetails: userDetails };
+        // Create the complete shift document for lazy creation
+        const shiftData: Shift = {
+          time: shiftToUpdate.time,
+          band: shiftToUpdate.band,
+          mode: shiftToUpdate.mode,
+          reservedBy: userId,
+          reservedDetails: userDetails,
+        };
 
-        return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
+        // Use setDoc with merge to handle both existing and non-existing documents
+        return from(setDoc(eventsDocRef, shiftData, { merge: true }).then(() => undefined));
       })
     );
   }

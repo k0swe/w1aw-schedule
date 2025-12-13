@@ -70,8 +70,39 @@ service cloud.firestore {
         function userAlreadyReserved() {
           return resource.data.reservedBy == request.auth.uid;
         }
+        function userIsApprovedForEvent() {
+          let approval = get(/databases/$(database)/documents/events/$(eventId)/approvals/$(request.auth.uid));
+          return approval.data.status == 'Approved';
+        }
+        function shiftTimeWithinEventBounds() {
+          let event = get(/databases/$(database)/documents/events/$(eventId));
+          return request.resource.data.time >= event.data.startTime
+            && request.resource.data.time < event.data.endTime;
+        }
+        function shiftTimeOnValidBoundary() {
+          let event = get(/databases/$(database)/documents/events/$(eventId));
+          let startMillis = event.data.startTime.toMillis();
+          let shiftMillis = request.resource.data.time.toMillis();
+          let twoHoursInMs = 7200000; // 2 * 60 * 60 * 1000
+          // Check if (shiftTime - startTime) is divisible by 2 hours
+          return (shiftMillis - startMillis) % twoHoursInMs == 0;
+        }
+        function validBandAndMode() {
+          let validBands = ['2200', '630', '160', '80', '40', '30', '20', '17', '15', '12', '10', '6', '2', '1.25', '0.70', '0.33'];
+          let validModes = ['phone', 'cw', 'digital'];
+          return request.resource.data.band in validBands
+            && request.resource.data.mode in validModes;
+        }
+        function creatingValidShift() {
+          return request.resource.data.keys().hasAll(['time', 'band', 'mode', 'reservedBy', 'reservedDetails'])
+            && request.resource.data.reservedBy == request.auth.uid
+            && validBandAndMode();
+        }
 
         allow read: if loggedIn();
+        allow create: if loggedIn() 
+          && (userIsApprovedForEvent() && creatingValidShift() && shiftTimeWithinEventBounds() && shiftTimeOnValidBoundary())
+          || isAdminForEvent(eventId);
         allow update: if onlyChangingReservation()
           && (userIsReservingForThemself() || userAlreadyReserved())
           || isAdminForEvent(eventId);
