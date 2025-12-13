@@ -300,10 +300,9 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   dayNightIcon(timeSlot: Date) {
-    const localHour = new Date(
-      timeSlot.toLocaleString('en-US', { timeZone: 'America/Denver' }),
-    ).getHours();
-    return localHour >= 6 && localHour < 20 ? 'light_mode' : 'dark_mode';
+    // Use browser's local time for sun/moon icons (6am-6pm = sun, 6pm-6am = moon)
+    const localHour = timeSlot.getHours();
+    return localHour >= 6 && localHour < 18 ? 'light_mode' : 'dark_mode';
   }
 
   copyIcsLink() {
