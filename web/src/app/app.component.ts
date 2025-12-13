@@ -82,6 +82,7 @@ export class AppComponent {
       });
 
     // Subscribe to router events to dynamically check admin status based on current route
+    // and update the selected event to match the route
     // startWith(null) emits an initial value to trigger the admin check immediately on component initialization
     this.router.events
       .pipe(
@@ -89,12 +90,25 @@ export class AppComponent {
         startWith(null), // Emit initial value to trigger admin check on component load
         map(() => this.getEventSlugFromRoute()),
         distinctUntilChanged(), // Prevent redundant API calls when navigating within the same event
-        switchMap((slug) =>
-          this.eventInfoService.getEventBySlug(slug).pipe(
-            map((eventInfo) => eventInfo?.id || COLORADO_DOC_ID),
-            switchMap((eventId) => this.authService.userIsAdmin(eventId)),
-          ),
-        ),
+        switchMap((slug) => {
+          // If we have a slug from the route, use it to get the event
+          if (slug) {
+            return this.eventInfoService.getEventBySlug(slug).pipe(
+              switchMap((eventInfo) => {
+                const eventId = eventInfo?.id || COLORADO_DOC_ID;
+                // Update selected event if it matches the route
+                if (eventInfo && eventInfo.id !== this.selectedEvent$.value?.id) {
+                  this.selectedEvent$.next(eventInfo);
+                }
+                return this.authService.userIsAdmin(eventId);
+              }),
+            );
+          } else {
+            // No slug in route, use Colorado default for admin check
+            // Don't update selectedEvent$ - let the default event logic handle it
+            return this.authService.userIsAdmin(COLORADO_DOC_ID);
+          }
+        }),
         takeUntilDestroyed(),
       )
       .subscribe((isAdmin) => {
@@ -102,13 +116,13 @@ export class AppComponent {
       });
   }
 
-  private getEventSlugFromRoute(): string {
+  private getEventSlugFromRoute(): string | null {
     // Extract slug from current route
     let route = this.router.routerState.root;
     while (route.firstChild) {
       route = route.firstChild;
     }
-    return route.snapshot.paramMap.get('slug') || COLORADO_SLUG;
+    return route.snapshot.paramMap.get('slug');
   }
 
   private selectDefaultEvent(events: EventInfoWithId[]): EventInfoWithId | undefined {
