@@ -7,12 +7,11 @@ import {
   doc,
   docData,
   query,
-  setDoc,
   updateDoc,
   where,
 } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
@@ -55,17 +54,17 @@ export class ScheduleService {
           mode: shiftToUpdate.mode,
         });
         const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
-        // Create the complete shift document for lazy creation
-        const shiftData: Shift = {
-          time: shiftToUpdate.time,
-          band: shiftToUpdate.band,
-          mode: shiftToUpdate.mode,
+        const reservationUpdate = {
           reservedBy: userId,
           reservedDetails: userDetails,
         };
 
-        // Use setDoc with merge to handle both existing and non-existing documents
-        return from(setDoc(eventsDocRef, shiftData, { merge: true }).then(() => undefined));
+        return from(updateDoc(eventsDocRef, reservationUpdate).then(() => undefined)).pipe(
+          catchError((error) => {
+            console.error('Error reserving shift (shift may not exist):', error);
+            return of(undefined);
+          })
+        );
       })
     );
   }
