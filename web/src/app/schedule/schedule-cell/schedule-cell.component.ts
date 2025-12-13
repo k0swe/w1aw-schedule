@@ -90,6 +90,16 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     this.eventApprovalSubscription?.unsubscribe();
   }
 
+  private createMinimalShift(): Shift {
+    return {
+      time: Timestamp.fromDate(this.timeslot),
+      band: this.band,
+      mode: this.mode,
+      reservedBy: null,
+      reservedDetails: null,
+    };
+  }
+
   toggleShift() {
     let shift = this.shift$.getValue();
     const userId = this.user$.getValue()?.uid!;
@@ -97,13 +107,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
 
     if (!shift) {
       // Lazy shift creation: shift doesn't exist yet, create minimal shift object
-      shift = {
-        time: Timestamp.fromDate(this.timeslot),
-        band: this.band,
-        mode: this.mode,
-        reservedBy: null,
-        reservedDetails: null,
-      };
+      shift = this.createMinimalShift();
     }
 
     if (!shift.reservedBy) {
@@ -164,13 +168,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     let shift = this.shift$.getValue();
     if (!shift) {
       // Lazy shift creation: shift doesn't exist yet, create minimal shift object
-      shift = {
-        time: Timestamp.fromDate(this.timeslot),
-        band: this.band,
-        mode: this.mode,
-        reservedBy: null,
-        reservedDetails: null,
-      };
+      shift = this.createMinimalShift();
     }
     const userDetails = this.approvedUsers$
       .getValue()!
