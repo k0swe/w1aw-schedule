@@ -113,6 +113,7 @@ export class ScheduleComponent implements OnDestroy {
   eventId: string = COLORADO_DOC_ID;
   eventStartTime: Date = new Date('2026-05-27T00:00:00Z'); // Default, updated from event info
   eventEndTime: Date = new Date('2026-06-02T23:59:59Z'); // Default, updated from event info
+  timeZoneLabel: string = ''; // Dynamic timezone label from event info
 
   viewDay: Date = new Date();
   viewBandGroup: string = 'Hi HF';
@@ -168,6 +169,9 @@ export class ScheduleComponent implements OnDestroy {
           // Use exact times from event info (no normalization)
           this.eventStartTime = eventInfo.startTime.toDate();
           this.eventEndTime = eventInfo.endTime.toDate();
+
+          // Get local timezone label (browser timezone, not event timezone)
+          this.timeZoneLabel = this.getLocalTimeZoneLabel(this.eventStartTime);
 
           // Set viewDay based on query params or nearest day to today
           const dayParam = this.route.snapshot.queryParams['day'];
@@ -306,5 +310,56 @@ export class ScheduleComponent implements OnDestroy {
     this.snackBarService.open('Copied to clipboard', undefined, {
       duration: 2000,
     });
+  }
+
+  /**
+   * Get a timezone label (abbreviation or GMT offset) for display
+   * Uses the browser's local timezone, not the event timezone
+   * @param date Reference date to determine the timezone abbreviation (for DST)
+   * @returns Timezone abbreviation (e.g., 'MDT', 'MST') or GMT offset (e.g., 'GMT-6')
+   */
+  private getLocalTimeZoneLabel(date: Date): string {
+    try {
+      // Get the local timezone abbreviation using Intl.DateTimeFormat
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZoneName: 'short',
+      });
+      const parts = formatter.formatToParts(date);
+      const timeZonePart = parts.find((part) => part.type === 'timeZoneName');
+      
+      if (timeZonePart && timeZonePart.value) {
+        return timeZonePart.value;
+      }
+
+      // Fallback to GMT offset if abbreviation not available
+      return this.getLocalGMTOffset(date);
+    } catch (error) {
+      // If timezone is invalid, return GMT offset
+      return this.getLocalGMTOffset(date);
+    }
+  }
+
+  /**
+   * Get GMT offset for local timezone
+   * @param date Reference date
+   * @returns GMT offset string (e.g., 'GMT-6', 'GMT+5:30')
+   */
+  private getLocalGMTOffset(date: Date): string {
+    try {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZoneName: 'longOffset',
+      });
+      const parts = formatter.formatToParts(date);
+      const timeZonePart = parts.find((part) => part.type === 'timeZoneName');
+      
+      if (timeZonePart && timeZonePart.value) {
+        return timeZonePart.value;
+      }
+
+      // Ultimate fallback
+      return 'Local';
+    } catch (error) {
+      return 'Local';
+    }
   }
 }
