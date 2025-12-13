@@ -8,7 +8,6 @@ import {
   inject,
 } from '@angular/core';
 import { User } from '@angular/fire/auth';
-import { Timestamp } from '@angular/fire/firestore';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
@@ -90,24 +89,8 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     this.eventApprovalSubscription?.unsubscribe();
   }
 
-  /**
-   * Creates a minimal shift object for lazy shift creation.
-   * Used when a shift doesn't exist in Firestore yet but needs to be created
-   * when an approved user tries to reserve it.
-   * @returns A Shift object with time, band, and mode from component inputs
-   */
-  private createMinimalShift(): Shift {
-    return {
-      time: Timestamp.fromDate(this.timeslot),
-      band: this.band,
-      mode: this.mode,
-      reservedBy: null,
-      reservedDetails: null,
-    };
-  }
-
   toggleShift() {
-    let shift = this.shift$.getValue();
+    const shift = this.shift$.getValue();
     const userId = this.user$.getValue()?.uid;
     const userDetails = this.userSettings$.getValue();
 
@@ -117,8 +100,8 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     }
 
     if (!shift) {
-      // Lazy shift creation: shift doesn't exist yet, create minimal shift object
-      shift = this.createMinimalShift();
+      console.error('Cannot toggle shift: shift does not exist yet');
+      return;
     }
 
     if (!shift.reservedBy) {
@@ -176,10 +159,10 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   reserveFor(userId: string) {
-    let shift = this.shift$.getValue();
+    const shift = this.shift$.getValue();
     if (!shift) {
-      // Lazy shift creation: shift doesn't exist yet, create minimal shift object
-      shift = this.createMinimalShift();
+      console.error('Cannot reserve shift: shift does not exist yet');
+      return;
     }
     const approvedUsers = this.approvedUsers$.getValue();
     if (!approvedUsers) {
