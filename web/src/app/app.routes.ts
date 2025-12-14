@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { AdminGuard } from './authentication/admin.guard';
 import { AuthenticationGuard } from './authentication/authentication.guard';
+import { SuperAdminGuard } from './authentication/super-admin.guard';
 import { HomeComponent } from './home/home.component';
 
 export const routes: Routes = [
@@ -61,5 +62,13 @@ export const routes: Routes = [
         (m) => m.ApprovalTabsComponent,
       ),
     canActivate: [AuthenticationGuard, AdminGuard],
+  },
+  {
+    path: 'init-shifts',
+    loadComponent: () =>
+      import('./init-shifts/init-shifts.component').then(
+        (m) => m.InitShiftsComponent,
+      ),
+    canActivate: [AuthenticationGuard, SuperAdminGuard],
   },
 ];

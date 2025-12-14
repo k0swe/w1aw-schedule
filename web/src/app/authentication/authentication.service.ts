@@ -20,6 +20,7 @@ import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { EventInfoService } from '../event-info/event-info.service';
+import { SUPER_ADMIN_ID } from '../schedule/shared-constants';
 
 @Injectable({
   providedIn: 'root',
@@ -102,6 +103,17 @@ export class AuthenticationService {
           }),
         ),
       ),
+    );
+  }
+
+  public userIsSuperAdmin(): Observable<boolean> {
+    return this.user$.pipe(
+      map((user) => {
+        if (!user) {
+          return false;
+        }
+        return user.uid === SUPER_ADMIN_ID;
+      }),
     );
   }
 

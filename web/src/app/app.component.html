@@ -59,6 +59,13 @@
         }
       </mat-card>
       <mat-divider></mat-divider>
+      @if (userIsSuperAdmin$ | async) {
+        <mat-list-item routerLink="/init-shifts">
+          <mat-icon matListItemIcon>settings</mat-icon>
+          Initialize Shifts
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      }
       <a
         mat-list-item
         href="https://github.com/k0swe/w1aw-schedule/issues"

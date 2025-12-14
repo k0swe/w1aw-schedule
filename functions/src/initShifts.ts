@@ -14,7 +14,7 @@ import {
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 
 export const initShifts = onRequest(
-  { memory: '512MiB', timeoutSeconds: 540 },
+  { memory: '512MiB', timeoutSeconds: 540, cors: true },
   async (request, response) => {
     const userId = await validateFirebaseIdToken(request, response);
     if (!userId || userId.uid !== 'VAfZAw8GhJQodyTTCkXgilbqvoM2') {
