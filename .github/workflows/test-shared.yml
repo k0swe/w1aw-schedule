@@ -56,6 +56,16 @@ jobs:
           name: shared-build
           path: shared
 
+      - name: Cache shared node deps
+        uses: actions/cache@v4
+        with:
+          path: shared/node_modules
+          key: ${{ runner.os }}-shared-${{ hashFiles('shared/package-lock.json') }}
+
+      - name: Install shared npm deps
+        working-directory: shared
+        run: npm ci
+
       - name: Cache node deps
         uses: actions/cache@v4
         with:
@@ -125,6 +135,16 @@ jobs:
           name: shared-build
           path: shared
 
+      - name: Cache shared node deps
+        uses: actions/cache@v4
+        with:
+          path: shared/node_modules
+          key: ${{ runner.os }}-shared-${{ hashFiles('shared/package-lock.json') }}
+
+      - name: Install shared npm deps
+        working-directory: shared
+        run: npm ci
+
       - name: Cache node deps
         uses: actions/cache@v4
         with:
@@ -144,3 +164,7 @@ jobs:
       - name: Test
         working-directory: functions
         run: npm test
+
+      - name: Build
+        working-directory: functions
+        run: npm run build
