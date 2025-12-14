@@ -14,10 +14,11 @@ describe('AppComponent', () => {
   let mockEventInfoService: jasmine.SpyObj<EventInfoService>;
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj('AuthenticationService', ['userIsAdmin'], {
+    mockAuthService = jasmine.createSpyObj('AuthenticationService', ['userIsAdmin', 'userIsSuperAdmin'], {
       user$: of(null),
     });
     mockAuthService.userIsAdmin.and.returnValue(of(false));
+    mockAuthService.userIsSuperAdmin.and.returnValue(of(false));
 
     const mockEventInfo: EventInfoWithId = {
       id: 'test-id',

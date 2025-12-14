@@ -1,12 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, Timestamp } from '@angular/fire/firestore';
+import { Functions } from '@angular/fire/functions';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
+import { UserSettingsService } from '../user-settings/user-settings.service';
 import { ScheduleComponent } from './schedule.component';
 import { ScheduleService } from './schedule.service';
 import { EventInfo } from './shared-constants';
@@ -20,6 +22,7 @@ describe('ScheduleComponent', () => {
   beforeEach(async () => {
     const authMock = {} as Auth;
     const firestoreMock = {} as Firestore;
+    const functionsMock = {} as Functions;
     const scheduleServiceMock = jasmine.createSpyObj('ScheduleService', [
       'findUserShifts',
       'findShift',
@@ -30,6 +33,14 @@ describe('ScheduleComponent', () => {
     const authServiceMock = {
       user$: new BehaviorSubject({ uid: 'test-user' }),
       userIsAdmin: jasmine.createSpy('userIsAdmin').and.returnValue(of(false)),
+    };
+
+    const userSettingsServiceMock = {
+      userSettings$: new BehaviorSubject(null),
+      settings$: new BehaviorSubject(null),
+      init: jasmine.createSpy('init'),
+      getApprovedUsers: jasmine.createSpy('getApprovedUsers').and.returnValue(of([])),
+      getUserEventApproval: jasmine.createSpy('getUserEventApproval').and.returnValue(of(null)),
     };
 
     eventInfoService = jasmine.createSpyObj('EventInfoService', [
@@ -63,9 +74,11 @@ describe('ScheduleComponent', () => {
         provideRouter([]),
         { provide: Auth, useValue: authMock },
         { provide: Firestore, useValue: firestoreMock },
+        { provide: Functions, useValue: functionsMock },
         { provide: ScheduleService, useValue: scheduleServiceMock },
         { provide: AuthenticationService, useValue: authServiceMock },
         { provide: EventInfoService, useValue: eventInfoService },
+        { provide: UserSettingsService, useValue: userSettingsServiceMock },
         { provide: ActivatedRoute, useValue: activatedRouteMock },
       ],
     }).compileComponents();
