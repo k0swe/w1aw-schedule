@@ -15,6 +15,11 @@ describe('newUser', () => {
   const adminList = ['67890', 'abcde'];
 
   before(async () => {
+    // Initialize firebase-admin for testing against the emulator
+    if (!admin.apps.length) {
+      admin.initializeApp({ projectId: 'w1aw-test' });
+    }
+    
     // Initialize firebase-functions-test without a credentials file so the tests can run
     // against the local Firestore emulator. The emulator is started automatically by the test script.
     test = firebaseFunctionsTest({ projectId: 'w1aw-test' });

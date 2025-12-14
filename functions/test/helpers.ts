@@ -7,9 +7,7 @@ import * as admin from 'firebase-admin';
 export async function deleteCollection(
   ref: admin.firestore.CollectionReference<admin.firestore.DocumentData>,
 ) {
-  await ref.get().then((snapshot) => {
-    snapshot.forEach(async (doc) => {
-      await doc.ref.delete();
-    });
-  });
+  const snapshot = await ref.get();
+  const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
+  await Promise.all(deletePromises);
 }
