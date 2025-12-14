@@ -2,7 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { constants as httpConstants } from 'http2';
 import ical from 'ical-generator';
 import * as admin from 'firebase-admin';
-import { COLORADO_DOC_ID } from './shared-constants';
+import { COLORADO_DOC_ID } from 'w1aw-schedule-shared';
 import getUuid from 'uuid-by-string';
 
 export const calendar = onRequest(async (request, response) => {

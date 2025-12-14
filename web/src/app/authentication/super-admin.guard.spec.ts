@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
-import { SUPER_ADMIN_ID } from '../schedule/shared-constants';
+import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
 import { AuthenticationService } from './authentication.service';
 import { SuperAdminGuard } from './super-admin.guard';
 

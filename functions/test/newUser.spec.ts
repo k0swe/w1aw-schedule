@@ -1,7 +1,7 @@
 import firebaseFunctionsTest from 'firebase-functions-test';
 import admin from 'firebase-admin';
 import * as assert from 'assert';
-import { COLORADO_DOC_ID } from '../src/shared-constants';
+import { COLORADO_DOC_ID } from 'w1aw-schedule-shared';
 import { deleteCollection } from './helpers';
 
 // Import the function directly from its source file instead of index.ts

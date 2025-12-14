@@ -25,6 +25,12 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
+      - name: Install and build shared module
+        working-directory: shared
+        run: |
+          npm ci
+          npm run build
+
       - name: Read cached build artifacts
         id: read-cache
         uses: actions/cache@v4

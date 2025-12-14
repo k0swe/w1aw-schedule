@@ -14,11 +14,25 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
+      - name: Cache shared node deps
+        uses: actions/cache@v4
+        with:
+          path: shared/node_modules
+          key: ${{ runner.os }}-shared-${{ hashFiles('shared/package-lock.json') }}
+
+      - name: Install shared deps
+        working-directory: shared
+        run: npm ci
+
+      - name: Build shared module
+        working-directory: shared
+        run: npm run build
+
       - name: Cache node deps
         uses: actions/cache@v4
         with:
           path: web/node_modules
-          key: ${{ runner.os }}-web-${{ hashFiles('web/package-lock.json') }}
+          key: ${{ runner.os }}-web-${{ hashFiles('web/package-lock.json', 'shared/package-lock.json') }}
 
       - name: Install npm deps
         working-directory: web
@@ -88,11 +102,25 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
+      - name: Cache shared node deps
+        uses: actions/cache@v4
+        with:
+          path: shared/node_modules
+          key: ${{ runner.os }}-shared-${{ hashFiles('shared/package-lock.json') }}
+
+      - name: Install shared deps
+        working-directory: shared
+        run: npm ci
+
+      - name: Build shared module
+        working-directory: shared
+        run: npm run build
+
       - name: Cache node deps
         uses: actions/cache@v4
         with:
           path: functions/node_modules
-          key: ${{ runner.os }}-functions-${{ hashFiles('functions/package-lock.json') }}
+          key: ${{ runner.os }}-functions-${{ hashFiles('functions/package-lock.json', 'shared/package-lock.json') }}
 
       - name: Install npm deps
         working-directory: functions

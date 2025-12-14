@@ -10,7 +10,7 @@ import {
   Shift,
   shiftId,
   TWO_HOURS_IN_MS,
-} from './shared-constants';
+} from 'w1aw-schedule-shared';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 
 export const initShifts = onRequest(

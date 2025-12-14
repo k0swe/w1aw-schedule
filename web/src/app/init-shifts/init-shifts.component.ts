@@ -10,7 +10,7 @@ import { Observable, of, firstValueFrom } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { EventInfoService } from '../event-info/event-info.service';
-import { EventInfoWithId } from '../schedule/shared-constants';
+import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 interface InitShiftsResponse {
   shiftCount: number;

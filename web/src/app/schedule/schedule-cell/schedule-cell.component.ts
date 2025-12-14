@@ -13,6 +13,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { EventApproval, Shift } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../../authentication/authentication.service';
 import {
@@ -20,7 +21,6 @@ import {
   UserSettingsService,
 } from '../../user-settings/user-settings.service';
 import { ScheduleService } from '../schedule.service';
-import { EventApproval, Shift } from '../shared-constants';
 
 @Component({
   selector: 'kel-schedule-cell',

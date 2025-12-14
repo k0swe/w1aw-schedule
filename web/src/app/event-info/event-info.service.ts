@@ -13,7 +13,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { EventInfo, EventInfoWithId } from '../schedule/shared-constants';
+import { EventInfo, EventInfoWithId } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',

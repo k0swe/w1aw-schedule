@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { EventInfoService } from '../event-info/event-info.service';
-import { COLORADO_DOC_ID, COLORADO_SLUG } from '../schedule/shared-constants';
+import { COLORADO_DOC_ID, COLORADO_SLUG } from 'w1aw-schedule-shared';
 import { AuthenticationService } from './authentication.service';
 
 @Injectable({

@@ -2,7 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions/v2';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 import * as admin from 'firebase-admin';
-import { COLORADO_DOC_ID, EventInfo } from './shared-constants';
+import { COLORADO_DOC_ID, EventInfo } from 'w1aw-schedule-shared';
 
 /**
  * Get the event info from Firestore.

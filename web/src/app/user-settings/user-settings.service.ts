@@ -24,10 +24,13 @@ import {
   of,
 } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
+import { EventApproval, EventInfoWithId, UserSettings } from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
-import { EventApproval, EventInfoWithId } from '../schedule/shared-constants';
+
+// Re-export UserSettings for backward compatibility
+export { UserSettings } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',
@@ -380,22 +383,4 @@ export class UserSettingsService {
       }),
     );
   }
-}
-
-export interface UserSettings {
-  id?: string;
-  callsign?: string;
-  email?: string;
-  emailVerified?: boolean;
-  gridSquare?: string;
-  name?: string;
-  phone?: string;
-  approvedBy?: string;
-  declinedBy?: string;
-  multiShift?: boolean;
-  arrlMemberNumber?: string;
-  discordUsername?: string;
-  discordId?: string;
-  discordDiscriminator?: string;
-  discordAvatar?: string;
 }

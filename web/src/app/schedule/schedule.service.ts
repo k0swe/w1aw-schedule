@@ -15,7 +15,7 @@ import { catchError, switchMap } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
-import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
+import { COLORADO_DOC_ID, Shift, shiftId } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',

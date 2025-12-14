@@ -10,7 +10,7 @@ import { map, switchMap } from 'rxjs/operators';
 
 
 import { EventInfoService } from '../event-info/event-info.service';
-import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfo } from '../schedule/shared-constants';
+import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfo } from 'w1aw-schedule-shared';
 import { UserSettings, UserSettingsService } from '../user-settings/user-settings.service';
 import { ApprovalListComponent } from './approval-list/approval-list.component';
 

@@ -27,7 +27,7 @@ import {
   COLORADO_DOC_ID,
   COLORADO_SLUG,
   Shift,
-} from '../schedule/shared-constants';
+} from 'w1aw-schedule-shared';
 
 @Component({
   selector: 'kel-agenda',
