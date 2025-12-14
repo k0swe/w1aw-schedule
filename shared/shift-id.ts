@@ -3,7 +3,7 @@
  * Uses UUID v5 to create collision-resistant IDs from shift parameters.
  */
 
-import uuidByString from 'uuid-by-string';
+import * as uuidByString from 'uuid-by-string';
 
 // Namespace UUID for W1AW Schedule shifts (randomly generated, fixed)
 const SHIFT_NAMESPACE = 'f7a3e5c1-9b2d-4a6f-8e3c-1d5b7a9c4f2e';
@@ -19,5 +19,6 @@ const SHIFT_NAMESPACE = 'f7a3e5c1-9b2d-4a6f-8e3c-1d5b7a9c4f2e';
  */
 export const shiftId = (timeMillis: number, band: string, mode: string): string => {
   const input = `${timeMillis}-${band}-${mode}`;
+  // @ts-ignore - uuidByString is a default export from a CommonJS module
   return uuidByString(input, SHIFT_NAMESPACE);
 };
