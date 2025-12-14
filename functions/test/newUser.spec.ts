@@ -4,7 +4,8 @@ import * as assert from 'assert';
 import { COLORADO_DOC_ID } from '../src/shared-constants';
 import { deleteCollection } from './helpers';
 
-// Import the function directly from its source file
+// Import the function directly from its source file instead of index.ts
+// to have cleaner test isolation and avoid unnecessary module initialization
 import { newUser } from '../src/newUser';
 
 describe('newUser', () => {
