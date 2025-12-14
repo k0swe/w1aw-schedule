@@ -22,7 +22,7 @@
     "firebase-functions": "^7.0.1",
     "ical-generator": "^10.0.0",
     "uuid-by-string": "^4.0.0",
-    "w1aw-schedule-shared": "file:../shared/w1aw-schedule-shared-1.0.0.tgz"
+    "w1aw-schedule-shared": "file:../shared"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
