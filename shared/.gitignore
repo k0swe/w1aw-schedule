@@ -1,0 +1,8 @@
+# Compiled output
+build/
+
+# NPM package tarballs
+*.tgz
+
+# Dependencies
+node_modules/
