@@ -3,11 +3,11 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Timestamp } from 'firebase/firestore';
 import { of } from 'rxjs';
+import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { AppComponent } from './app.component';
 import { AuthenticationService } from './authentication/authentication.service';
 import { EventInfoService } from './event-info/event-info.service';
-import { EventInfoWithId } from './schedule/shared-constants';
 
 describe('AppComponent', () => {
   let mockAuthService: jasmine.SpyObj<AuthenticationService>;
