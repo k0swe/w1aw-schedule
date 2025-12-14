@@ -9,8 +9,8 @@ set -e
 # Note: This script modifies package.json and package-lock.json to reference the tarball.
 # These changes should NOT be committed - they are only needed for deployment.
 
-# Verify we're in the functions directory
-if [ ! -f "prepare-deploy.sh" ]; then
+# Verify we're in the functions directory by checking for package.json and build script
+if [ ! -f "package.json" ] || ! grep -q '"name": "w1aw-schedule-functions"' package.json; then
   echo "Error: This script must be run from the functions directory"
   exit 1
 fi
@@ -28,6 +28,9 @@ echo "Installing functions dependencies with shared module..."
 cd ../functions
 npm ci
 npm install "../shared/$TARBALL"
+
+echo "Cleaning up tarball..."
+rm -f "../shared/$TARBALL"
 
 echo "Building functions..."
 npm run build
