@@ -164,7 +164,3 @@ jobs:
       - name: Test
         working-directory: functions
         run: npm test
-
-      - name: Build
-        working-directory: functions
-        run: npm run build
