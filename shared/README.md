@@ -66,10 +66,27 @@ npm run watch
 The GitHub Actions workflows automatically:
 
 1. Build the shared module first
-2. Use the built artifacts for web and functions builds
-3. Cache dependencies for faster builds
+2. Use the built artifacts for web builds
+3. For functions deployment, the Firebase predeploy script:
+   - Builds and packs the shared module into a tarball
+   - Installs the tarball as a real package (not a symlink)
+   - Builds the functions code
+
+This ensures the shared module is properly bundled with the functions when deploying to Cloud Functions.
 
 See `.github/workflows/test-shared.yml` and `.github/workflows/deploy.yml` for details.
+
+## Deployment to Cloud Functions
+
+When deploying to Firebase Cloud Functions, the shared module must be packaged as a tarball rather than using a symlink. This is because Firebase only uploads the `functions` directory, and symlinks to `../shared` would be broken in the cloud environment.
+
+The `functions/prepare-deploy.sh` script handles this automatically:
+1. Builds the shared module
+2. Creates a tarball with `npm pack`
+3. Installs the tarball into `functions/node_modules` as a real package
+4. Builds the functions code
+
+This predeploy script is automatically run by Firebase CLI before deployment (configured in `firebase.json`).
 
 ## Type Safety
 

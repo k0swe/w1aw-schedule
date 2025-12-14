@@ -5,12 +5,15 @@ echo "Preparing shared module for deployment..."
 cd ../shared
 npm ci
 npm run build
-npm pack
+
+echo "Packing shared module..."
+TARBALL=$(npm pack)
+echo "Created tarball: $TARBALL"
 
 echo "Installing functions dependencies with shared module..."
 cd ../functions
 npm ci
-npm install ../shared/w1aw-schedule-shared-1.0.0.tgz
+npm install "../shared/$TARBALL"
 
 echo "Building functions..."
 npm run build
