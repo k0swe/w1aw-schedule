@@ -35,7 +35,10 @@ export class ScheduleService {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId(ts.toMillis(), band, mode);
     if (!environment.production) {
-      console.log(`Finding shift for eventId: ${eventId}, time: ${time.toISOString()}, band: ${band}, mode: ${mode}, hashed shiftId: ${sid}`);
+      console.log(
+        `Finding shift for eventId: ${eventId}, time: ${time.toISOString()}, ` +
+        `band: ${band}, mode: ${mode}, hashed shiftId: ${sid}`,
+      );
     }
     const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
     return docData(eventsDocRef) as Observable<Shift | undefined>;
