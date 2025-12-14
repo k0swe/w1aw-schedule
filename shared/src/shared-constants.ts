@@ -42,7 +42,10 @@ export interface EventInfoWithId extends EventInfo {
   id: string;
 }
 
-// TODO: Remove after migration - kept for backwards compatibility
+/**
+ * @deprecated Use EventInfo instead. This interface is kept for backwards compatibility
+ * and will be removed in a future version.
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SectionInfo extends EventInfo {}
 
