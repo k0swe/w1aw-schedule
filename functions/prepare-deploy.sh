@@ -27,15 +27,19 @@ npm run build
 echo "Packing shared module..."
 TARBALL=$(npm pack)
 echo "Created tarball: $TARBALL"
-TARBALL_PATH="$(pwd)/$TARBALL"
+
+echo "Copying tarball to functions directory..."
+cp "$TARBALL" ../functions/
 
 echo "Installing functions dependencies with shared module..."
 cd ../functions
 npm ci
-npm install "$TARBALL_PATH"
+npm install "./$TARBALL"
 
-echo "Cleaning up tarball..."
-rm -f "$TARBALL_PATH"
+echo "Cleaning up tarball from shared directory..."
+rm -f "../shared/$TARBALL"
+# Note: The tarball remains in functions/ and will be uploaded to Cloud Build.
+# It is excluded from git by functions/.gitignore but included in Firebase deployment.
 
 echo "Building functions..."
 npm run build
