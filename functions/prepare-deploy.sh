@@ -38,6 +38,8 @@ npm install "./$TARBALL"
 
 echo "Cleaning up tarball from shared directory..."
 rm -f "../shared/$TARBALL"
+# Note: The tarball remains in functions/ and will be uploaded to Cloud Build.
+# It is excluded from git by functions/.gitignore but included in Firebase deployment.
 
 echo "Building functions..."
 npm run build
