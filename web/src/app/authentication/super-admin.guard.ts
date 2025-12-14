@@ -8,9 +8,8 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { SUPER_ADMIN_ID } from '../schedule/shared-constants';
 import { AuthenticationService } from './authentication.service';
-
-const SUPER_ADMIN_ID = 'VAfZAw8GhJQodyTTCkXgilbqvoM2';
 
 @Injectable({
   providedIn: 'root',

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
+import { SUPER_ADMIN_ID } from '../schedule/shared-constants';
 import { AuthenticationService } from './authentication.service';
 import { SuperAdminGuard } from './super-admin.guard';
 
@@ -48,7 +49,7 @@ describe('SuperAdminGuard', () => {
   });
 
   it('should return true when user is super-admin', (done) => {
-    user$.next({ uid: 'VAfZAw8GhJQodyTTCkXgilbqvoM2' });
+    user$.next({ uid: SUPER_ADMIN_ID });
 
     const result = guard.canActivate(
       {} as ActivatedRouteSnapshot,

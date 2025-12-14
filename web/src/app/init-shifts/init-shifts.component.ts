@@ -6,11 +6,15 @@ import { MatButton } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, of } from 'rxjs';
+import { Observable, of, firstValueFrom } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { EventInfoService } from '../event-info/event-info.service';
 import { EventInfoWithId } from '../schedule/shared-constants';
+
+interface InitShiftsResponse {
+  shiftCount: number;
+}
 
 @Component({
   selector: 'kel-init-shifts',
@@ -65,13 +69,13 @@ export class InitShiftsComponent implements OnInit {
       const token = await user.getIdToken();
       const url = `${environment.functionBase}/initShifts?eventId=${eventId}`;
 
-      const result: any = await this.http
-        .get(url, {
+      const result = await firstValueFrom(
+        this.http.get<InitShiftsResponse>(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        .toPromise();
+        }),
+      );
 
       this.snackBar.open(
         `Successfully initialized ${result.shiftCount} shifts`,
