@@ -13,10 +13,11 @@ import {
 import { Observable, from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
+import { shiftId } from '../../../../shared/shift-id';
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
-import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
+import { COLORADO_DOC_ID, Shift } from './shared-constants';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +33,7 @@ export class ScheduleService {
     eventId: string = COLORADO_DOC_ID,
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
-    const sid = shiftId({ time: ts, band, mode, reservedBy: null });
+    const sid = shiftId(ts.toMillis(), band, mode);
     if (!environment.production) {
       console.log(`Finding shift for eventId: ${eventId}, time: ${time.toISOString()}, band: ${band}, mode: ${mode}, hashed shiftId: ${sid}`);
     }
@@ -52,11 +53,11 @@ export class ScheduleService {
           // trying to take someone else's shift?
           return of(undefined);
         }
-        const sid = shiftId({
-          time: shiftToUpdate.time,
-          band: shiftToUpdate.band,
-          mode: shiftToUpdate.mode,
-        });
+        const sid = shiftId(
+          shiftToUpdate.time.toMillis(),
+          shiftToUpdate.band,
+          shiftToUpdate.mode,
+        );
         const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
         const reservationUpdate = {
           reservedBy: userId,
@@ -84,11 +85,11 @@ export class ScheduleService {
           // trying to cancel someone else's shift?
           return of(undefined);
         }
-        const sid = shiftId({
-          time: shiftToUpdate.time,
-          band: shiftToUpdate.band,
-          mode: shiftToUpdate.mode,
-        });
+        const sid = shiftId(
+          shiftToUpdate.time.toMillis(),
+          shiftToUpdate.band,
+          shiftToUpdate.mode,
+        );
         const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
         const updateData = { reservedBy: null, reservedDetails: null };
 

@@ -55,18 +55,3 @@ export interface Shift {
   reservedBy: string | null;
   reservedDetails: UserSettings | null;
 }
-
-export const shiftId = (shift: Partial<Shift>): string => {
-  const hashInput =
-    shift.time?.toMillis() + '-' + shift.band + '-' + shift.mode;
-  return djb2Hash(hashInput);
-};
-
-const djb2Hash = (str: string): string => {
-  const len = str.length;
-  let h = 5381;
-  for (let i = 0; i < len; i++) {
-    h = (h * 33) ^ str.charCodeAt(i);
-  }
-  return (h >>> 0).toString(16);
-};

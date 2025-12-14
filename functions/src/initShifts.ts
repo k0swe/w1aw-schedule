@@ -8,9 +8,9 @@ import {
   COLORADO_DOC_ID,
   MODES,
   Shift,
-  shiftId,
   TWO_HOURS_IN_MS,
 } from './shared-constants';
+import { shiftId } from '../../shared/shift-id';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 
 export const initShifts = onRequest(
@@ -61,7 +61,7 @@ export const initShifts = onRequest(
     logger.info('Generated shifts', { count: shifts.length });
 
     const hashedShifts = new Map<string, object>();
-    shifts.forEach((shift) => hashedShifts.set(shiftId(shift), shift));
+    shifts.forEach((shift) => hashedShifts.set(shiftId(shift.time.toMillis(), shift.band, shift.mode), shift));
 
     const coloradoEventsShifts = admin
       .firestore()

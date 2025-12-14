@@ -15,13 +15,14 @@ import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { shiftId } from '../../../../../shared/shift-id';
 import { AuthenticationService } from '../../authentication/authentication.service';
 import {
   UserSettings,
   UserSettingsService,
 } from '../../user-settings/user-settings.service';
 import { ScheduleService } from '../schedule.service';
-import { EventApproval, Shift, shiftId } from '../shared-constants';
+import { EventApproval, Shift } from '../shared-constants';
 
 @Component({
   selector: 'kel-schedule-cell',
@@ -102,7 +103,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
 
     if (!shift) {
       const ts = Timestamp.fromDate(this.timeslot);
-      const sid = shiftId({ time: ts, band: this.band, mode: this.mode });
+      const sid = shiftId(ts.toMillis(), this.band, this.mode);
       console.error(`Cannot toggle shift: shift has not been created by an administrator. Hashed shiftId: ${sid}`);
       return;
     }
@@ -165,7 +166,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     const shift = this.shift$.getValue();
     if (!shift) {
       const ts = Timestamp.fromDate(this.timeslot);
-      const sid = shiftId({ time: ts, band: this.band, mode: this.mode });
+      const sid = shiftId(ts.toMillis(), this.band, this.mode);
       console.error(`Cannot reserve shift: shift has not been created by an administrator. Hashed shiftId: ${sid}`);
       return;
     }

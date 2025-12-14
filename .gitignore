@@ -332,3 +332,8 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,windows,firebase,jetbrains+all,visualstudiocode,node
+
+# Shared module build artifacts
+shared/*.js
+shared/*.d.ts
+shared/*.js.map
