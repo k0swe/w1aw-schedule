@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # This script prepares the functions directory for deployment to Firebase Cloud Functions.
 # It builds and packs the shared module into a tarball, then installs it as a real package
@@ -9,8 +9,8 @@ set -e
 # Note: This script modifies package.json and package-lock.json to reference the tarball.
 # These changes should NOT be committed - they are only needed for deployment.
 
-# Verify we're in the functions directory by checking for package.json and build script
-if [ ! -f "package.json" ] || ! grep -q '"name": "w1aw-schedule-functions"' package.json; then
+# Verify we're in the functions directory by checking for Firebase Functions indicators
+if [ ! -f "package.json" ] || ! grep -q "firebase-functions" package.json; then
   echo "Error: This script must be run from the functions directory"
   exit 1
 fi
@@ -23,14 +23,15 @@ npm run build
 echo "Packing shared module..."
 TARBALL=$(npm pack)
 echo "Created tarball: $TARBALL"
+TARBALL_PATH="$(pwd)/$TARBALL"
 
 echo "Installing functions dependencies with shared module..."
 cd ../functions
 npm ci
-npm install "../shared/$TARBALL"
+npm install "$TARBALL_PATH"
 
 echo "Cleaning up tarball..."
-rm -f "../shared/$TARBALL"
+rm -f "$TARBALL_PATH"
 
 echo "Building functions..."
 npm run build
