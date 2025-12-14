@@ -4,6 +4,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
 jobs:
   test:
     uses: k0swe/w1aw-schedule/.github/workflows/test-shared.yml@main
