@@ -6,8 +6,29 @@ During the weeks of May 27th through June 2nd and September 2nd through 8th, 202
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will
-automatically reload if you change any of the source files.
+Before running the development server, you need to build the shared module:
+
+```bash
+cd shared
+npm install
+npm run build
+cd ../web
+npm install
+ng serve
+```
+
+Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+
+### Project Structure
+
+This monorepo contains:
+
+- **`shared/`** - Shared constants and types used by both web and functions
+- **`web/`** - Angular frontend application
+- **`functions/`** - Firebase Cloud Functions (Node.js backend)
+- **`firestore/`** - Firestore security rules and indexes
+
+The shared module must be built before building web or functions. See [shared/README.md](shared/README.md) for more details.
 
 ## Firebase
 
