@@ -9,6 +9,10 @@ set -euo pipefail
 # Note: This script modifies package.json and package-lock.json to reference the tarball.
 # These changes should NOT be committed - they are only needed for deployment.
 
+# Change to the functions directory. Firebase sets RESOURCE_DIR to point to the functions directory,
+# but runs the script from the project root.
+cd "${RESOURCE_DIR:-.}"
+
 # Verify we're in the functions directory by checking for Firebase Functions indicators
 if [ ! -f "package.json" ] || ! grep -q "firebase-functions" package.json; then
   echo "Error: This script must be run from the functions directory"
