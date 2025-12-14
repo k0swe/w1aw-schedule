@@ -19,8 +19,7 @@
         "node_modules",
         ".git",
         "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.tgz"
+        "firebase-debug.*.log"
       ],
       "predeploy": [
         "bash \"$RESOURCE_DIR/prepare-deploy.sh\""

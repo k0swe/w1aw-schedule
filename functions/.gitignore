@@ -6,3 +6,6 @@ node_modules/
 
 creds.json
 *.log
+
+# Shared module tarball (generated during deployment)
+*.tgz
