@@ -2,8 +2,8 @@ name: (Reusable) Test and Compile
 on: workflow_call
 
 jobs:
-  build-shared:
-    name: Build Shared Module
+  test-web:
+    name: Test Web
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,42 +27,6 @@ jobs:
       - name: Build shared module
         working-directory: shared
         run: npm run build
-
-      - name: Upload shared build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: shared-build
-          path: shared/build/
-          retention-days: 1
-
-  test-web:
-    name: Test Web
-    runs-on: ubuntu-latest
-    needs: build-shared
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup node
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Cache shared node deps
-        uses: actions/cache@v4
-        with:
-          path: shared/node_modules
-          key: ${{ runner.os }}-shared-${{ hashFiles('shared/package-lock.json') }}
-
-      - name: Install shared deps
-        working-directory: shared
-        run: npm ci
-
-      - name: Download shared build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-build
-          path: shared/build/
 
       - name: Cache node deps
         uses: actions/cache@v4
@@ -123,7 +87,6 @@ jobs:
   test-functions:
     name: Test Functions
     runs-on: ubuntu-latest
-    needs: build-shared
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -149,11 +112,9 @@ jobs:
         working-directory: shared
         run: npm ci
 
-      - name: Download shared build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-build
-          path: shared/build/
+      - name: Build shared module
+        working-directory: shared
+        run: npm run build
 
       - name: Cache node deps
         uses: actions/cache@v4
