@@ -52,7 +52,7 @@ import {
   Shift,
   TWO_HOURS_IN_MS,
   VHF_UHF_BANDS,
-} from './shared-constants';
+} from 'w1aw-schedule-shared';
 import { SunCalculationService } from './sun-calculation.service';
 
 @Component({

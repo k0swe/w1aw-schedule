@@ -38,7 +38,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
-import { EventApproval, EventInfoWithId } from '../schedule/shared-constants';
+import { EventApproval, EventInfoWithId } from 'w1aw-schedule-shared';
 import { UserSettings, UserSettingsService } from './user-settings.service';
 
 @Component({

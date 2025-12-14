@@ -11,7 +11,7 @@ import { EventInfoService } from '../event-info/event-info.service';
 import { UserSettingsService } from '../user-settings/user-settings.service';
 import { ScheduleComponent } from './schedule.component';
 import { ScheduleService } from './schedule.service';
-import { EventInfo } from './shared-constants';
+import { EventInfo } from 'w1aw-schedule-shared';
 
 describe('ScheduleComponent', () => {
   let component: ScheduleComponent;

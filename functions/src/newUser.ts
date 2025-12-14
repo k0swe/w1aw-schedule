@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
-import { COLORADO_DOC_ID, EventInfo } from './shared-constants';
+import { COLORADO_DOC_ID, EventInfo } from 'w1aw-schedule-shared';
 
 export const newUser = onDocumentCreated('users/{userId}', async (event) => {
   const snapshot = event.data;

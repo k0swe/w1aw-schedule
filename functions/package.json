@@ -21,7 +21,8 @@
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.1",
     "ical-generator": "^10.0.0",
-    "uuid-by-string": "^4.0.0"
+    "uuid-by-string": "^4.0.0",
+    "w1aw-schedule-shared": "file:../shared"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

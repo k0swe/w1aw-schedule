@@ -20,7 +20,7 @@ import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 import { EventInfoService } from '../event-info/event-info.service';
-import { SUPER_ADMIN_ID } from '../schedule/shared-constants';
+import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',

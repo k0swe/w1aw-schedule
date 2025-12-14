@@ -17,12 +17,12 @@ import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, filter, map, startWith, switchMap, take, tap } from 'rxjs/operators';
+import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
 import { AvatarComponent } from './avatar/avatar.component';
 import { EventInfoService } from './event-info/event-info.service';
-import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfoWithId } from './schedule/shared-constants';
 
 @Component({
   selector: 'kel-root',
