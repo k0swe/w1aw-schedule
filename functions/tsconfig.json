@@ -5,13 +5,10 @@
     "esModuleInterop": true,
     "noUnusedLocals": true,
     "outDir": "build",
+    "rootDir": ".",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
-    "baseUrl": ".",
-    "paths": {
-      "w1aw-schedule-shared": ["../shared/src/index.ts"]
-    }
+    "target": "es2017"
   },
   "compileOnSave": true,
   "include": ["src", "test"]
