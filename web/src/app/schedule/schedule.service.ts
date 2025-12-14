@@ -13,6 +13,7 @@ import {
 import { Observable, from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
 import { COLORADO_DOC_ID, Shift, shiftId } from './shared-constants';
@@ -32,7 +33,9 @@ export class ScheduleService {
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
-    console.log(`Finding shift for eventId: ${eventId}, time: ${time.toISOString()}, band: ${band}, mode: ${mode}, hashed shiftId: ${sid}`);
+    if (!environment.production) {
+      console.log(`Finding shift for eventId: ${eventId}, time: ${time.toISOString()}, band: ${band}, mode: ${mode}, hashed shiftId: ${sid}`);
+    }
     const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
     return docData(eventsDocRef) as Observable<Shift | undefined>;
   }
