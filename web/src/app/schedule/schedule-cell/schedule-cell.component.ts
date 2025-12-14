@@ -8,6 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { User } from '@angular/fire/auth';
+import { Timestamp } from '@angular/fire/firestore';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
@@ -20,7 +21,7 @@ import {
   UserSettingsService,
 } from '../../user-settings/user-settings.service';
 import { ScheduleService } from '../schedule.service';
-import { EventApproval, Shift } from '../shared-constants';
+import { EventApproval, Shift, shiftId } from '../shared-constants';
 
 @Component({
   selector: 'kel-schedule-cell',
@@ -100,7 +101,9 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     }
 
     if (!shift) {
-      console.error('Cannot toggle shift: shift has not been created by an administrator');
+      const ts = Timestamp.fromDate(this.timeslot);
+      const sid = shiftId({ time: ts, band: this.band, mode: this.mode });
+      console.error(`Cannot toggle shift: shift has not been created by an administrator. Hashed shiftId: ${sid}`);
       return;
     }
 
@@ -161,7 +164,9 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   reserveFor(userId: string) {
     const shift = this.shift$.getValue();
     if (!shift) {
-      console.error('Cannot reserve shift: shift has not been created by an administrator');
+      const ts = Timestamp.fromDate(this.timeslot);
+      const sid = shiftId({ time: ts, band: this.band, mode: this.mode });
+      console.error(`Cannot reserve shift: shift has not been created by an administrator. Hashed shiftId: ${sid}`);
       return;
     }
     const approvedUsers = this.approvedUsers$.getValue();
