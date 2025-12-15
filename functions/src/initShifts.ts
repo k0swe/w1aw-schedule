@@ -98,7 +98,10 @@ const calcTimeSlots = (startTime: Date, endTime: Date): Array<Date> => {
   const timeSlots: Array<Date> = [];
   let currentTimeSlot = startTime;
   while (currentTimeSlot < endTime) {
-    timeSlots.push(currentTimeSlot);
+    // Zero out milliseconds to match browser behavior
+    const normalizedSlot = new Date(currentTimeSlot.getTime());
+    normalizedSlot.setMilliseconds(0);
+    timeSlots.push(normalizedSlot);
     currentTimeSlot = new Date(currentTimeSlot.getTime() + TWO_HOURS_IN_MS);
   }
   return timeSlots;
