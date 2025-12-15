@@ -178,9 +178,11 @@ export class ScheduleComponent implements OnDestroy {
           if (eventInfo.googleCalendarId) {
             const startDate = this.formatDateAsYYYYMMDD(this.eventStartTime);
             const endDate = this.formatDateAsYYYYMMDD(this.eventEndTime);
+            const encodedCalendarId = encodeURIComponent(eventInfo.googleCalendarId);
+            const encodedTimeZone = encodeURIComponent(eventInfo.timeZoneId);
             this.googleCalendarLink =
-              `https://calendar.google.com/calendar/u/0/embed?src=${eventInfo.googleCalendarId}@import.calendar.google.com` +
-              `&ctz=${eventInfo.timeZoneId}&mode=WEEK&dates=${startDate}/${endDate}`;
+              `https://calendar.google.com/calendar/u/0/embed?src=${encodedCalendarId}@import.calendar.google.com` +
+              `&ctz=${encodedTimeZone}&mode=WEEK&dates=${startDate}/${endDate}`;
           } else {
             this.googleCalendarLink = undefined;
           }
