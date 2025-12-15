@@ -99,11 +99,13 @@
           Download iCalendar file
         </button>
       </a>
-      <a [href]="googleCalendarLink" target="_blank" rel="noopener">
-        <button matButton="filled" class="button-secondary-color">
-          Quick View (updates lag)
-        </button>
-      </a>
+      @if (googleCalendarLink) {
+        <a [href]="googleCalendarLink" target="_blank" rel="noopener">
+          <button matButton="filled" class="button-secondary-color">
+            Quick View (updates lag)
+          </button>
+        </a>
+      }
     </mat-card-actions>
   </mat-card>
 </div>

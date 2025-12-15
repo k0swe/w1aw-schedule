@@ -123,9 +123,7 @@ export class ScheduleComponent implements OnDestroy {
   viewMode: string = 'phone';
   prevDay: Date = new Date();
   nextDay: Date = new Date();
-  googleCalendarLink =
-    'https://calendar.google.com/calendar/u/0/embed?src=j1vm5nfmlg2djdqjv86sjfe7ob2a8bl8@import.calendar.google.com' +
-    '&ctz=America/Denver&mode=WEEK&dates=20260526/20260602';
+  googleCalendarLink?: string;
   icsLink = '';
 
   constructor() {
@@ -175,6 +173,20 @@ export class ScheduleComponent implements OnDestroy {
 
           // Get local timezone label (browser timezone, not event timezone)
           this.timeZoneLabel = getLocalTimeZoneLabel(this.eventStartTime);
+
+          // Construct Google Calendar link if googleCalendarId is provided
+          if (eventInfo.googleCalendarId) {
+            const startDate = this.formatDateAsYYYYMMDD(this.eventStartTime);
+            const endDate = this.formatDateAsYYYYMMDD(this.eventEndTime);
+            const encodedCalendarId = encodeURIComponent(eventInfo.googleCalendarId);
+            const encodedTimeZone = encodeURIComponent(eventInfo.timeZoneId);
+            const encodedDates = encodeURIComponent(`${startDate}/${endDate}`);
+            this.googleCalendarLink =
+              `https://calendar.google.com/calendar/u/0/embed?src=${encodedCalendarId}@import.calendar.google.com` +
+              `&ctz=${encodedTimeZone}&mode=WEEK&dates=${encodedDates}`;
+          } else {
+            this.googleCalendarLink = undefined;
+          }
 
           // Set viewDay based on query params or nearest day to today
           const dayParam = this.route.snapshot.queryParams['day'];
@@ -274,6 +286,16 @@ export class ScheduleComponent implements OnDestroy {
     // Disable if nextDay is entirely after the event ends
     // A day is entirely after the event if its start is after event end
     return this.nextDay > this.eventEndTime;
+  }
+
+  /**
+   * Format a Date object as YYYYMMDD for Google Calendar URL
+   */
+  private formatDateAsYYYYMMDD(date: Date): string {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
   }
 
   changeParams() {
