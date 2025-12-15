@@ -36,6 +36,7 @@ export interface EventInfo {
   startTime: GenericTimestamp;
   endTime: GenericTimestamp;
   timeZoneId: string;
+  googleCalendarId?: string;
 }
 
 export interface EventInfoWithId extends EventInfo {

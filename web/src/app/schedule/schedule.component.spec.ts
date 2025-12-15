@@ -57,6 +57,7 @@ describe('ScheduleComponent', () => {
       startTime: Timestamp.fromDate(new Date('2026-05-27T00:00:00Z')),
       endTime: Timestamp.fromDate(new Date('2026-06-02T23:59:59Z')),
       timeZoneId: 'America/Denver',
+      googleCalendarId: 'test-calendar-id',
     };
     eventInfoService.getEventInfo.and.returnValue(of(mockEventInfo));
     eventInfoService.getEventBySlug.and.returnValue(of(undefined));
@@ -192,6 +193,40 @@ describe('ScheduleComponent', () => {
         // Should default to event start (since today is before 2026)
         const expectedDate = new Date(Date.UTC(2026, 4, 27, 0, 0, 0, 0));
         expect(component.viewDay.getTime()).toBe(expectedDate.getTime());
+        done();
+      }, 100);
+    });
+  });
+
+  describe('Google Calendar link', () => {
+    it('should construct Google Calendar link when googleCalendarId is provided', (done) => {
+      fixture = TestBed.createComponent(ScheduleComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      setTimeout(() => {
+        expect(component.googleCalendarLink).toBeDefined();
+        expect(component.googleCalendarLink).toContain('test-calendar-id@import.calendar.google.com');
+        expect(component.googleCalendarLink).toContain('ctz=America/Denver');
+        expect(component.googleCalendarLink).toContain('mode=WEEK');
+        expect(component.googleCalendarLink).toContain('dates=20260527/20260602');
+        done();
+      }, 100);
+    });
+
+    it('should set googleCalendarLink to undefined when googleCalendarId is missing', (done) => {
+      const eventInfoWithoutCalendar = {
+        ...mockEventInfo,
+        googleCalendarId: undefined,
+      };
+      eventInfoService.getEventInfo.and.returnValue(of(eventInfoWithoutCalendar));
+
+      fixture = TestBed.createComponent(ScheduleComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      setTimeout(() => {
+        expect(component.googleCalendarLink).toBeUndefined();
         done();
       }, 100);
     });
