@@ -209,7 +209,7 @@ describe('ScheduleComponent', () => {
         expect(component.googleCalendarLink).toContain('test-calendar-id@import.calendar.google.com');
         expect(component.googleCalendarLink).toContain('ctz=America%2FDenver');
         expect(component.googleCalendarLink).toContain('mode=WEEK');
-        expect(component.googleCalendarLink).toContain('dates=20260527/20260602');
+        expect(component.googleCalendarLink).toContain('dates=20260527%2F20260602');
         done();
       }, 100);
     });

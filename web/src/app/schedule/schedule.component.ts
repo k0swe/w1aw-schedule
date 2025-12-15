@@ -180,9 +180,10 @@ export class ScheduleComponent implements OnDestroy {
             const endDate = this.formatDateAsYYYYMMDD(this.eventEndTime);
             const encodedCalendarId = encodeURIComponent(eventInfo.googleCalendarId);
             const encodedTimeZone = encodeURIComponent(eventInfo.timeZoneId);
+            const encodedDates = encodeURIComponent(`${startDate}/${endDate}`);
             this.googleCalendarLink =
               `https://calendar.google.com/calendar/u/0/embed?src=${encodedCalendarId}@import.calendar.google.com` +
-              `&ctz=${encodedTimeZone}&mode=WEEK&dates=${startDate}/${endDate}`;
+              `&ctz=${encodedTimeZone}&mode=WEEK&dates=${encodedDates}`;
           } else {
             this.googleCalendarLink = undefined;
           }
