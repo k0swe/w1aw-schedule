@@ -53,6 +53,11 @@ export const initShifts = onRequest(
       response.status(400).send({ error: 'Event startTime and endTime are required' });
       return;
     }
+    
+    if (endTime <= startTime) {
+      response.status(400).send({ error: 'Event endTime must be after startTime' });
+      return;
+    }
 
     const timeSlots = calcTimeSlots(startTime, endTime);
 
