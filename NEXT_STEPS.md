@@ -31,11 +31,14 @@ Create a Cloud Function or script to run once:
 
 ```typescript
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
-import { COLORADO_DOC_ID } from './shared-constants';
 
 async function migrateApprovals() {
   const db = getFirestore();
   const usersSnapshot = await db.collection('users').get();
+  
+  // Get all events to create approvals for
+  const eventsSnapshot = await db.collection('events').get();
+  const eventIds = eventsSnapshot.docs.map(doc => doc.id);
   
   const batch = db.batch();
   let batchCount = 0;
@@ -60,8 +63,9 @@ async function migrateApprovals() {
     }
     
     // Determine which event(s) to create approvals for
-    // For now, assume all users are for Colorado event
-    const eventId = COLORADO_DOC_ID;
+    // You'll need to decide which event(s) each user should be associated with
+    // For example, if all existing users are for a specific event:
+    const eventId = eventIds[0]; // Or specify the appropriate event ID
     
     const approvalRef = db.doc(`events/${eventId}/approvals/${userId}`);
     

@@ -2,6 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { constants as httpConstants } from 'http2';
 import ical from 'ical-generator';
 import * as admin from 'firebase-admin';
+import { EventInfo } from 'w1aw-schedule-shared';
 import getUuid from 'uuid-by-string';
 
 export const calendar = onRequest(async (request, response) => {
@@ -13,7 +14,21 @@ export const calendar = onRequest(async (request, response) => {
     return;
   }
   
-  let title = 'W1AW schedule';
+  // Fetch event info to get the event name
+  const eventDoc = await admin
+    .firestore()
+    .collection('events')
+    .doc(eventId)
+    .get();
+  
+  if (!eventDoc.exists) {
+    response.status(httpConstants.HTTP_STATUS_NOT_FOUND);
+    response.send('Event not found');
+    return;
+  }
+  
+  const eventInfo = eventDoc.data() as EventInfo;
+  let title = `${eventInfo.name} schedule`;
 
   const uid = request.query.uid?.toString();
   if (uid) {
@@ -51,7 +66,7 @@ export const calendar = onRequest(async (request, response) => {
       id: getUuid(doc.id),
       start: doc.data().time.toDate(),
       end: new Date(doc.data().time.toDate().getTime() + 2 * 60 * 60 * 1000),
-      summary: `${doc.data().reservedDetails.callsign} operate W1AW/0 on ${
+      summary: `${doc.data().reservedDetails.callsign} operate ${eventInfo.coordinatorCallsign} on ${
         doc.data().band
       }m ${doc.data().mode}`,
     });
