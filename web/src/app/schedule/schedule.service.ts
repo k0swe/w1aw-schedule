@@ -15,7 +15,7 @@ import { catchError, switchMap } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
-import { COLORADO_DOC_ID, Shift, shiftId } from 'w1aw-schedule-shared';
+import { Shift, shiftId } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +28,7 @@ export class ScheduleService {
     time: Date,
     band: string,
     mode: string,
-    eventId: string = COLORADO_DOC_ID,
+    eventId: string,
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
@@ -40,7 +40,7 @@ export class ScheduleService {
     shiftToUpdate: Shift,
     userId: string,
     userDetails: UserSettings,
-    eventId: string = COLORADO_DOC_ID,
+    eventId: string,
   ): Observable<void> {
     return this.authenticationService.userIsAdmin(eventId).pipe(
       switchMap((isAdmin) => {
@@ -72,7 +72,7 @@ export class ScheduleService {
   cancelShift(
     shiftToUpdate: Shift,
     userId: string,
-    eventId: string = COLORADO_DOC_ID,
+    eventId: string,
   ): Observable<void> {
     return this.authenticationService.userIsAdmin(eventId).pipe(
       switchMap((isAdmin) => {
@@ -95,7 +95,7 @@ export class ScheduleService {
 
   findUserShifts(
     uid: string,
-    eventId: string = COLORADO_DOC_ID,
+    eventId: string,
   ): Observable<Shift[]> {
     const eventsShiftsCol = collection(
       this.firestore,

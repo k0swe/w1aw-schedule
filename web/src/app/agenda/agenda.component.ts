@@ -24,8 +24,6 @@ import { EventInfoService } from '../event-info/event-info.service';
 import { ScheduleService } from '../schedule/schedule.service';
 import { getLocalTimeZoneLabel } from '../timezone-utils';
 import {
-  COLORADO_DOC_ID,
-  COLORADO_SLUG,
   Shift,
 } from 'w1aw-schedule-shared';
 
@@ -56,29 +54,28 @@ export class AgendaComponent implements OnDestroy {
 
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   icsLink = '';
-  eventId: string = COLORADO_DOC_ID;
+  eventId: string = '';
   timeZoneLabel: string = ''; // Dynamic timezone label from event info
 
   constructor() {
-    // React to route parameter changes
+    // React to route parameter changes - slug is required
     this.route.paramMap
       .pipe(
         switchMap((params) => {
-          const slug = params.get('slug') || COLORADO_SLUG;
-
-          // Resolve slug to eventId
-          if (slug === COLORADO_SLUG) {
-            // Optimization: use default Colorado event ID without query
-            return of({ slug, eventId: COLORADO_DOC_ID });
-          } else {
-            // Query Firestore to find event by slug
-            return this.eventInfoService.getEventBySlug(slug).pipe(
-              map((eventInfo) => ({
-                slug,
-                eventId: eventInfo?.id || COLORADO_DOC_ID,
-              })),
-            );
+          const slug = params.get('slug');
+          if (!slug) {
+            throw new Error('Event slug is required in route');
           }
+
+          // Query Firestore to find event by slug
+          return this.eventInfoService.getEventBySlug(slug).pipe(
+            map((eventInfo) => {
+              if (!eventInfo) {
+                throw new Error(`Event not found for slug: ${slug}`);
+              }
+              return { slug, eventId: eventInfo.id };
+            }),
+          );
         }),
         takeUntil(this.destroy$),
       )

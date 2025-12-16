@@ -43,8 +43,6 @@ import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleService } from './schedule.service';
 import {
   BANDS,
-  COLORADO_DOC_ID,
-  COLORADO_SLUG,
   HI_HF_BANDS,
   LF_BANDS,
   LOW_HF_BANDS,
@@ -113,9 +111,9 @@ export class ScheduleComponent implements OnDestroy {
   bandGroupNames = ['LF', 'Low HF', 'Hi HF', 'VHF & UHF'];
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   columnsToDisplay: string[] = [];
-  eventId: string = COLORADO_DOC_ID;
-  eventStartTime: Date = new Date('2026-05-27T00:00:00Z'); // Default, updated from event info
-  eventEndTime: Date = new Date('2026-06-02T23:59:59Z'); // Default, updated from event info
+  eventId: string = '';
+  eventStartTime: Date = new Date(); // Set from event info
+  eventEndTime: Date = new Date(); // Set from event info
   timeZoneLabel: string = ''; // Dynamic timezone label from event info
 
   viewDay: Date = new Date();
@@ -127,25 +125,24 @@ export class ScheduleComponent implements OnDestroy {
   icsLink = '';
 
   constructor() {
-    // React to route parameter changes
+    // React to route parameter changes - slug is required
     this.route.paramMap
       .pipe(
         switchMap((params) => {
-          const slug = params.get('slug') || COLORADO_SLUG;
-
-          // Resolve slug to eventId and get event info
-          if (slug === COLORADO_SLUG) {
-            // Optimization: use default Colorado event ID without query
-            return of({ slug, eventId: COLORADO_DOC_ID });
-          } else {
-            // Query Firestore to find event by slug
-            return this.eventInfoService.getEventBySlug(slug).pipe(
-              map((eventInfo) => ({
-                slug,
-                eventId: eventInfo?.id || COLORADO_DOC_ID,
-              })),
-            );
+          const slug = params.get('slug');
+          if (!slug) {
+            throw new Error('Event slug is required in route');
           }
+
+          // Query Firestore to find event by slug
+          return this.eventInfoService.getEventBySlug(slug).pipe(
+            map((eventInfo) => {
+              if (!eventInfo) {
+                throw new Error(`Event not found for slug: ${slug}`);
+              }
+              return { slug, eventId: eventInfo.id };
+            }),
+          );
         }),
         takeUntil(this.destroy$),
       )

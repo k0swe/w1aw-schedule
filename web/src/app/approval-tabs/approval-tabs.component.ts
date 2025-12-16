@@ -10,7 +10,7 @@ import { map, switchMap } from 'rxjs/operators';
 
 
 import { EventInfoService } from '../event-info/event-info.service';
-import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfo } from 'w1aw-schedule-shared';
+import { EventInfo } from 'w1aw-schedule-shared';
 import { UserSettings, UserSettingsService } from '../user-settings/user-settings.service';
 import { ApprovalListComponent } from './approval-list/approval-list.component';
 
@@ -76,22 +76,20 @@ export class ApprovalTabsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Get event ID from route parameter (slug) - required, no default
+    // Get event ID from route parameter (slug) - required
     this.route.paramMap
       .pipe(
         switchMap((params) => {
           const slug = params.get('slug');
           if (!slug) {
-            // If no slug, try defaulting to Colorado for backward compatibility
-            return this.eventInfoService.getEventBySlug(COLORADO_SLUG);
+            throw new Error('Event slug is required in route');
           }
           return this.eventInfoService.getEventBySlug(slug);
         }),
       )
       .subscribe((eventInfo) => {
         if (!eventInfo) {
-          console.error('No event found for the given slug');
-          return;
+          throw new Error('Event not found for the given slug');
         }
 
         this.eventId.set(eventInfo.id);

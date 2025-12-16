@@ -2,13 +2,18 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { constants as httpConstants } from 'http2';
 import ical from 'ical-generator';
 import * as admin from 'firebase-admin';
-import { COLORADO_DOC_ID } from 'w1aw-schedule-shared';
 import getUuid from 'uuid-by-string';
 
 export const calendar = onRequest(async (request, response) => {
-  // Accept eventId query parameter, default to Colorado event for backward compatibility
-  const eventId = request.query.eventId?.toString() || COLORADO_DOC_ID;
-  let title = 'W1AW/0 Colorado schedule';
+  // Require eventId query parameter
+  const eventId = request.query.eventId?.toString();
+  if (!eventId) {
+    response.status(httpConstants.HTTP_STATUS_BAD_REQUEST);
+    response.send('eventId query parameter is required');
+    return;
+  }
+  
+  let title = 'W1AW schedule';
 
   const uid = request.query.uid?.toString();
   if (uid) {

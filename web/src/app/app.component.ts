@@ -17,7 +17,7 @@ import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { distinctUntilChanged, filter, map, startWith, switchMap, take, tap } from 'rxjs/operators';
-import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfoWithId } from 'w1aw-schedule-shared';
+import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { environment } from '../environments/environment';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -112,14 +112,20 @@ export class AppComponent {
                 }
               }),
               switchMap((eventInfo) => {
-                const eventId = eventInfo?.id || COLORADO_DOC_ID;
-                return this.authService.userIsAdmin(eventId);
+                if (!eventInfo) {
+                  throw new Error(`Event not found for slug: ${slug}`);
+                }
+                return this.authService.userIsAdmin(eventInfo.id);
               }),
             );
           } else {
-            // No slug in route, use Colorado default for admin check
-            // Don't update selectedEvent$ - let the default event logic handle it
-            return this.authService.userIsAdmin(COLORADO_DOC_ID);
+            // No slug in route - check if we have a selected event
+            const selectedEvent = this.selectedEvent$.value;
+            if (selectedEvent) {
+              return this.authService.userIsAdmin(selectedEvent.id);
+            }
+            // No event selected, return false for admin status
+            return of(false);
           }
         }),
         takeUntilDestroyed(),

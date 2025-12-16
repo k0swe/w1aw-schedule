@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
-import { COLORADO_DOC_ID, EventInfo } from 'w1aw-schedule-shared';
+import { EventInfo } from 'w1aw-schedule-shared';
 
 export const newUser = onDocumentCreated('users/{userId}', async (event) => {
   const snapshot = event.data;
@@ -34,17 +34,26 @@ export const newUser = onDocumentCreated('users/{userId}', async (event) => {
     console.error('Error getting auth user:', error);
   }
 
-  const eventsDoc = await admin.firestore().collection('events').doc(COLORADO_DOC_ID).get();
-  const eventInfoData = eventsDoc.data() as EventInfo;
-  const { admins } = eventInfoData;
+  // Get all events to notify their admins
+  const eventsSnapshot = await admin.firestore().collection('events').get();
+  
+  // Collect all admin UIDs across all events (deduplicated)
+  const allAdminUids = new Set<string>();
+  eventsSnapshot.docs.forEach((doc) => {
+    const eventInfoData = doc.data() as EventInfo;
+    if (eventInfoData.admins) {
+      eventInfoData.admins.forEach((adminUid) => allAdminUids.add(adminUid));
+    }
+  });
 
+  // Send welcome email to new user and BCC all admins
   await admin
     .firestore()
     .collection('mail')
     .doc()
     .set({
       to: email,
-      bccUids: admins,
+      bccUids: Array.from(allAdminUids),
       template: {
         name: 'welcome',
         data: {
