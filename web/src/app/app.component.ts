@@ -15,7 +15,7 @@ import { MatSidenav, MatSidenavContainer } from '@angular/material/sidenav';
 import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { BehaviorSubject, combineLatest } from 'rxjs';
+import { BehaviorSubject, combineLatest, of } from 'rxjs';
 import { distinctUntilChanged, filter, map, startWith, switchMap, take, tap } from 'rxjs/operators';
 import { EventInfoWithId } from 'w1aw-schedule-shared';
 

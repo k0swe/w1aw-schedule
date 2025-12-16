@@ -1,7 +1,6 @@
 import firebaseFunctionsTest from 'firebase-functions-test';
 import admin from 'firebase-admin';
 import * as assert from 'assert';
-import { COLORADO_DOC_ID } from 'w1aw-schedule-shared';
 import { deleteCollection } from './helpers';
 
 // Import the function directly from its source file instead of index.ts
@@ -13,6 +12,7 @@ describe('newUser', () => {
   const userId = '12345';
   const userEmail = 'test@example.com';
   const adminList = ['67890', 'abcde'];
+  const testEventId = 'test-event-123';
 
   before(async () => {
     // Initialize firebase-admin for testing against the emulator
@@ -24,9 +24,11 @@ describe('newUser', () => {
     // against the local Firestore emulator. The emulator is started automatically by the test script.
     test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
     
-    // Set up test data in events collection
-    await admin.firestore().collection('events').doc(COLORADO_DOC_ID).set({
+    // Set up test data in events collection - create a test event
+    await admin.firestore().collection('events').doc(testEventId).set({
       admins: adminList,
+      name: 'Test Event',
+      slug: 'test-event',
     });
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
