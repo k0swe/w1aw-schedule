@@ -53,6 +53,7 @@ describe('ScheduleComponent', () => {
       slug: 'test-event',
       coordinatorName: 'Test',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromDate(new Date('2026-05-27T00:00:00Z')),
       endTime: Timestamp.fromDate(new Date('2026-06-02T23:59:59Z')),

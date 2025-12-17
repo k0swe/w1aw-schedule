@@ -10,15 +10,9 @@ service cloud.firestore {
       let admins = get(/databases/$(database)/documents/events/$(eventId)).data.admins;
       return request.auth.uid != null && admins != null && request.auth.uid in admins;
     }
-    
-    function isAdminInAnyEvent() {
-      // Helper function to check if user is admin in any event
-      // Used for user management permissions
-      // Note: This is expensive and should only be used where necessary
-      return exists(/databases/$(database)/documents/events/$(request.auth.uid));
-    }
 
-    // Users may only read their own profile
+    // Users may read their own profile or any profile if logged in
+    // Admins need to read user profiles when managing event approvals
     match /users/{userId} {
       function usersOwnDoc() {
         return request.auth.uid == userId;
@@ -28,9 +22,8 @@ service cloud.firestore {
       }
 
       allow create: if loggedIn() && request.resource.id == request.auth.uid;
-      // Users can read their own doc. For admin access, admins query specific event approvals.
-      allow read:   if loggedIn() && usersOwnDoc();
-      allow update: if loggedIn() && (usersOwnDoc() && notUpdatingStatus());
+      allow read:   if loggedIn();
+      allow update: if loggedIn() && usersOwnDoc() && notUpdatingStatus();
       allow delete: if loggedIn() && usersOwnDoc();
     }
 

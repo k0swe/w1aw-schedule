@@ -26,6 +26,7 @@ describe('AppComponent', () => {
       name: 'Test Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.now(),
       endTime: Timestamp.now(),
@@ -68,6 +69,7 @@ describe('AppComponent', () => {
       name: 'Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
       endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
@@ -80,6 +82,7 @@ describe('AppComponent', () => {
       name: 'Current Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
       endTime: Timestamp.fromMillis(now + 86400000), // 1 day from now
@@ -106,6 +109,7 @@ describe('AppComponent', () => {
       name: 'Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
       endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
@@ -118,6 +122,7 @@ describe('AppComponent', () => {
       name: 'Future Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now + 86400000), // 1 day from now
       endTime: Timestamp.fromMillis(now + 172800000), // 2 days from now
@@ -144,6 +149,7 @@ describe('AppComponent', () => {
       name: 'Older Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 259200000), // 3 days ago
       endTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
@@ -156,6 +162,7 @@ describe('AppComponent', () => {
       name: 'Recent Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
       endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
@@ -181,6 +188,7 @@ describe('AppComponent', () => {
       name: 'New Event',
       coordinatorName: 'New Coordinator',
       coordinatorCallsign: 'NEW',
+      eventCallsign: 'N0SZ',
       admins: [],
       startTime: Timestamp.now(),
       endTime: Timestamp.now(),
