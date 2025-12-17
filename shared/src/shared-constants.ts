@@ -27,6 +27,7 @@ export interface EventInfo {
   slug: string;
   coordinatorName: string;
   coordinatorCallsign: string;
+  eventCallsign: string;
   admins: string[];
   startTime: GenericTimestamp;
   endTime: GenericTimestamp;

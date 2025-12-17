@@ -66,7 +66,7 @@ export const calendar = onRequest(async (request, response) => {
       id: getUuid(doc.id),
       start: doc.data().time.toDate(),
       end: new Date(doc.data().time.toDate().getTime() + 2 * 60 * 60 * 1000),
-      summary: `${doc.data().reservedDetails.callsign} operate ${eventInfo.coordinatorCallsign} on ${
+      summary: `${doc.data().reservedDetails.callsign} operate ${eventInfo.eventCallsign} on ${
         doc.data().band
       }m ${doc.data().mode}`,
     });
