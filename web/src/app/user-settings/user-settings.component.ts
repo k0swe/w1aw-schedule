@@ -36,9 +36,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { EventApproval, EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
-import { EventApproval, EventInfoWithId } from 'w1aw-schedule-shared';
 import { UserSettings, UserSettingsService } from './user-settings.service';
 
 @Component({

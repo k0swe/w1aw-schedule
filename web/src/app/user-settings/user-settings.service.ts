@@ -24,7 +24,11 @@ import {
   of,
 } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { EventApproval, EventInfoWithId, UserSettings } from 'w1aw-schedule-shared';
+import {
+  EventApproval,
+  EventInfoWithId,
+  UserSettings,
+} from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';

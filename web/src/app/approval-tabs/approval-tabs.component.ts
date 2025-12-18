@@ -1,36 +1,31 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { MatBadge } from '@angular/material/badge';
-import { MatCard, MatCardContent, MatCardHeader, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
+import {
+  MatCard,
+  MatCardContent,
+  MatCardHeader,
+  MatCardSubtitle,
+  MatCardTitle,
+} from '@angular/material/card';
 import { MatTab, MatTabGroup, MatTabLabel } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-
-
+import { EventInfo } from 'w1aw-schedule-shared';
 
 import { EventInfoService } from '../event-info/event-info.service';
-import { COLORADO_DOC_ID, COLORADO_SLUG, EventInfo } from 'w1aw-schedule-shared';
-import { UserSettings, UserSettingsService } from '../user-settings/user-settings.service';
+import {
+  UserSettings,
+  UserSettingsService,
+} from '../user-settings/user-settings.service';
 import { ApprovalListComponent } from './approval-list/approval-list.component';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @Component({
   selector: 'kel-approval-tabs',
@@ -76,22 +71,20 @@ export class ApprovalTabsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Get event ID from route parameter (slug) - required, no default
+    // Get event ID from route parameter (slug) - required
     this.route.paramMap
       .pipe(
         switchMap((params) => {
           const slug = params.get('slug');
           if (!slug) {
-            // If no slug, try defaulting to Colorado for backward compatibility
-            return this.eventInfoService.getEventBySlug(COLORADO_SLUG);
+            throw new Error('Event slug is required in route');
           }
           return this.eventInfoService.getEventBySlug(slug);
         }),
       )
       .subscribe((eventInfo) => {
         if (!eventInfo) {
-          console.error('No event found for the given slug');
-          return;
+          throw new Error('Event not found for the given slug');
         }
 
         this.eventId.set(eventInfo.id);

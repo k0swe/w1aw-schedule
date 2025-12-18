@@ -12,7 +12,6 @@ import {
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
 import { EventInfo, EventInfoWithId } from 'w1aw-schedule-shared';
 
 @Injectable({

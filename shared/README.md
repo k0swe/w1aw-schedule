@@ -29,13 +29,13 @@ The shared module is referenced as a local file dependency in both `web/package.
 ### In Web Application
 
 ```typescript
-import { COLORADO_DOC_ID, EventInfo, Shift } from 'w1aw-schedule-shared';
+import { EventInfo, Shift, BANDS, MODES } from 'w1aw-schedule-shared';
 ```
 
 ### In Cloud Functions
 
 ```typescript
-import { COLORADO_DOC_ID, EventInfo, Shift } from 'w1aw-schedule-shared';
+import { EventInfo, Shift, BANDS, MODES } from 'w1aw-schedule-shared';
 ```
 
 ## Development
@@ -101,12 +101,11 @@ This ensures type safety across both environments without requiring separate typ
 The shared module exports:
 
 ### Constants
-- `TWO_HOURS_IN_MS` - Duration constant
-- `MODES` - Operating modes (phone, cw, digital)
-- `BANDS` - Amateur radio bands
-- `COLORADO_DOC_ID` - Default event ID
-- `COLORADO_SLUG` - Default event slug
-- `SUPER_ADMIN_ID` - Super admin user ID
+- `TWO_HOURS_IN_MS` - Duration constant for 2-hour time slots
+- `MODES` - Operating modes array (phone, cw, digital)
+- `BANDS` - Amateur radio bands array (LF, HF, VHF/UHF)
+- `LF_BANDS`, `LOW_HF_BANDS`, `HI_HF_BANDS`, `VHF_UHF_BANDS` - Band groups
+- `SUPER_ADMIN_ID` - Super admin user ID with full system access
 
 ### Types
 - `EventInfo` - Event information structure

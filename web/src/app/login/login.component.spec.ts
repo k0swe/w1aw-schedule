@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Auth } from '@angular/fire/auth';
-import { Functions } from '@angular/fire/functions';
 import { Firestore } from '@angular/fire/firestore';
+import { Functions } from '@angular/fire/functions';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 

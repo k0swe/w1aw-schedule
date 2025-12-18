@@ -1,16 +1,27 @@
 import { AsyncPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { MatButton } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
+import {
+  MatCard,
+  MatCardContent,
+  MatCardHeader,
+  MatCardTitle,
+} from '@angular/material/card';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, of, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, of } from 'rxjs';
+import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
 import { EventInfoService } from '../event-info/event-info.service';
-import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 interface InitShiftsResponse {
   shiftCount: number;

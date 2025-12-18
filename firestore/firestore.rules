@@ -4,12 +4,6 @@ service cloud.firestore {
     function loggedIn() {
       return request.auth != null;
     }
-    function isAdmin() {
-      // Check admin status for the default Colorado event for backward compatibility
-      // In multi-event scenarios, this should be checked per-event
-      let admins = get(/databases/$(database)/documents/events/jZbFyscc23zjkEGRuPAI).data.admins;
-      return request.auth.uid != null && admins != null && request.auth.uid in admins;
-    }
 
     function isAdminForEvent(eventId) {
       // Check admin status for a specific event
@@ -17,7 +11,8 @@ service cloud.firestore {
       return request.auth.uid != null && admins != null && request.auth.uid in admins;
     }
 
-    // Users may only read their own profile
+    // Users may read their own profile or any profile if logged in
+    // Admins need to read user profiles when managing event approvals
     match /users/{userId} {
       function usersOwnDoc() {
         return request.auth.uid == userId;
@@ -27,8 +22,8 @@ service cloud.firestore {
       }
 
       allow create: if loggedIn() && request.resource.id == request.auth.uid;
-      allow read:   if loggedIn() && (usersOwnDoc() || isAdmin());
-      allow update: if loggedIn() && (usersOwnDoc() && notUpdatingStatus()) || isAdmin();
+      allow read:   if loggedIn();
+      allow update: if loggedIn() && usersOwnDoc() && notUpdatingStatus();
       allow delete: if loggedIn() && usersOwnDoc();
     }
 

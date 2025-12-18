@@ -40,11 +40,15 @@
           }
         </mat-select>
         @if (selectedEvent$ | async; as selectedEvent) {
-          <mat-list-item [routerLink]="'/events/' + selectedEvent.slug + '/schedule'">
+          <mat-list-item
+            [routerLink]="'/events/' + selectedEvent.slug + '/schedule'"
+          >
             <mat-icon matListItemIcon>calendar_month</mat-icon>
             Full Schedule
           </mat-list-item>
-          <mat-list-item [routerLink]="'/events/' + selectedEvent.slug + '/agenda'">
+          <mat-list-item
+            [routerLink]="'/events/' + selectedEvent.slug + '/agenda'"
+          >
             <mat-icon matListItemIcon>event_available</mat-icon>
             My Agenda
           </mat-list-item>

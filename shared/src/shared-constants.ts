@@ -13,11 +13,6 @@ export const BANDS = [
   ...HI_HF_BANDS,
   ...VHF_UHF_BANDS,
 ];
-// Default event ID for the Colorado section W1AW/0 event
-// This is used for backward compatibility when no event ID is specified
-export const COLORADO_DOC_ID = 'jZbFyscc23zjkEGRuPAI';
-// Default event slug for the Colorado section W1AW/0 event
-export const COLORADO_SLUG = 'usa250-co-may';
 // Super-admin user ID with full system access
 export const SUPER_ADMIN_ID = 'VAfZAw8GhJQodyTTCkXgilbqvoM2';
 
@@ -32,6 +27,7 @@ export interface EventInfo {
   slug: string;
   coordinatorName: string;
   coordinatorCallsign: string;
+  eventCallsign: string;
   admins: string[];
   startTime: GenericTimestamp;
   endTime: GenericTimestamp;

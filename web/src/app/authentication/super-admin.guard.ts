@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import {
+  ActivatedRouteSnapshot,
   CanActivate,
   RouterStateSnapshot,
-  ActivatedRouteSnapshot,
   UrlTree,
 } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
 import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
+
 import { AuthenticationService } from './authentication.service';
 
 @Injectable({

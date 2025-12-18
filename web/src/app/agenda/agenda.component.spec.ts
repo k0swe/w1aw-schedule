@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore, Timestamp } from '@angular/fire/firestore';
 import { Functions } from '@angular/fire/functions';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
+import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
@@ -24,16 +25,32 @@ describe('AgendaComponent', () => {
       navigate: jasmine.createSpy('navigate'),
     };
     const activatedRouteMock = {
-      paramMap: of(new Map()),
+      paramMap: of(convertToParamMap({ slug: 'test-slug' })),
       snapshot: { queryParams: {} },
     };
+
+    const mockEventInfo: EventInfoWithId = {
+      id: 'test-id',
+      slug: 'test-slug',
+      name: 'Test Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
     const eventInfoServiceMock = {
       getAdminList: () => of([]),
-      getEventBySlug: () => of(undefined),
-      getEventInfo: () => of(undefined),
+      getEventBySlug: () => of(mockEventInfo),
+      getEventInfo: () => of(mockEventInfo),
     };
     const scheduleServiceMock = {
-      findUserShifts: jasmine.createSpy('findUserShifts').and.returnValue(of([])),
+      findUserShifts: jasmine
+        .createSpy('findUserShifts')
+        .and.returnValue(of([])),
     };
     const authenticationServiceMock = {
       user$: new BehaviorSubject(null),

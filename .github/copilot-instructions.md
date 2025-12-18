@@ -92,9 +92,11 @@ This is the W1AW/0 Colorado Scheduler application for scheduling amateur radio o
 The application supports multiple events with separate schedules:
 
 - Each event has a unique ID and user-friendly slug
-- Routes use slugs: `/events/:slug/schedule`, `/events/:slug/agenda`
-- Default event (Colorado): ID `jZbFyscc23zjkEGRuPAI`, slug `usa250-co-may`
-- Services accept optional `eventId` parameter defaulting to Colorado event
+- Routes use slugs: `/events/:slug/schedule`, `/events/:slug/agenda`, `/events/:slug/approvals`
+- All routes require a slug parameter (no default routes)
+- Services require an `eventId` parameter (no defaults)
+- Cloud functions require an `eventId` query parameter
+- The event selector in the sidebar allows users to switch between events
 - See MULTI_EVENT_SUPPORT.md for detailed architecture
 
 ## Building and Testing
@@ -180,7 +182,6 @@ firebase functions:config:set discord.redirect_uri="..."
 ## Important Notes
 
 - **Node Version**: 22+ (web requires >= 22, functions requires exactly 22)
-- **Default Event**: Code defaults to Colorado event for backward compatibility
 - **User Settings**: Global across all events (not event-specific)
 - **Admin Permissions**: Event-specific (admins manage only their events)
 - **Security**: Never commit secrets or API keys
@@ -188,9 +189,9 @@ firebase functions:config:set discord.redirect_uri="..."
 
 ## Key Constants and Shared Code
 
-- Event IDs and constants in `/functions/src/shared-constants.ts`
-- Colorado default event ID: `jZbFyscc23zjkEGRuPAI`
+- Constants and types in `/shared/src/shared-constants.ts`
 - Time slots and bands defined per event in Firestore
+- Event-specific data (name, coordinator callsign, start/end times) stored in `/events/{eventId}`
 
 ## Getting Help
 

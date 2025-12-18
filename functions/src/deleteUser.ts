@@ -2,19 +2,6 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions/v2';
 import { validateFirebaseIdToken } from './validateFirebaseToken';
 import * as admin from 'firebase-admin';
-import { COLORADO_DOC_ID, EventInfo } from 'w1aw-schedule-shared';
-
-/**
- * Get the event info from Firestore.
- */
-async function getEventInfo() {
-  const eventInfoSnapshot = await admin
-    .firestore()
-    .collection('events')
-    .doc(COLORADO_DOC_ID)
-    .get();
-  return eventInfoSnapshot.data() as EventInfo;
-}
 
 export const deleteUser = onRequest(
   { cors: true },
@@ -31,24 +18,23 @@ export const deleteUser = onRequest(
       return;
     }
 
-    const eventInfo = await getEventInfo();
+    // Only allow users to delete themselves
     const userDeletingSelf = token.uid === deleteUid;
-    const adminRequest = eventInfo.admins.find((a) => a === token.uid);
-    if (userDeletingSelf) {
-      logger.info({
-        message: 'User deleting self',
-        uid: token.uid,
+
+    if (!userDeletingSelf) {
+      logger.warn({
+        message: 'Unauthorized deletion attempt',
+        requestingUser: token.uid,
+        targetUser: deleteUid,
       });
-    } else if (adminRequest) {
-      logger.info({
-        message: 'Admin deleting user',
-        admin: token.uid,
-        user: deleteUid,
-      });
-    } else {
       response.status(403).send({ error: 'Unauthorized' });
       return;
     }
+
+    logger.info({
+      message: 'User deleting self',
+      uid: token.uid,
+    });
 
     try {
       await admin.firestore().collection('users').doc(deleteUid).delete();

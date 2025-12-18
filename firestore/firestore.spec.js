@@ -16,7 +16,7 @@ const {
 /** @type testing.RulesTestEnvironment */
 let testEnv;
 
-const colorado = "jZbFyscc23zjkEGRuPAI";
+const testEventId = "test-event-123";
 
 before(async () => {
   // Silence expected rules rejections from Firestore SDK. Unexpected rejections
@@ -75,16 +75,6 @@ describe("User profiles", () => {
     await assertFails(getDoc(doc(unauthedDb, "users/joe")));
   });
 
-  it("should not allow authed reading of other users' data", async () => {
-    await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), "users/joe"), { foo: "bar" });
-    });
-
-    const tanyaDb = testEnv.authenticatedContext("tanya").firestore();
-
-    await assertFails(getDoc(doc(tanyaDb, "users/joe")));
-  });
-
   it("should allow users to write most of their own data", async () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
@@ -126,7 +116,7 @@ describe("User profiles", () => {
   it("should allow admins to read any user", async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
-      await setDoc(doc(fs, `events/${colorado}`), {
+      await setDoc(doc(fs, `events/${testEventId}`), {
         admins: ["amanda"],
       });
       await setDoc(doc(fs, "users/alice"), {
@@ -139,76 +129,31 @@ describe("User profiles", () => {
 
     await assertSucceeds(getDoc(doc(amandaDb, "users/alice")));
   });
-
-  it("should allow admins to write approval status", async () => {
-    await testEnv.withSecurityRulesDisabled(async (context) => {
-      const fs = context.firestore();
-      await setDoc(doc(fs, `events/${colorado}`), {
-        admins: ["amanda"],
-      });
-      await setDoc(doc(fs, "users/alice"), {
-        name: "Alice",
-        callsign: "t3st",
-        gridSquare: "DM33",
-        status: "Applied",
-      });
-    });
-    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
-
-    await assertSucceeds(
-      updateDoc(doc(amandaDb, "users/alice"), {
-        status: "Approved",
-      }),
-    );
-  });
-});
-
-it("should allow admins to write multi-shift status", async () => {
-  await testEnv.withSecurityRulesDisabled(async (context) => {
-    const fs = context.firestore();
-    await setDoc(doc(fs, `events/${colorado}`), {
-      admins: ["amanda"],
-    });
-    await setDoc(doc(fs, "users/alice"), {
-      name: "Alice",
-      callsign: "t3st",
-      gridSquare: "DM33",
-      status: "Applied",
-      multiShift: false,
-    });
-  });
-  const amandaDb = testEnv.authenticatedContext("amanda").firestore();
-
-  await assertSucceeds(
-    updateDoc(doc(amandaDb, "users/alice"), {
-      multiShift: true,
-    }),
-  );
 });
 
 describe("Event information", () => {
   it("should allow anyone to read event information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), `events/${colorado}`), {
+      await setDoc(doc(context.firestore(), `events/${testEventId}`), {
         name: "Colorado",
         admins: ["amanda"],
       });
     });
     const unauthedDb = testEnv.unauthenticatedContext().firestore();
 
-    await assertSucceeds(getDoc(doc(unauthedDb, `events/${colorado}`)));
+    await assertSucceeds(getDoc(doc(unauthedDb, `events/${testEventId}`)));
   });
 
   it("should not allow anyone to write event information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), `events/${colorado}`), {
+      await setDoc(doc(context.firestore(), `events/${testEventId}`), {
         name: "Colorado",
       });
     });
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertFails(
-      setDoc(doc(aliceDb, `events/${colorado}`), {
+      setDoc(doc(aliceDb, `events/${testEventId}`), {
         name: "The best event",
       }),
     );
@@ -216,13 +161,13 @@ describe("Event information", () => {
 
   it("should not allow anyone to delete event information", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
-      await setDoc(doc(context.firestore(), `events/${colorado}`), {
+      await setDoc(doc(context.firestore(), `events/${testEventId}`), {
         name: "Colorado",
       });
     });
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
-    await assertFails(deleteDoc(doc(aliceDb, `events/${colorado}`)));
+    await assertFails(deleteDoc(doc(aliceDb, `events/${testEventId}`)));
   });
 });
 
@@ -230,22 +175,22 @@ describe("Shifts", () => {
   beforeEach(async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
-      await setDoc(doc(fs, `events/${colorado}`), {
+      await setDoc(doc(fs, `events/${testEventId}`), {
         admins: ["amanda"],
       });
-      await setDoc(doc(fs, `events/${colorado}/shifts/shift1`), {
+      await setDoc(doc(fs, `events/${testEventId}/shifts/shift1`), {
         time: new Date(),
         band: "20",
         mode: "phone",
         reservedBy: null,
       });
-      await setDoc(doc(fs, `events/${colorado}/shifts/shift2`), {
+      await setDoc(doc(fs, `events/${testEventId}/shifts/shift2`), {
         time: new Date(),
         band: "40",
         mode: "phone",
         reservedBy: "ravi",
       });
-      await setDoc(doc(fs, `events/${colorado}/shifts/shift3`), {
+      await setDoc(doc(fs, `events/${testEventId}/shifts/shift3`), {
         time: new Date(),
         band: "80",
         mode: "phone",
@@ -258,20 +203,20 @@ describe("Shifts", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      getDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`)),
+      getDoc(doc(aliceDb, `events/${testEventId}/shifts/shift1`)),
     );
     await assertSucceeds(
-      getDoc(doc(aliceDb, `events/${colorado}/shifts/shift2`)),
+      getDoc(doc(aliceDb, `events/${testEventId}/shifts/shift2`)),
     );
     await assertSucceeds(
-      getDoc(doc(aliceDb, `events/${colorado}/shifts/shift3`)),
+      getDoc(doc(aliceDb, `events/${testEventId}/shifts/shift3`)),
     );
   });
 
   it("should allow a user to reserve an open shift for themselves", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertSucceeds(
-      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/shifts/shift1`), {
         reservedBy: "alice",
       }),
     );
@@ -280,7 +225,7 @@ describe("Shifts", () => {
   it("should allow a user to cancel their shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertSucceeds(
-      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift3`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/shifts/shift3`), {
         reservedBy: null,
       }),
     );
@@ -289,7 +234,7 @@ describe("Shifts", () => {
   it("should not allow a user to reserve an open shift for someone else", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/shifts/shift1`), {
         reservedBy: "ravi",
       }),
     );
@@ -298,7 +243,7 @@ describe("Shifts", () => {
   it("should not allow a user to cancel someone else's shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift2`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/shifts/shift2`), {
         reservedBy: null,
       }),
     );
@@ -307,7 +252,7 @@ describe("Shifts", () => {
   it("should not allow a user to take over someone else's shift reservation", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift2`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/shifts/shift2`), {
         reservedBy: "alice",
       }),
     );
@@ -316,7 +261,7 @@ describe("Shifts", () => {
   it("should not allow a user to overwrite shift info", async function () {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
     await assertFails(
-      updateDoc(doc(aliceDb, `events/${colorado}/shifts/shift1`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/shifts/shift1`), {
         mode: "digital",
       }),
     );
@@ -325,7 +270,7 @@ describe("Shifts", () => {
   it("should allow an admin to cancel another user's shift reservation", async function () {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `events/${colorado}/shifts/shift2`), {
+      updateDoc(doc(amandaDb, `events/${testEventId}/shifts/shift2`), {
         reservedBy: null,
       }),
     );
@@ -334,7 +279,7 @@ describe("Shifts", () => {
   it("should allow an admin to reserve a shift for another user", async function () {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `events/${colorado}/shifts/shift1`), {
+      updateDoc(doc(amandaDb, `events/${testEventId}/shifts/shift1`), {
         reservedBy: "alice",
       }),
     );
@@ -348,7 +293,7 @@ describe("Multi-event support", () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
       // Setup Colorado event with amanda as admin
-      await setDoc(doc(fs, `events/${colorado}`), {
+      await setDoc(doc(fs, `events/${testEventId}`), {
         admins: ["amanda"],
       });
       // Setup new test event with bob as admin
@@ -426,7 +371,7 @@ describe("Per-event approval", () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const fs = context.firestore();
       // Setup Colorado event with amanda as admin
-      await setDoc(doc(fs, `events/${colorado}`), {
+      await setDoc(doc(fs, `events/${testEventId}`), {
         admins: ["amanda"],
       });
       // Setup new test event with bob as admin
@@ -447,7 +392,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      setDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
+      setDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`), {
         status: "Applied",
         appliedAt: new Date(),
         userId: "alice",
@@ -459,7 +404,7 @@ describe("Per-event approval", () => {
     const bobDb = testEnv.authenticatedContext("bob").firestore();
 
     await assertFails(
-      setDoc(doc(bobDb, `events/${colorado}/approvals/alice`), {
+      setDoc(doc(bobDb, `events/${testEventId}/approvals/alice`), {
         status: "Applied",
         appliedAt: new Date(),
         userId: "alice",
@@ -470,10 +415,7 @@ describe("Per-event approval", () => {
   it("should allow a user to read their own event approval status", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -485,17 +427,14 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      getDoc(doc(aliceDb, `events/${colorado}/approvals/alice`)),
+      getDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`)),
     );
   });
 
   it("should not allow a user to read another user's event approval status", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -507,17 +446,14 @@ describe("Per-event approval", () => {
     const bobDb = testEnv.authenticatedContext("bob").firestore();
 
     await assertFails(
-      getDoc(doc(bobDb, `events/${colorado}/approvals/alice`)),
+      getDoc(doc(bobDb, `events/${testEventId}/approvals/alice`)),
     );
   });
 
   it("should allow event admin to read user's approval status for their event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -529,17 +465,14 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      getDoc(doc(amandaDb, `events/${colorado}/approvals/alice`)),
+      getDoc(doc(amandaDb, `events/${testEventId}/approvals/alice`)),
     );
   });
 
   it("should not allow admin from one event to read approval for another event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${newEvent}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${newEvent}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -559,10 +492,7 @@ describe("Per-event approval", () => {
   it("should not allow user to change their own approval status", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -574,7 +504,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertFails(
-      updateDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`), {
         status: "Approved",
       }),
     );
@@ -583,10 +513,7 @@ describe("Per-event approval", () => {
   it("should allow event admin to approve user for their event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -598,7 +525,7 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `events/${colorado}/approvals/alice`), {
+      updateDoc(doc(amandaDb, `events/${testEventId}/approvals/alice`), {
         status: "Approved",
         approvedBy: "amanda",
         statusChangedAt: new Date(),
@@ -609,10 +536,7 @@ describe("Per-event approval", () => {
   it("should allow event admin to decline user for their event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -624,7 +548,7 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `events/${colorado}/approvals/alice`), {
+      updateDoc(doc(amandaDb, `events/${testEventId}/approvals/alice`), {
         status: "Declined",
         declinedBy: "amanda",
         statusChangedAt: new Date(),
@@ -635,10 +559,7 @@ describe("Per-event approval", () => {
   it("should not allow admin from one event to approve for another event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${newEvent}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${newEvent}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -662,10 +583,7 @@ describe("Per-event approval", () => {
   it("should allow user to update non-protected fields in their approval", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date("2025-01-01"),
@@ -678,7 +596,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
+      updateDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`), {
         notes: "Updated notes",
       }),
     );
@@ -687,10 +605,7 @@ describe("Per-event approval", () => {
   it("should allow user to delete their own event approval", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -702,17 +617,14 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      deleteDoc(doc(aliceDb, `events/${colorado}/approvals/alice`)),
+      deleteDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`)),
     );
   });
 
   it("should not allow user to delete another user's event approval", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -724,7 +636,7 @@ describe("Per-event approval", () => {
     const bobDb = testEnv.authenticatedContext("bob").firestore();
 
     await assertFails(
-      deleteDoc(doc(bobDb, `events/${colorado}/approvals/alice`)),
+      deleteDoc(doc(bobDb, `events/${testEventId}/approvals/alice`)),
     );
   });
 
@@ -732,7 +644,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertSucceeds(
-      setDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
+      setDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`), {
         status: "Applied",
         appliedAt: new Date(),
         userId: "alice",
@@ -743,10 +655,7 @@ describe("Per-event approval", () => {
   it("should allow event admin to read approval with userId field via direct access", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -758,17 +667,14 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      getDoc(doc(amandaDb, `events/${colorado}/approvals/alice`)),
+      getDoc(doc(amandaDb, `events/${testEventId}/approvals/alice`)),
     );
   });
 
   it("should allow event admin to update approval with userId field", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${colorado}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -780,7 +686,7 @@ describe("Per-event approval", () => {
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
 
     await assertSucceeds(
-      updateDoc(doc(amandaDb, `events/${colorado}/approvals/alice`), {
+      updateDoc(doc(amandaDb, `events/${testEventId}/approvals/alice`), {
         status: "Approved",
         approvedBy: "amanda",
         statusChangedAt: new Date(),
@@ -791,10 +697,7 @@ describe("Per-event approval", () => {
   it("should not allow admin from one event to access approval for another event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
-        doc(
-          context.firestore(),
-          `events/${newEvent}/approvals/alice`,
-        ),
+        doc(context.firestore(), `events/${newEvent}/approvals/alice`),
         {
           status: "Applied",
           appliedAt: new Date(),
@@ -815,7 +718,7 @@ describe("Per-event approval", () => {
     const aliceDb = testEnv.authenticatedContext("alice").firestore();
 
     await assertFails(
-      setDoc(doc(aliceDb, `events/${colorado}/approvals/alice`), {
+      setDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`), {
         status: "Approved",
         appliedAt: new Date(),
         userId: "alice",

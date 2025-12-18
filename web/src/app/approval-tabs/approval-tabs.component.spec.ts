@@ -1,7 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Firestore } from '@angular/fire/firestore';
-import { provideRouter } from '@angular/router';
+import { Firestore, Timestamp } from '@angular/fire/firestore';
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  provideRouter,
+} from '@angular/router';
 import { of } from 'rxjs';
+import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { EventInfoService } from '../event-info/event-info.service';
 import { UserSettingsService } from '../user-settings/user-settings.service';
@@ -18,9 +23,28 @@ describe('ApprovalTabsComponent', () => {
       getApprovedUsers: () => of([]),
       getDeclinedUsers: () => of([]),
     };
+
+    const mockEventInfo: EventInfoWithId = {
+      id: 'test-id',
+      slug: 'test-slug',
+      name: 'Test Event',
+      coordinatorName: 'Test Coordinator',
+      coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
+      admins: [],
+      startTime: Timestamp.now(),
+      endTime: Timestamp.now(),
+      timeZoneId: 'America/Denver',
+    };
+
     const eventInfoServiceMock = {
-      getEventBySlug: () => of({ id: 'test-id', name: 'Test Event' }),
-      getEventInfo: () => of({ name: 'Test Event' }),
+      getEventBySlug: () => of(mockEventInfo),
+      getEventInfo: () => of(mockEventInfo),
+    };
+
+    const activatedRouteMock = {
+      paramMap: of(convertToParamMap({ slug: 'test-slug' })),
+      fragment: of(null),
     };
 
     TestBed.configureTestingModule({
@@ -30,6 +54,7 @@ describe('ApprovalTabsComponent', () => {
         { provide: Firestore, useValue: firestoreMock },
         { provide: UserSettingsService, useValue: userSettingsServiceMock },
         { provide: EventInfoService, useValue: eventInfoServiceMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
       ],
     });
     fixture = TestBed.createComponent(ApprovalTabsComponent);

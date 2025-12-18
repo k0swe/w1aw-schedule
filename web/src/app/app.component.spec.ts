@@ -14,9 +14,13 @@ describe('AppComponent', () => {
   let mockEventInfoService: jasmine.SpyObj<EventInfoService>;
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj('AuthenticationService', ['userIsAdmin', 'userIsSuperAdmin'], {
-      user$: of(null),
-    });
+    mockAuthService = jasmine.createSpyObj(
+      'AuthenticationService',
+      ['userIsAdmin', 'userIsSuperAdmin'],
+      {
+        user$: of(null),
+      },
+    );
     mockAuthService.userIsAdmin.and.returnValue(of(false));
     mockAuthService.userIsSuperAdmin.and.returnValue(of(false));
 
@@ -26,13 +30,17 @@ describe('AppComponent', () => {
       name: 'Test Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.now(),
       endTime: Timestamp.now(),
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService = jasmine.createSpyObj('EventInfoService', ['getEventBySlug', 'getAllEvents']);
+    mockEventInfoService = jasmine.createSpyObj('EventInfoService', [
+      'getEventBySlug',
+      'getAllEvents',
+    ]);
     mockEventInfoService.getEventBySlug.and.returnValue(of(mockEventInfo));
     mockEventInfoService.getAllEvents.and.returnValue(of([mockEventInfo]));
 
@@ -68,6 +76,7 @@ describe('AppComponent', () => {
       name: 'Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
       endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
@@ -80,13 +89,16 @@ describe('AppComponent', () => {
       name: 'Current Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
       endTime: Timestamp.fromMillis(now + 86400000), // 1 day from now
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService.getAllEvents.and.returnValue(of([pastEvent, currentEvent]));
+    mockEventInfoService.getAllEvents.and.returnValue(
+      of([pastEvent, currentEvent]),
+    );
 
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
@@ -106,6 +118,7 @@ describe('AppComponent', () => {
       name: 'Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
       endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
@@ -118,13 +131,16 @@ describe('AppComponent', () => {
       name: 'Future Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now + 86400000), // 1 day from now
       endTime: Timestamp.fromMillis(now + 172800000), // 2 days from now
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService.getAllEvents.and.returnValue(of([pastEvent, futureEvent]));
+    mockEventInfoService.getAllEvents.and.returnValue(
+      of([pastEvent, futureEvent]),
+    );
 
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
@@ -144,6 +160,7 @@ describe('AppComponent', () => {
       name: 'Older Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 259200000), // 3 days ago
       endTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
@@ -156,13 +173,16 @@ describe('AppComponent', () => {
       name: 'Recent Past Event',
       coordinatorName: 'Test Coordinator',
       coordinatorCallsign: 'TEST',
+      eventCallsign: 'W1AW/0',
       admins: [],
       startTime: Timestamp.fromMillis(now - 172800000), // 2 days ago
       endTime: Timestamp.fromMillis(now - 86400000), // 1 day ago
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService.getAllEvents.and.returnValue(of([olderPastEvent, recentPastEvent]));
+    mockEventInfoService.getAllEvents.and.returnValue(
+      of([olderPastEvent, recentPastEvent]),
+    );
 
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
@@ -181,6 +201,7 @@ describe('AppComponent', () => {
       name: 'New Event',
       coordinatorName: 'New Coordinator',
       coordinatorCallsign: 'NEW',
+      eventCallsign: 'N0SZ',
       admins: [],
       startTime: Timestamp.now(),
       endTime: Timestamp.now(),
@@ -201,14 +222,17 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
-    
+
     // Simulate being on schedule page
-    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/schedule');
+    spyOnProperty(router, 'url', 'get').and.returnValue(
+      '/events/old-slug/schedule',
+    );
 
     const newEvent: EventInfoWithId = {
       id: 'new-id',
       slug: 'new-slug',
       name: 'New Event',
+      eventCallsign: 'N0SZ',
       coordinatorName: 'New Coordinator',
       coordinatorCallsign: 'NEW',
       admins: [],
@@ -219,7 +243,11 @@ describe('AppComponent', () => {
 
     app.onEventChange(newEvent);
 
-    expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'schedule']);
+    expect(router.navigate).toHaveBeenCalledWith([
+      '/events',
+      'new-slug',
+      'schedule',
+    ]);
   });
 
   it('should navigate to agenda page when switching events on agenda page', () => {
@@ -227,14 +255,17 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
-    
+
     // Simulate being on agenda page
-    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/agenda');
+    spyOnProperty(router, 'url', 'get').and.returnValue(
+      '/events/old-slug/agenda',
+    );
 
     const newEvent: EventInfoWithId = {
       id: 'new-id',
       slug: 'new-slug',
       name: 'New Event',
+      eventCallsign: 'N0SZ',
       coordinatorName: 'New Coordinator',
       coordinatorCallsign: 'NEW',
       admins: [],
@@ -245,24 +276,31 @@ describe('AppComponent', () => {
 
     app.onEventChange(newEvent);
 
-    expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'agenda']);
+    expect(router.navigate).toHaveBeenCalledWith([
+      '/events',
+      'new-slug',
+      'agenda',
+    ]);
   });
 
   it('should navigate to approvals page when switching events on approvals page if user is admin', (done) => {
     mockAuthService.userIsAdmin.and.returnValue(of(true));
-    
+
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
-    
+
     // Simulate being on approvals page
-    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/approvals');
+    spyOnProperty(router, 'url', 'get').and.returnValue(
+      '/events/old-slug/approvals',
+    );
 
     const newEvent: EventInfoWithId = {
       id: 'new-id',
       slug: 'new-slug',
       name: 'New Event',
+      eventCallsign: 'N0SZ',
       coordinatorName: 'New Coordinator',
       coordinatorCallsign: 'NEW',
       admins: [],
@@ -275,26 +313,33 @@ describe('AppComponent', () => {
 
     setTimeout(() => {
       expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
-      expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'approvals']);
+      expect(router.navigate).toHaveBeenCalledWith([
+        '/events',
+        'new-slug',
+        'approvals',
+      ]);
       done();
     }, 100);
   });
 
   it('should navigate to schedule page when switching events on approvals page if user is not admin', (done) => {
     mockAuthService.userIsAdmin.and.returnValue(of(false));
-    
+
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
-    
+
     // Simulate being on approvals page
-    spyOnProperty(router, 'url', 'get').and.returnValue('/events/old-slug/approvals');
+    spyOnProperty(router, 'url', 'get').and.returnValue(
+      '/events/old-slug/approvals',
+    );
 
     const newEvent: EventInfoWithId = {
       id: 'new-id',
       slug: 'new-slug',
       name: 'New Event',
+      eventCallsign: 'N0SZ',
       coordinatorName: 'New Coordinator',
       coordinatorCallsign: 'NEW',
       admins: [],
@@ -307,7 +352,11 @@ describe('AppComponent', () => {
 
     setTimeout(() => {
       expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
-      expect(router.navigate).toHaveBeenCalledWith(['/events', 'new-slug', 'schedule']);
+      expect(router.navigate).toHaveBeenCalledWith([
+        '/events',
+        'new-slug',
+        'schedule',
+      ]);
       done();
     }, 100);
   });
@@ -319,6 +368,7 @@ describe('AppComponent', () => {
       id: 'event-1',
       slug: 'event-1-slug',
       name: 'First Event',
+      eventCallsign: 'N0SZ',
       coordinatorName: 'Coordinator 1',
       coordinatorCallsign: 'CALL1',
       admins: [],
@@ -331,6 +381,7 @@ describe('AppComponent', () => {
       id: 'event-2',
       slug: 'event-2-slug',
       name: 'Second Event',
+      eventCallsign: 'W0TX',
       coordinatorName: 'Coordinator 2',
       coordinatorCallsign: 'CALL2',
       admins: [],
@@ -350,7 +401,9 @@ describe('AppComponent', () => {
       const events = app.events$.value;
       expect(events.length).toBe(2);
       // Verify events are in chronological order
-      expect(events[0].startTime.toMillis()).toBeLessThan(events[1].startTime.toMillis());
+      expect(events[0].startTime.toMillis()).toBeLessThan(
+        events[1].startTime.toMillis(),
+      );
       done();
     }, 100);
   });
@@ -361,6 +414,7 @@ describe('AppComponent', () => {
       id: 'event-1',
       slug: 'event-1-slug',
       name: 'First Event',
+      eventCallsign: 'N0SZ',
       coordinatorName: 'Coordinator 1',
       coordinatorCallsign: 'CALL1',
       admins: [],
@@ -373,6 +427,7 @@ describe('AppComponent', () => {
       id: 'event-2',
       slug: 'event-2-slug',
       name: 'Second Event',
+      eventCallsign: 'N0SZ',
       coordinatorName: 'Coordinator 2',
       coordinatorCallsign: 'CALL2',
       admins: [],

@@ -5,7 +5,6 @@ import { Timestamp } from 'firebase-admin/firestore';
 
 import {
   BANDS,
-  COLORADO_DOC_ID,
   MODES,
   Shift,
   shiftId,
@@ -22,8 +21,12 @@ export const initShifts = onRequest(
     }
     logger.info('Validated user', userId.uid);
 
-    // Accept eventId query parameter, default to Colorado event for backward compatibility
-    const eventId = request.query.eventId?.toString() || COLORADO_DOC_ID;
+    // Require eventId query parameter
+    const eventId = request.query.eventId?.toString();
+    if (!eventId) {
+      response.status(400).send({ error: 'eventId query parameter is required' });
+      return;
+    }
     logger.info('Initializing shifts for event', eventId);
 
     // Get event info to retrieve startTime and endTime
@@ -39,8 +42,22 @@ export const initShifts = onRequest(
     }
 
     const eventData = eventDoc.data();
-    const startTime = eventData?.startTime?.toDate() || new Date('2026-05-27T00:00:00Z');
-    const endTime = eventData?.endTime?.toDate() || new Date('2026-06-02T23:59:59Z');
+    if (!eventData) {
+      response.status(404).send({ error: 'Event data not found' });
+      return;
+    }
+    const startTime = eventData.startTime?.toDate();
+    const endTime = eventData.endTime?.toDate();
+    
+    if (!startTime || !endTime) {
+      response.status(400).send({ error: 'Event startTime and endTime are required' });
+      return;
+    }
+    
+    if (endTime <= startTime) {
+      response.status(400).send({ error: 'Event endTime must be after startTime' });
+      return;
+    }
 
     const timeSlots = calcTimeSlots(startTime, endTime);
 

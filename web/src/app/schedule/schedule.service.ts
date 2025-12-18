@@ -12,10 +12,10 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { Shift, shiftId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
-import { COLORADO_DOC_ID, Shift, shiftId } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +28,7 @@ export class ScheduleService {
     time: Date,
     band: string,
     mode: string,
-    eventId: string = COLORADO_DOC_ID,
+    eventId: string,
   ): Observable<Shift | undefined> {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
@@ -40,7 +40,7 @@ export class ScheduleService {
     shiftToUpdate: Shift,
     userId: string,
     userDetails: UserSettings,
-    eventId: string = COLORADO_DOC_ID,
+    eventId: string,
   ): Observable<void> {
     return this.authenticationService.userIsAdmin(eventId).pipe(
       switchMap((isAdmin) => {
@@ -53,26 +53,37 @@ export class ScheduleService {
           band: shiftToUpdate.band,
           mode: shiftToUpdate.mode,
         });
-        const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
+        const eventsDocRef = doc(
+          this.firestore,
+          'events',
+          eventId,
+          'shifts',
+          sid,
+        );
         const reservationUpdate = {
           reservedBy: userId,
           reservedDetails: userDetails,
         };
 
-        return from(updateDoc(eventsDocRef, reservationUpdate).then(() => undefined)).pipe(
+        return from(
+          updateDoc(eventsDocRef, reservationUpdate).then(() => undefined),
+        ).pipe(
           catchError((error) => {
-            console.error('Error reserving shift (shift may not exist):', error);
+            console.error(
+              'Error reserving shift (shift may not exist):',
+              error,
+            );
             return of(undefined);
-          })
+          }),
         );
-      })
+      }),
     );
   }
 
   cancelShift(
     shiftToUpdate: Shift,
     userId: string,
-    eventId: string = COLORADO_DOC_ID,
+    eventId: string,
   ): Observable<void> {
     return this.authenticationService.userIsAdmin(eventId).pipe(
       switchMap((isAdmin) => {
@@ -85,18 +96,21 @@ export class ScheduleService {
           band: shiftToUpdate.band,
           mode: shiftToUpdate.mode,
         });
-        const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
+        const eventsDocRef = doc(
+          this.firestore,
+          'events',
+          eventId,
+          'shifts',
+          sid,
+        );
         const updateData = { reservedBy: null, reservedDetails: null };
 
         return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
-      })
+      }),
     );
   }
 
-  findUserShifts(
-    uid: string,
-    eventId: string = COLORADO_DOC_ID,
-  ): Observable<Shift[]> {
+  findUserShifts(uid: string, eventId: string): Observable<Shift[]> {
     const eventsShiftsCol = collection(
       this.firestore,
       'events',

@@ -1,7 +1,6 @@
 import firebaseFunctionsTest from 'firebase-functions-test';
 import admin from 'firebase-admin';
 import * as assert from 'assert';
-import { COLORADO_DOC_ID } from 'w1aw-schedule-shared';
 import { deleteCollection } from './helpers';
 
 // Import the function directly from its source file instead of index.ts
@@ -12,7 +11,6 @@ describe('newUser', () => {
   let test: ReturnType<typeof firebaseFunctionsTest>;
   const userId = '12345';
   const userEmail = 'test@example.com';
-  const adminList = ['67890', 'abcde'];
 
   before(async () => {
     // Initialize firebase-admin for testing against the emulator
@@ -24,10 +22,6 @@ describe('newUser', () => {
     // against the local Firestore emulator. The emulator is started automatically by the test script.
     test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
     
-    // Set up test data in events collection
-    await admin.firestore().collection('events').doc(COLORADO_DOC_ID).set({
-      admins: adminList,
-    });
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
     
@@ -69,7 +63,7 @@ describe('newUser', () => {
     assert.equal(mailDocs.size, 1);
     const mailDoc = mailDocs.docs[0];
     assert.equal(mailDoc.data()?.to, userEmail);
-    assert.deepEqual(mailDoc.data()?.bccUids, adminList);
+    assert.equal(mailDoc.data()?.bccUids, undefined);
     assert.equal(mailDoc.data()?.template.name, 'welcome');
     assert.equal(mailDoc.data()?.template.data.email, userEmail);
   });
@@ -80,6 +74,5 @@ describe('newUser', () => {
     // Reset the database.
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
-    await deleteCollection(admin.firestore().collection('events'));
   });
 });
