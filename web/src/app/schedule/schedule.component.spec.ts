@@ -5,19 +5,19 @@ import { Functions } from '@angular/fire/functions';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
+import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
 import { UserSettingsService } from '../user-settings/user-settings.service';
 import { ScheduleComponent } from './schedule.component';
 import { ScheduleService } from './schedule.service';
-import { EventInfo } from 'w1aw-schedule-shared';
 
 describe('ScheduleComponent', () => {
   let component: ScheduleComponent;
   let fixture: ComponentFixture<ScheduleComponent>;
   let eventInfoService: jasmine.SpyObj<EventInfoService>;
-  let mockEventInfo: EventInfo;
+  let mockEventInfo: EventInfoWithId;
 
   beforeEach(async () => {
     const authMock = {} as Auth;
@@ -39,8 +39,12 @@ describe('ScheduleComponent', () => {
       userSettings$: new BehaviorSubject(null),
       settings$: new BehaviorSubject(null),
       init: jasmine.createSpy('init'),
-      getApprovedUsers: jasmine.createSpy('getApprovedUsers').and.returnValue(of([])),
-      getUserEventApproval: jasmine.createSpy('getUserEventApproval').and.returnValue(of(null)),
+      getApprovedUsers: jasmine
+        .createSpy('getApprovedUsers')
+        .and.returnValue(of([])),
+      getUserEventApproval: jasmine
+        .createSpy('getUserEventApproval')
+        .and.returnValue(of(null)),
     };
 
     eventInfoService = jasmine.createSpyObj('EventInfoService', [
@@ -49,6 +53,7 @@ describe('ScheduleComponent', () => {
     ]);
 
     mockEventInfo = {
+      id: 'test-event-id',
       name: 'Test Event',
       slug: 'test-event',
       coordinatorName: 'Test',
@@ -61,10 +66,10 @@ describe('ScheduleComponent', () => {
       googleCalendarId: 'test-calendar-id',
     };
     eventInfoService.getEventInfo.and.returnValue(of(mockEventInfo));
-    eventInfoService.getEventBySlug.and.returnValue(of(undefined));
+    eventInfoService.getEventBySlug.and.returnValue(of(mockEventInfo));
 
     const activatedRouteMock = {
-      paramMap: of(convertToParamMap({})),
+      paramMap: of(convertToParamMap({ slug: 'test-event' })),
       snapshot: {
         queryParams: {},
       },
@@ -207,10 +212,14 @@ describe('ScheduleComponent', () => {
 
       setTimeout(() => {
         expect(component.googleCalendarLink).toBeDefined();
-        expect(component.googleCalendarLink).toContain('test-calendar-id@import.calendar.google.com');
+        expect(component.googleCalendarLink).toContain(
+          'test-calendar-id@import.calendar.google.com',
+        );
         expect(component.googleCalendarLink).toContain('ctz=America%2FDenver');
         expect(component.googleCalendarLink).toContain('mode=WEEK');
-        expect(component.googleCalendarLink).toContain('dates=20260527%2F20260602');
+        expect(component.googleCalendarLink).toContain(
+          'dates=20260527%2F20260602',
+        );
         done();
       }, 100);
     });
@@ -220,7 +229,9 @@ describe('ScheduleComponent', () => {
         ...mockEventInfo,
         googleCalendarId: undefined,
       };
-      eventInfoService.getEventInfo.and.returnValue(of(eventInfoWithoutCalendar));
+      eventInfoService.getEventInfo.and.returnValue(
+        of(eventInfoWithoutCalendar),
+      );
 
       fixture = TestBed.createComponent(ScheduleComponent);
       component = fixture.componentInstance;

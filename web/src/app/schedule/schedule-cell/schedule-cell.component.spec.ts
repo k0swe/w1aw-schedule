@@ -37,8 +37,12 @@ describe('ScheduleCellComponent', () => {
       userSettings$: new BehaviorSubject(null),
       settings$: new BehaviorSubject(null),
       init: jasmine.createSpy('init'),
-      getApprovedUsers: jasmine.createSpy('getApprovedUsers').and.returnValue(of([])),
-      getUserEventApproval: jasmine.createSpy('getUserEventApproval').and.returnValue(of(null)),
+      getApprovedUsers: jasmine
+        .createSpy('getApprovedUsers')
+        .and.returnValue(of([])),
+      getUserEventApproval: jasmine
+        .createSpy('getUserEventApproval')
+        .and.returnValue(of(null)),
     };
 
     await TestBed.configureTestingModule({

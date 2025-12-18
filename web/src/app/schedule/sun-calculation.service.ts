@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import * as SunCalc from 'suncalc';
 import { BehaviorSubject, Observable } from 'rxjs';
+import * as SunCalc from 'suncalc';
 
 export interface GeolocationCoordinates {
   latitude: number;
@@ -40,7 +40,9 @@ export class SunCalculationService {
         () => {
           // User denied permission or geolocation failed
           // Fall back to simple model (userLocation$ remains undefined)
-          console.info('Geolocation not available, using fallback day/night model');
+          console.info(
+            'Geolocation not available, using fallback day/night model',
+          );
         },
         {
           enableHighAccuracy: false, // Low precision is sufficient
@@ -71,7 +73,11 @@ export class SunCalculationService {
 
     // If location is available, use suncalc for accurate sunrise/sunset
     if (location) {
-      const times = SunCalc.getTimes(time, location.latitude, location.longitude);
+      const times = SunCalc.getTimes(
+        time,
+        location.latitude,
+        location.longitude,
+      );
       return time >= times.sunrise && time < times.sunset;
     }
 

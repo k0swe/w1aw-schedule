@@ -34,13 +34,6 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subject, of } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
-
-import { environment } from '../../environments/environment';
-import { AuthenticationService } from '../authentication/authentication.service';
-import { EventInfoService } from '../event-info/event-info.service';
-import { getLocalTimeZoneLabel } from '../timezone-utils';
-import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
-import { ScheduleService } from './schedule.service';
 import {
   BANDS,
   HI_HF_BANDS,
@@ -51,6 +44,13 @@ import {
   TWO_HOURS_IN_MS,
   VHF_UHF_BANDS,
 } from 'w1aw-schedule-shared';
+
+import { environment } from '../../environments/environment';
+import { AuthenticationService } from '../authentication/authentication.service';
+import { EventInfoService } from '../event-info/event-info.service';
+import { getLocalTimeZoneLabel } from '../timezone-utils';
+import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
+import { ScheduleService } from './schedule.service';
 import { SunCalculationService } from './sun-calculation.service';
 
 @Component({
@@ -175,7 +175,9 @@ export class ScheduleComponent implements OnDestroy {
           if (eventInfo.googleCalendarId) {
             const startDate = this.formatDateAsYYYYMMDD(this.eventStartTime);
             const endDate = this.formatDateAsYYYYMMDD(this.eventEndTime);
-            const encodedCalendarId = encodeURIComponent(eventInfo.googleCalendarId);
+            const encodedCalendarId = encodeURIComponent(
+              eventInfo.googleCalendarId,
+            );
             const encodedTimeZone = encodeURIComponent(eventInfo.timeZoneId);
             const encodedDates = encodeURIComponent(`${startDate}/${endDate}`);
             this.googleCalendarLink =

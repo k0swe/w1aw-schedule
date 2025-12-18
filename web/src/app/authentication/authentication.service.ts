@@ -18,9 +18,9 @@ import { Functions, httpsCallable } from '@angular/fire/functions';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
 
 import { EventInfoService } from '../event-info/event-info.service';
-import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',

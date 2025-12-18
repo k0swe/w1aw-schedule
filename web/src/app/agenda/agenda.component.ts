@@ -15,17 +15,15 @@ import {
 } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, of } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { Shift } from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
 import { ScheduleService } from '../schedule/schedule.service';
 import { getLocalTimeZoneLabel } from '../timezone-utils';
-import {
-  Shift,
-} from 'w1aw-schedule-shared';
 
 @Component({
   selector: 'kel-agenda',

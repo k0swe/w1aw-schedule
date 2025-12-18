@@ -95,12 +95,16 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     const userDetails = this.userSettings$.getValue();
 
     if (!userId || !userDetails) {
-      console.error('Cannot toggle shift: user not authenticated or settings not loaded');
+      console.error(
+        'Cannot toggle shift: user not authenticated or settings not loaded',
+      );
       return;
     }
 
     if (!shift) {
-      console.error('Cannot toggle shift: shift has not been created by an administrator');
+      console.error(
+        'Cannot toggle shift: shift has not been created by an administrator',
+      );
       return;
     }
 
@@ -161,7 +165,9 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   reserveFor(userId: string) {
     const shift = this.shift$.getValue();
     if (!shift) {
-      console.error('Cannot reserve shift: shift has not been created by an administrator');
+      console.error(
+        'Cannot reserve shift: shift has not been created by an administrator',
+      );
       return;
     }
     const approvedUsers = this.approvedUsers$.getValue();
@@ -183,7 +189,9 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     const shift = this.shift$.getValue();
     const userId = this.user$.getValue()?.uid;
     if (!shift || !userId) {
-      console.error('Cannot clear reservation: shift not found or user not authenticated');
+      console.error(
+        'Cannot clear reservation: shift not found or user not authenticated',
+      );
       return;
     }
     this.scheduleService.cancelShift(shift, userId, this.eventId).subscribe();

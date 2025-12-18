@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatCard } from '@angular/material/card';
-import { MatOption, MatSelect } from '@angular/material/select';
 import { MatIcon } from '@angular/material/icon';
 import {
   MatDivider,
@@ -11,12 +10,26 @@ import {
   MatListItemIcon,
   MatNavList,
 } from '@angular/material/list';
+import { MatOption, MatSelect } from '@angular/material/select';
 import { MatSidenav, MatSidenavContainer } from '@angular/material/sidenav';
 import { MatToolbar } from '@angular/material/toolbar';
 import { Title } from '@angular/platform-browser';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterOutlet,
+} from '@angular/router';
 import { BehaviorSubject, combineLatest, of } from 'rxjs';
-import { distinctUntilChanged, filter, map, startWith, switchMap, take, tap } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs/operators';
 import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { environment } from '../environments/environment';
@@ -104,9 +117,14 @@ export class AppComponent {
                 // Update selected event to match the route
                 // Use the event object from events$ array to ensure mat-select value binding works
                 if (eventInfo?.id) {
-                  const matchingEvent = events.find(e => e.id === eventInfo.id);
+                  const matchingEvent = events.find(
+                    (e) => e.id === eventInfo.id,
+                  );
                   // Update only if we found a match and it's different from current selection
-                  if (matchingEvent && matchingEvent.id !== this.selectedEvent$.value?.id) {
+                  if (
+                    matchingEvent &&
+                    matchingEvent.id !== this.selectedEvent$.value?.id
+                  ) {
                     this.selectedEvent$.next(matchingEvent);
                   }
                 }
@@ -156,7 +174,9 @@ export class AppComponent {
     return route.snapshot.paramMap.get('slug');
   }
 
-  private selectDefaultEvent(events: EventInfoWithId[]): EventInfoWithId | undefined {
+  private selectDefaultEvent(
+    events: EventInfoWithId[],
+  ): EventInfoWithId | undefined {
     if (events.length === 0) {
       return undefined;
     }
@@ -165,7 +185,7 @@ export class AppComponent {
     // Find the first event that hasn't ended yet (current or future)
     const now = Date.now();
     const currentOrFutureEvent = events.find(
-      (event) => event.endTime.toMillis() > now
+      (event) => event.endTime.toMillis() > now,
     );
 
     // If found a current/future event, use it
@@ -181,21 +201,24 @@ export class AppComponent {
     const scheduleMatch = currentUrl.match(/\/events\/[^/]+\/schedule/);
     const agendaMatch = currentUrl.match(/\/events\/[^/]+\/agenda/);
     const approvalsMatch = currentUrl.match(/\/events\/[^/]+\/approvals/);
-    
+
     if (scheduleMatch) {
       this.router.navigate(['/events', event.slug, 'schedule']);
     } else if (agendaMatch) {
       this.router.navigate(['/events', event.slug, 'agenda']);
     } else if (approvalsMatch) {
       // Check if user is admin for the new event before navigating to approvals
-      this.authService.userIsAdmin(event.id).pipe(take(1)).subscribe((isAdmin) => {
-        if (isAdmin) {
-          this.router.navigate(['/events', event.slug, 'approvals']);
-        } else {
-          // User is not admin for this event, default to schedule page
-          this.router.navigate(['/events', event.slug, 'schedule']);
-        }
-      });
+      this.authService
+        .userIsAdmin(event.id)
+        .pipe(take(1))
+        .subscribe((isAdmin) => {
+          if (isAdmin) {
+            this.router.navigate(['/events', event.slug, 'approvals']);
+          } else {
+            // User is not admin for this event, default to schedule page
+            this.router.navigate(['/events', event.slug, 'schedule']);
+          }
+        });
     }
   }
 }

@@ -12,10 +12,10 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { Shift, shiftId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettings } from '../user-settings/user-settings.service';
-import { Shift, shiftId } from 'w1aw-schedule-shared';
 
 @Injectable({
   providedIn: 'root',
@@ -53,19 +53,30 @@ export class ScheduleService {
           band: shiftToUpdate.band,
           mode: shiftToUpdate.mode,
         });
-        const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
+        const eventsDocRef = doc(
+          this.firestore,
+          'events',
+          eventId,
+          'shifts',
+          sid,
+        );
         const reservationUpdate = {
           reservedBy: userId,
           reservedDetails: userDetails,
         };
 
-        return from(updateDoc(eventsDocRef, reservationUpdate).then(() => undefined)).pipe(
+        return from(
+          updateDoc(eventsDocRef, reservationUpdate).then(() => undefined),
+        ).pipe(
           catchError((error) => {
-            console.error('Error reserving shift (shift may not exist):', error);
+            console.error(
+              'Error reserving shift (shift may not exist):',
+              error,
+            );
             return of(undefined);
-          })
+          }),
         );
-      })
+      }),
     );
   }
 
@@ -85,18 +96,21 @@ export class ScheduleService {
           band: shiftToUpdate.band,
           mode: shiftToUpdate.mode,
         });
-        const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
+        const eventsDocRef = doc(
+          this.firestore,
+          'events',
+          eventId,
+          'shifts',
+          sid,
+        );
         const updateData = { reservedBy: null, reservedDetails: null };
 
         return from(updateDoc(eventsDocRef, updateData).then(() => undefined));
-      })
+      }),
     );
   }
 
-  findUserShifts(
-    uid: string,
-    eventId: string,
-  ): Observable<Shift[]> {
+  findUserShifts(uid: string, eventId: string): Observable<Shift[]> {
     const eventsShiftsCol = collection(
       this.firestore,
       'events',
