@@ -35,15 +35,6 @@ jobs:
           npm ci
           npm run build
 
-      - name: Read cached build artifacts
-        id: read-cache
-        uses: actions/cache@v5
-        env:
-          cache-name: cache-build-artifacts
-        with:
-          path: web/dist/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
       - name: Install dependencies
         working-directory: web
         run: npm ci
