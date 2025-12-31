@@ -54,19 +54,4 @@ jobs:
       - name: Deploy to Firebase
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
-        run: firebase deploy --only hosting,firestore:rules,firestore:indexes,functions --project w1aw-schedule-76a82 --debug
-
-      - name: Tag as deployed
-        run: |
-          git config --global user.name github-actions
-          git config --global user.email github-actions@github.com
-          git tag deployed --force
-          git push --tags --force
-
-      - name: Google Chat Notification
-        uses: Co-qn/google-chat-notification@v1
-        with:
-          name: W1AW Schedule Deploy
-          url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-          status: ${{ job.status }}
-        if: always()
+        run: firebase deploy --only hosting,firestore,firestore --project w1aw-schedule-76a82
