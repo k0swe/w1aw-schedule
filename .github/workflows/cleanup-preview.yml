@@ -13,6 +13,7 @@ concurrency:
 jobs:
   cleanup-preview:
     name: Cleanup Preview Channel
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
