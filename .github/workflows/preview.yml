@@ -13,6 +13,7 @@ concurrency:
 jobs:
   build-and-preview:
     name: Build and Preview
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       checks: write
