@@ -1,6 +1,10 @@
 # <img src="https://raw.githubusercontent.com/k0swe/w1aw-schedule/refs/heads/main/web/src/assets/Colorado_WAS250.svg" width="100px" alt="Colorado Worked All States 250 logo"> ARRL Colorado Section's W1AW/0 Scheduler
 
-In 2026, the [American Radio Relay League](https://www.arrl.org/) is celebrating the semiquincentennial (250th anniversary) of the United States by holding the [America250 Worked All States](https://www.arrl.org/america250-was) award program! During the weeks of May 27th through June 2nd and September 2nd through 8th, the Colorado section will be operating as `W1AW/0`.  We need a way of scheduling operators to cover shifts.
+In 2026, the [American Radio Relay League](https://www.arrl.org/) is celebrating the
+semiquincentennial (250th anniversary) of the United States by holding the
+[America250 Worked All States](https://www.arrl.org/america250-was) award program! During the weeks
+of May 27th through June 2nd and September 2nd through 8th, the Colorado section will be operating
+as `W1AW/0`. We need a way of scheduling operators to cover shifts.
 
 ![Screenshot of W1AW/0 Colorado Scheduler](w1aw-schedule.png)
 
@@ -17,7 +21,8 @@ npm install
 ng serve
 ```
 
-Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of
+the source files.
 
 ### Project Structure
 
@@ -28,7 +33,8 @@ This monorepo contains:
 - **`functions/`** - Firebase Cloud Functions (Node.js backend)
 - **`firestore/`** - Firestore security rules and indexes
 
-The shared module must be built before building web or functions. See [shared/README.md](shared/README.md) for more details.
+The shared module must be built before building web or functions. See
+[shared/README.md](shared/README.md) for more details.
 
 ## Firebase
 
