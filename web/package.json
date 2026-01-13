@@ -37,7 +37,7 @@
     "@angular/cli": "21.0.5",
     "@angular/compiler-cli": "21.0.8",
     "@trivago/prettier-plugin-sort-imports": "6.0.2",
-    "@types/jasmine": "5.1.14",
+    "@types/jasmine": "5.1.15",
     "@types/suncalc": "^1.9.2",
     "jasmine-core": "5.13.0",
     "karma": "6.4.4",
