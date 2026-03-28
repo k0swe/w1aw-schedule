@@ -95,9 +95,8 @@ export class AppComponent {
         }
       });
 
-    // Subscribe to router events to dynamically check admin status based on current route
-    // and update the selected event to match the route
-    // Combine with events$ to ensure we have the event list before trying to match
+    // Subscribe to router events to update the selected event to match the route.
+    // Combine with events$ to ensure we have the event list before trying to match.
     combineLatest([
       this.router.events.pipe(
         filter((event) => event instanceof NavigationEnd),
@@ -110,7 +109,6 @@ export class AppComponent {
       .pipe(
         filter(([slug, events]) => events.length > 0), // Wait for events to load
         switchMap(([slug, events]) => {
-          // If we have a slug from the route, use it to get the event
           if (slug) {
             return this.eventInfoService.getEventBySlug(slug).pipe(
               tap((eventInfo) => {
@@ -129,23 +127,23 @@ export class AppComponent {
                   }
                 }
               }),
-              switchMap((eventInfo) => {
-                if (!eventInfo) {
-                  throw new Error(`Event not found for slug: ${slug}`);
-                }
-                return this.authService.userIsAdmin(eventInfo.id);
-              }),
             );
-          } else {
-            // No slug in route - check if we have a selected event
-            const selectedEvent = this.selectedEvent$.value;
-            if (selectedEvent) {
-              return this.authService.userIsAdmin(selectedEvent.id);
-            }
-            // No event selected, return false for admin status
-            return of(false);
           }
+          return of(null);
         }),
+        takeUntilDestroyed(),
+      )
+      .subscribe();
+
+    // Derive admin status reactively from the selected event so that switching
+    // events via the nav selector always refreshes the Approve Users button,
+    // regardless of whether a route navigation also occurs.
+    this.selectedEvent$
+      .pipe(
+        distinctUntilChanged((a, b) => a?.id === b?.id),
+        switchMap((event) =>
+          event ? this.authService.userIsAdmin(event.id) : of(false),
+        ),
         takeUntilDestroyed(),
       )
       .subscribe((isAdmin) => {
