@@ -11,7 +11,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { EventInfo, EventInfoWithId } from 'w1aw-schedule-shared';
 
 @Injectable({
@@ -19,12 +19,18 @@ import { EventInfo, EventInfoWithId } from 'w1aw-schedule-shared';
 })
 export class EventInfoService {
   private firestore = inject(Firestore);
+  private adminListCache = new Map<string, Observable<string[]>>();
 
   public getAdminList(eventId: string): Observable<string[]> {
-    const eventsDocRef = doc(this.firestore, 'events', eventId);
-    return docData(eventsDocRef).pipe(
-      map((eventInfo) => (eventInfo as EventInfo)?.admins || []),
-    );
+    if (!this.adminListCache.has(eventId)) {
+      const eventsDocRef = doc(this.firestore, 'events', eventId);
+      const shared = (docData(eventsDocRef) as Observable<EventInfo>).pipe(
+        map((eventInfo) => eventInfo?.admins || []),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+      this.adminListCache.set(eventId, shared);
+    }
+    return this.adminListCache.get(eventId)!;
   }
 
   public getEventInfo(eventId: string): Observable<EventInfo | undefined> {
@@ -43,8 +49,8 @@ export class EventInfoService {
   public getAllEvents(): Observable<EventInfoWithId[]> {
     const eventsCol = collection(this.firestore, 'events');
     const eventsQuery = query(eventsCol, orderBy('startTime', 'asc'));
-    return collectionData(eventsQuery, { idField: 'id' }) as Observable<
-      EventInfoWithId[]
-    >;
+    return collectionData(eventsQuery, {
+      idField: 'id',
+    }) as Observable<EventInfoWithId[]>;
   }
 }
