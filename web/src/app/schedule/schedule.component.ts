@@ -32,7 +32,7 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subject, of } from 'rxjs';
+import { BehaviorSubject, Subject, merge, of } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
 import {
   BANDS,
@@ -97,6 +97,7 @@ export class ScheduleComponent implements OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private sunCalculationService = inject(SunCalculationService);
   private destroy$ = new Subject<void>();
+  private reinit$ = new Subject<void>();
 
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
@@ -153,6 +154,9 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   private initializeComponent() {
+    // Cancel subscriptions from any previous event before creating new ones
+    this.reinit$.next();
+
     this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
     this.viewBandGroup =
       this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
@@ -161,7 +165,7 @@ export class ScheduleComponent implements OnDestroy {
     // Get event info to use startTime and endTime
     this.eventInfoService
       .getEventInfo(this.eventId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
       .subscribe((eventInfo) => {
         if (eventInfo) {
           // Use exact times from event info (no normalization)
@@ -209,13 +213,15 @@ export class ScheduleComponent implements OnDestroy {
         this.authenticationService.user$.getValue()!.uid,
         this.eventId,
       )
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
       .subscribe((shifts) => this.userShifts$.next(shifts));
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.reinit$.next();
+    this.reinit$.complete();
   }
 
   goToPrevDay() {
