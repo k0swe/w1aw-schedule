@@ -32,8 +32,15 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subject, merge, of } from 'rxjs';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subject, merge } from 'rxjs';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  switchMap,
+  take,
+  takeUntil,
+} from 'rxjs/operators';
 import {
   BANDS,
   HI_HF_BANDS,
@@ -129,14 +136,20 @@ export class ScheduleComponent implements OnDestroy {
     // React to route parameter changes - slug is required
     this.route.paramMap
       .pipe(
-        switchMap((params) => {
-          const slug = params.get('slug');
-          if (!slug) {
-            throw new Error('Event slug is required in route');
-          }
-
-          // Query Firestore to find event by slug
+        map((params) => {
+          return params.get('slug');
+        }),
+        filter((slug): slug is string => {
+          if (!slug) throw new Error('Event slug is required in route');
+          return true;
+        }),
+        // Don't reinit when same slug re-emits (e.g. changeParams updates query params)
+        distinctUntilChanged(),
+        switchMap((slug) => {
+          // Query Firestore to find event by slug - take(1) because we only
+          // need to resolve the slug once per navigation
           return this.eventInfoService.getEventBySlug(slug).pipe(
+            take(1),
             map((eventInfo) => {
               if (!eventInfo) {
                 throw new Error(`Event not found for slug: ${slug}`);
@@ -214,7 +227,9 @@ export class ScheduleComponent implements OnDestroy {
         this.eventId,
       )
       .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
-      .subscribe((shifts) => this.userShifts$.next(shifts));
+      .subscribe((shifts) => {
+        this.userShifts$.next(shifts);
+      });
   }
 
   ngOnDestroy() {
@@ -310,13 +325,21 @@ export class ScheduleComponent implements OnDestroy {
     }
     let isoString = this.viewDay.toISOString();
     let dateString = isoString.substring(0, isoString.indexOf('T'));
-    this.router.navigate([], {
-      queryParams: {
-        day: dateString,
-        bandGroup: this.viewBandGroup,
-        mode: this.viewMode,
-      },
-    });
+    // Only navigate if the query params actually changed to avoid flooding NavigationEnd
+    const currentParams = this.route.snapshot.queryParams;
+    if (
+      currentParams['day'] !== dateString ||
+      currentParams['bandGroup'] !== this.viewBandGroup ||
+      currentParams['mode'] !== this.viewMode
+    ) {
+      this.router.navigate([], {
+        queryParams: {
+          day: dateString,
+          bandGroup: this.viewBandGroup,
+          mode: this.viewMode,
+        },
+      });
+    }
     this.timeSlots = [];
     this.updatePrevNextDays();
     for (

@@ -104,13 +104,20 @@ export class AppComponent {
         map(() => this.getEventSlugFromRoute()),
         distinctUntilChanged(), // Prevent redundant processing when slug doesn't change
       ),
-      this.events$,
+      this.events$.pipe(
+        // Prevent re-running switchMap when getAllEvents re-emits the same list
+        distinctUntilChanged(
+          (a, b) =>
+            a.length === b.length && a.every((e, i) => e.id === b[i].id),
+        ),
+      ),
     ])
       .pipe(
         filter(([slug, events]) => events.length > 0), // Wait for events to load
         switchMap(([slug, events]) => {
           if (slug) {
             return this.eventInfoService.getEventBySlug(slug).pipe(
+              take(1),
               tap((eventInfo) => {
                 // Update selected event to match the route
                 // Use the event object from events$ array to ensure mat-select value binding works
