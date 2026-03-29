@@ -131,8 +131,8 @@
             <strong>{{ event.name }}</strong>
             @if (event.startTime && event.endTime) {
               <span class="event-dates">
-                {{ event.startTime.toDate() | date: 'short' }} -
-                {{ event.endTime.toDate() | date: 'short' }}
+                {{ event.startTime.toDate() | date: 'short' : 'UTC' }} -
+                {{ event.endTime.toDate() | date: 'short' : 'UTC' }} UTC
               </span>
             }
           </div>
