@@ -45,8 +45,8 @@ service cloud.firestore {
 
         // Users can create their own approval application (status must be 'Applied')
         allow create: if loggedIn() && usersOwnApproval() && creatingAppliedStatus();
-        // Users can read their own approval status, admins can read all approvals for their event
-        allow read:   if loggedIn() && (usersOwnApproval() || isAdminForEvent(eventId));
+        // Any logged-in user can read approvals (needed to display approved users on the schedule)
+        allow read:   if loggedIn();
         // Users can update non-protected fields, admins can update all fields
         allow update: if loggedIn() && ((usersOwnApproval() && notUpdatingApprovalFields()) || isAdminForEvent(eventId));
         // Users can withdraw their application

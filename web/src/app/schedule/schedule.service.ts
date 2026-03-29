@@ -11,7 +11,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
-import { catchError, finalize, switchMap, tap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { Shift, shiftId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -33,18 +33,7 @@ export class ScheduleService {
     const ts = Timestamp.fromDate(time);
     const sid = shiftId({ time: ts, band, mode, reservedBy: null });
     const eventsDocRef = doc(this.firestore, 'events', eventId, 'shifts', sid);
-    const path = eventsDocRef.path;
-    return (docData(eventsDocRef) as Observable<Shift | undefined>).pipe(
-      tap({
-        subscribe: () =>
-          console.log('[DEBUG ScheduleService] findShift SUBSCRIBE', path),
-        unsubscribe: () =>
-          console.log('[DEBUG ScheduleService] findShift UNSUBSCRIBE', path),
-      }),
-      finalize(() =>
-        console.log('[DEBUG ScheduleService] findShift FINALIZE', path),
-      ),
-    );
+    return docData(eventsDocRef) as Observable<Shift | undefined>;
   }
 
   reserveShift(
@@ -130,13 +119,6 @@ export class ScheduleService {
     );
     const eventsQuery = query(eventsShiftsCol, where('reservedBy', '==', uid));
 
-    return (collectionData(eventsQuery) as Observable<Shift[]>).pipe(
-      finalize(() =>
-        console.log(
-          '[DEBUG ScheduleService] findUserShifts FINALIZE',
-          'eventId:', eventId,
-        ),
-      ),
-    );
+    return collectionData(eventsQuery) as Observable<Shift[]>;
   }
 }

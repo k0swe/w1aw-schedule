@@ -431,7 +431,7 @@ describe("Per-event approval", () => {
     );
   });
 
-  it("should not allow a user to read another user's event approval status", async function () {
+  it("should allow any logged-in user to read another user's event approval status", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
         doc(context.firestore(), `events/${testEventId}/approvals/alice`),
@@ -445,7 +445,7 @@ describe("Per-event approval", () => {
 
     const bobDb = testEnv.authenticatedContext("bob").firestore();
 
-    await assertFails(
+    await assertSucceeds(
       getDoc(doc(bobDb, `events/${testEventId}/approvals/alice`)),
     );
   });
@@ -469,7 +469,7 @@ describe("Per-event approval", () => {
     );
   });
 
-  it("should not allow admin from one event to read approval for another event", async function () {
+  it("should allow any logged-in user to read approval from any event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
         doc(context.firestore(), `events/${newEvent}/approvals/alice`),
@@ -482,9 +482,9 @@ describe("Per-event approval", () => {
     });
 
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
-    // Amanda is admin for Colorado but not for newEvent
+    // Amanda is admin for Colorado but not for newEvent; any logged-in user can read
 
-    await assertFails(
+    await assertSucceeds(
       getDoc(doc(amandaDb, `events/${newEvent}/approvals/alice`)),
     );
   });

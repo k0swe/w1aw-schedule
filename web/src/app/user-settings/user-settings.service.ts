@@ -23,7 +23,7 @@ import {
   mergeMap,
   of,
 } from 'rxjs';
-import { catchError, finalize, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import {
   EventApproval,
   EventInfoWithId,
@@ -135,12 +135,6 @@ export class UserSettingsService {
           }),
         );
       }),
-      finalize(() =>
-        console.log(
-          '[DEBUG UserSettingsService] getUserEventApproval FINALIZE',
-          'eventId:', eventId,
-        ),
-      ),
     );
   }
 
@@ -259,7 +253,7 @@ export class UserSettingsService {
     );
   }
 
-  // Admin only - Query event approvals by status for a specific event
+  // Query event approvals by status for a specific event
   private getEventApprovalsByStatus(
     eventId: string,
     status: 'Applied' | 'Approved' | 'Declined',
@@ -296,13 +290,15 @@ export class UserSettingsService {
           Promise.all(userObservables.map((obs) => firstValueFrom(obs))),
         );
       }),
-      finalize(() =>
-        console.log(
-          '[DEBUG UserSettingsService] getEventApprovalsByStatus FINALIZE',
+      catchError((err) => {
+        console.error(
+          '[UserSettingsService] getEventApprovalsByStatus error',
           'eventId:', eventId,
           'status:', status,
-        ),
-      ),
+          err,
+        );
+        return of([]);
+      }),
     );
   }
 
