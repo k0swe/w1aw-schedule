@@ -170,6 +170,24 @@ export class ScheduleComponent implements OnDestroy {
     // Cancel subscriptions from any previous event before creating new ones
     this.reinit$.next();
 
+    // Clear the schedule table so old ScheduleCellComponent instances (and their
+    // Firestore listeners) are destroyed before any new subscriptions can fire.
+    // IMPORTANT: use detectChanges() (not markForCheck()) here. markForCheck()
+    // only schedules CD for a future cycle; with Zone.js, Firestore cached-data
+    // callbacks arrive as microtasks and can fire *before* that cycle runs,
+    // causing changeParams() to repopulate timeSlots before old cells are
+    // destroyed, leaving them alive with dangling Firestore listeners.
+    // detectChanges() runs synchronously so old cells are always torn down first.
+    // The try/catch handles the rare case where detectChanges() is called
+    // during an existing CD cycle (e.g., synchronous mocks in unit tests).
+    this.timeSlots = [];
+    this.columnsToDisplay = [];
+    try {
+      this.cdr.detectChanges();
+    } catch {
+      this.cdr.markForCheck();
+    }
+
     this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
     this.viewBandGroup =
       this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
@@ -179,8 +197,19 @@ export class ScheduleComponent implements OnDestroy {
     this.eventInfoService
       .getEventInfo(this.eventId)
       .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
-      .subscribe((eventInfo) => {
-        if (eventInfo) {
+      .subscribe({
+        next: (eventInfo) => {
+          // Guard against new/incomplete events that may be missing required
+          // time fields.
+          if (!eventInfo?.startTime || !eventInfo?.endTime) {
+            console.warn(
+              '[ScheduleComponent] Event data incomplete (missing startTime or endTime);',
+              'schedule will not render.',
+              'eventId:', this.eventId,
+            );
+            return;
+          }
+
           // Use exact times from event info (no normalization)
           this.eventStartTime = eventInfo.startTime.toDate();
           this.eventEndTime = eventInfo.endTime.toDate();
@@ -214,11 +243,15 @@ export class ScheduleComponent implements OnDestroy {
 
           // Recalculate prevDay and nextDay with the loaded event times
           this.updatePrevNextDays();
+
           this.changeParams();
 
           // Trigger change detection to update the view
           this.cdr.markForCheck();
-        }
+        },
+        error: (err) => {
+          console.error('[ScheduleComponent] Error loading event info:', err);
+        },
       });
 
     this.scheduleService
@@ -227,8 +260,13 @@ export class ScheduleComponent implements OnDestroy {
         this.eventId,
       )
       .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
-      .subscribe((shifts) => {
-        this.userShifts$.next(shifts);
+      .subscribe({
+        next: (shifts) => {
+          this.userShifts$.next(shifts);
+        },
+        error: (err) => {
+          console.error('[ScheduleComponent] Error loading user shifts:', err);
+        },
       });
   }
 

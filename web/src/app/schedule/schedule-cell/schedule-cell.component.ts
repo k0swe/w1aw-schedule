@@ -63,11 +63,19 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     this.userSettingsService.init();
     this.shiftSubscription = this.scheduleService
       .findShift(this.timeslot, this.band, this.mode, this.eventId)
-      .subscribe((sh) => this.shift$.next(sh));
+      .subscribe({
+        next: (sh) => this.shift$.next(sh),
+        error: (err) =>
+          console.error('[ScheduleCellComponent] findShift error', err),
+      });
     this.user$ = this.authenticationService.user$;
     this.adminSubscription = this.authenticationService
       .userIsAdmin(this.eventId)
-      .subscribe((isAdmin) => this.isAdmin$.next(isAdmin));
+      .subscribe({
+        next: (isAdmin) => this.isAdmin$.next(isAdmin),
+        error: (err) =>
+          console.error('[ScheduleCellComponent] userIsAdmin error', err),
+      });
     this.userSettings$ = this.userSettingsService.settings$;
     this.approvedUsersSubscription = this.userSettingsService
       .getApprovedUsers(this.eventId)
@@ -76,10 +84,21 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
           users.sort((a, b) => a.callsign!.localeCompare(b.callsign!)),
         ),
       )
-      .subscribe(this.approvedUsers$);
+      .subscribe({
+        next: (users) => this.approvedUsers$.next(users),
+        error: (err) =>
+          console.error('[ScheduleCellComponent] getApprovedUsers error', err),
+      });
     this.eventApprovalSubscription = this.userSettingsService
       .getUserEventApproval(this.eventId)
-      .subscribe((approval) => this.eventApproval$.next(approval));
+      .subscribe({
+        next: (approval) => this.eventApproval$.next(approval),
+        error: (err) =>
+          console.error(
+            '[ScheduleCellComponent] getUserEventApproval error',
+            err,
+          ),
+      });
   }
 
   ngOnDestroy() {

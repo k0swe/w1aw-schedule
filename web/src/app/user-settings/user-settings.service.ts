@@ -253,7 +253,7 @@ export class UserSettingsService {
     );
   }
 
-  // Admin only - Query event approvals by status for a specific event
+  // Query event approvals by status for a specific event
   private getEventApprovalsByStatus(
     eventId: string,
     status: 'Applied' | 'Approved' | 'Declined',
@@ -289,6 +289,15 @@ export class UserSettingsService {
         return from(
           Promise.all(userObservables.map((obs) => firstValueFrom(obs))),
         );
+      }),
+      catchError((err) => {
+        console.error(
+          '[UserSettingsService] getEventApprovalsByStatus error',
+          'eventId:', eventId,
+          'status:', status,
+          err,
+        );
+        return of([]);
       }),
     );
   }
