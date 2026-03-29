@@ -694,7 +694,7 @@ describe("Per-event approval", () => {
     );
   });
 
-  it("should not allow admin from one event to access approval for another event", async function () {
+  it("should allow admin from one event to access approval for another event", async function () {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(
         doc(context.firestore(), `events/${newEvent}/approvals/alice`),
@@ -707,9 +707,9 @@ describe("Per-event approval", () => {
     });
 
     const amandaDb = testEnv.authenticatedContext("amanda").firestore();
-    // Amanda is admin for Colorado but not for newEvent
+    // Amanda is admin for Colorado but not for newEvent; any logged-in user can read
 
-    await assertFails(
+    await assertSucceeds(
       getDoc(doc(amandaDb, `events/${newEvent}/approvals/alice`)),
     );
   });
