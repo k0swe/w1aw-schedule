@@ -170,11 +170,35 @@ export class ScheduleComponent implements OnDestroy {
     // Cancel subscriptions from any previous event before creating new ones
     this.reinit$.next();
 
-    // Eagerly clear the schedule table so old ScheduleCellComponent instances
-    // (and their Firestore listeners) are destroyed on the next change detection
-    // cycle, even if the new event's data is incomplete or arrives late.
+    // [DEBUG] Log entry state to help diagnose stale Firestore listener buildup
+    console.log(
+      '[DEBUG ScheduleComponent] initializeComponent() start',
+      'eventId:', this.eventId,
+      'existing timeSlots:', this.timeSlots.length,
+    );
+
+    // Clear the schedule table so old ScheduleCellComponent instances (and their
+    // Firestore listeners) are destroyed before any new subscriptions can fire.
+    // IMPORTANT: use detectChanges() (not markForCheck()) here. markForCheck()
+    // only schedules CD for a future cycle; with Zone.js, Firestore cached-data
+    // callbacks arrive as microtasks and can fire *before* that cycle runs,
+    // causing changeParams() to repopulate timeSlots before old cells are
+    // destroyed, leaving them alive with dangling Firestore listeners.
+    // detectChanges() runs synchronously so old cells are always torn down first.
+    // The try/catch handles the rare case where detectChanges() is called
+    // during an existing CD cycle (e.g., synchronous mocks in unit tests).
     this.timeSlots = [];
-    this.cdr.markForCheck();
+    this.columnsToDisplay = [];
+    try {
+      this.cdr.detectChanges();
+    } catch {
+      this.cdr.markForCheck();
+    }
+
+    // [DEBUG] After synchronous CD, old cells should all be destroyed now
+    console.log(
+      '[DEBUG ScheduleComponent] detectChanges() called; old cells should be destroyed',
+    );
 
     this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
     this.viewBandGroup =
@@ -187,11 +211,23 @@ export class ScheduleComponent implements OnDestroy {
       .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
       .subscribe({
         next: (eventInfo) => {
+          // [DEBUG] Log what data arrived (or didn't)
+          console.log(
+            '[DEBUG ScheduleComponent] getEventInfo next',
+            'eventId:', this.eventId,
+            'hasStartTime:', !!eventInfo?.startTime,
+            'hasEndTime:', !!eventInfo?.endTime,
+          );
+
           // Guard against new/incomplete events that may be missing required
-          // time fields; without this check, toDate() would throw a TypeError,
-          // preventing changeParams() from running and leaving stale cell
-          // components alive with dangling Firestore listeners.
+          // time fields.
           if (!eventInfo?.startTime || !eventInfo?.endTime) {
+            console.warn(
+              '[DEBUG ScheduleComponent] getEventInfo returned incomplete data',
+              '(missing startTime or endTime); schedule will not render.',
+              'eventId:', this.eventId,
+              'eventInfo:', eventInfo,
+            );
             return;
           }
 
@@ -228,7 +264,22 @@ export class ScheduleComponent implements OnDestroy {
 
           // Recalculate prevDay and nextDay with the loaded event times
           this.updatePrevNextDays();
+
+          // [DEBUG] Log before changeParams so we know timeSlots will be repopulated
+          console.log(
+            '[DEBUG ScheduleComponent] calling changeParams()',
+            'eventId:', this.eventId,
+            'activeCells before:', ScheduleCellComponent.activeCount,
+          );
+
           this.changeParams();
+
+          // [DEBUG] Log timeSlots count after changeParams
+          console.log(
+            '[DEBUG ScheduleComponent] changeParams() done',
+            'timeSlots:', this.timeSlots.length,
+            'activeCells (stale if > 0 before CD):', ScheduleCellComponent.activeCount,
+          );
 
           // Trigger change detection to update the view
           this.cdr.markForCheck();
@@ -244,8 +295,13 @@ export class ScheduleComponent implements OnDestroy {
         this.eventId,
       )
       .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
-      .subscribe((shifts) => {
-        this.userShifts$.next(shifts);
+      .subscribe({
+        next: (shifts) => {
+          this.userShifts$.next(shifts);
+        },
+        error: (err) => {
+          console.error('[ScheduleComponent] Error loading user shifts:', err);
+        },
       });
   }
 

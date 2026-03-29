@@ -43,6 +43,11 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   private authenticationService = inject(AuthenticationService);
   private userSettingsService = inject(UserSettingsService);
 
+  // [DEBUG] Track total active cell instances across all navigation events
+  static activeCount = 0;
+  private static nextInstanceId = 0;
+  private readonly instanceId = ++ScheduleCellComponent.nextInstanceId;
+
   @Input() timeslot!: Date;
   @Input() band!: string;
   @Input() mode!: string;
@@ -60,14 +65,38 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   private eventApprovalSubscription: Subscription | null = null;
 
   ngOnInit(): void {
+    // [DEBUG] Log cell creation with count to detect stale instances overlapping new ones
+    ScheduleCellComponent.activeCount++;
+    console.log(
+      `[DEBUG ScheduleCellComponent] ngOnInit #${this.instanceId}`,
+      'activeCount:', ScheduleCellComponent.activeCount,
+      'eventId:', this.eventId,
+      'band:', this.band,
+      'mode:', this.mode,
+    );
+
     this.userSettingsService.init();
     this.shiftSubscription = this.scheduleService
       .findShift(this.timeslot, this.band, this.mode, this.eventId)
-      .subscribe((sh) => this.shift$.next(sh));
+      .subscribe({
+        next: (sh) => this.shift$.next(sh),
+        error: (err) =>
+          console.error(
+            `[DEBUG ScheduleCellComponent] findShift error #${this.instanceId} eventId: ${this.eventId}`,
+            err,
+          ),
+      });
     this.user$ = this.authenticationService.user$;
     this.adminSubscription = this.authenticationService
       .userIsAdmin(this.eventId)
-      .subscribe((isAdmin) => this.isAdmin$.next(isAdmin));
+      .subscribe({
+        next: (isAdmin) => this.isAdmin$.next(isAdmin),
+        error: (err) =>
+          console.error(
+            `[DEBUG ScheduleCellComponent] userIsAdmin error #${this.instanceId} eventId: ${this.eventId}`,
+            err,
+          ),
+      });
     this.userSettings$ = this.userSettingsService.settings$;
     this.approvedUsersSubscription = this.userSettingsService
       .getApprovedUsers(this.eventId)
@@ -76,13 +105,36 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
           users.sort((a, b) => a.callsign!.localeCompare(b.callsign!)),
         ),
       )
-      .subscribe(this.approvedUsers$);
+      .subscribe({
+        next: (users) => this.approvedUsers$.next(users),
+        error: (err) =>
+          console.error(
+            `[DEBUG ScheduleCellComponent] getApprovedUsers error #${this.instanceId} eventId: ${this.eventId}`,
+            err,
+          ),
+      });
     this.eventApprovalSubscription = this.userSettingsService
       .getUserEventApproval(this.eventId)
-      .subscribe((approval) => this.eventApproval$.next(approval));
+      .subscribe({
+        next: (approval) => this.eventApproval$.next(approval),
+        error: (err) =>
+          console.error(
+            `[DEBUG ScheduleCellComponent] getUserEventApproval error #${this.instanceId} eventId: ${this.eventId}`,
+            err,
+          ),
+      });
   }
 
   ngOnDestroy() {
+    // [DEBUG] Log cell destruction — count should reach 0 after navigation
+    ScheduleCellComponent.activeCount--;
+    console.log(
+      `[DEBUG ScheduleCellComponent] ngOnDestroy #${this.instanceId}`,
+      'activeCount:', ScheduleCellComponent.activeCount,
+      'eventId:', this.eventId,
+      'band:', this.band,
+      'mode:', this.mode,
+    );
     this.shiftSubscription?.unsubscribe();
     this.adminSubscription?.unsubscribe();
     this.approvedUsersSubscription?.unsubscribe();
