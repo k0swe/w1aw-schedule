@@ -7,7 +7,7 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { initializeApp } from 'firebase/app';
+import { getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { Firestore, getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
@@ -17,7 +17,10 @@ import { routes } from './app.routes';
 import { AUTH, FUNCTIONS } from './firebase-rxjs';
 
 // Initialize the Firebase app singleton before any DI factories run.
-initializeApp(environment.firebase);
+// Guard against re-initialization (e.g. HMR, test environments).
+if (!getApps().length) {
+  initializeApp(environment.firebase);
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [

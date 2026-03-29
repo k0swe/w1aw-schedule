@@ -28,15 +28,15 @@ export const FUNCTIONS = new InjectionToken<Functions>(
 
 /**
  * Returns an Observable that emits the document data whenever it changes.
- * The Observable completes the Firestore listener when unsubscribed.
+ * The Observable cancels the Firestore listener when unsubscribed.
  */
 export function docData<T = DocumentData>(
-  ref: DocumentReference,
+  ref: DocumentReference<T>,
 ): Observable<T | undefined> {
   return new Observable((subscriber) => {
     return onSnapshot(
       ref,
-      (snap) => subscriber.next(snap.data() as T | undefined),
+      (snap) => subscriber.next(snap.data()),
       (err) => subscriber.error(err),
     );
   });
@@ -49,7 +49,7 @@ export function docData<T = DocumentData>(
  * The Observable cancels the Firestore listener when unsubscribed.
  */
 export function collectionData<T = DocumentData>(
-  q: Query,
+  q: Query<T>,
   options?: { idField?: string },
 ): Observable<T[]> {
   return new Observable((subscriber) => {
@@ -57,7 +57,7 @@ export function collectionData<T = DocumentData>(
       q,
       (snap) => {
         const docs = snap.docs.map((d) => {
-          const data = d.data() as T;
+          const data = d.data();
           if (options?.idField) {
             return { ...data, [options.idField]: d.id } as T;
           }
@@ -75,9 +75,9 @@ export function collectionData<T = DocumentData>(
  * whenever the collection changes.
  * The Observable cancels the Firestore listener when unsubscribed.
  */
-export function collectionSnapshots(
-  q: Query,
-): Observable<QueryDocumentSnapshot<DocumentData>[]> {
+export function collectionSnapshots<T = DocumentData>(
+  q: Query<T>,
+): Observable<QueryDocumentSnapshot<T>[]> {
   return new Observable((subscriber) => {
     return onSnapshot(
       q,
