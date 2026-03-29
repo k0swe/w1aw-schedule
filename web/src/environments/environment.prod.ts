@@ -1,5 +1,5 @@
 export const environment = {
-  appName: 'W1AW/0 Colorado Schedule',
+  appName: 'W1AW/portable Schedule',
   functionBase: `https://us-central1-w1aw-schedule-76a82.cloudfunctions.net`,
   production: true,
   firebase: {
