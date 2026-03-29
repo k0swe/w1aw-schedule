@@ -7,7 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Auth } from '@angular/fire/auth';
+import { Auth } from 'firebase/auth';
 import { MatButton } from '@angular/material/button';
 import {
   MatCard,
@@ -22,6 +22,7 @@ import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
 import { EventInfoService } from '../event-info/event-info.service';
+import { AUTH } from '../firebase-rxjs';
 
 interface InitShiftsResponse {
   shiftCount: number;
@@ -47,7 +48,7 @@ interface InitShiftsResponse {
 export class InitShiftsComponent implements OnInit {
   private eventInfoService = inject(EventInfoService);
   private http = inject(HttpClient);
-  private auth = inject(Auth);
+  private auth = inject<Auth>(AUTH);
   private snackBar = inject(MatSnackBar);
 
   events$: Observable<EventInfoWithId[]> = of([]);

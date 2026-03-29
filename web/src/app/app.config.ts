@@ -6,22 +6,28 @@ import {
   ApplicationConfig,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getAuth, provideAuth } from '@angular/fire/auth';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
-import { getFunctions, provideFunctions } from '@angular/fire/functions';
 import { provideRouter } from '@angular/router';
+import { getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { Firestore, getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
+import { AUTH, FUNCTIONS } from './firebase-rxjs';
+
+// Initialize the Firebase app singleton before any DI factories run.
+// Guard against re-initialization (e.g. HMR, test environments).
+if (!getApps().length) {
+  initializeApp(environment.firebase);
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => getFirestore()),
-    provideAuth(() => getAuth()),
-    provideFunctions(() => getFunctions()),
+    { provide: AUTH, useFactory: getAuth },
+    { provide: Firestore, useFactory: getFirestore },
+    { provide: FUNCTIONS, useFactory: getFunctions },
     provideHttpClient(withInterceptorsFromDi()),
     provideRouter(routes),
   ],

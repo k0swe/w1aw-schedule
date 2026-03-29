@@ -5,7 +5,6 @@ import {
   GoogleAuthProvider,
   User,
   UserCredential,
-  authState,
   createUserWithEmailAndPassword,
   fetchSignInMethodsForEmail,
   sendEmailVerification,
@@ -13,21 +12,22 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
-} from '@angular/fire/auth';
-import { Functions, httpsCallable } from '@angular/fire/functions';
+} from 'firebase/auth';
+import { Functions, httpsCallable } from 'firebase/functions';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
 
 import { EventInfoService } from '../event-info/event-info.service';
+import { AUTH, FUNCTIONS, authState } from '../firebase-rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
-  private auth = inject(Auth);
-  private functions = inject(Functions);
+  private auth = inject<Auth>(AUTH);
+  private functions = inject<Functions>(FUNCTIONS);
   private route = inject(ActivatedRoute);
   private eventInfoService = inject(EventInfoService);
   private router = inject(Router);

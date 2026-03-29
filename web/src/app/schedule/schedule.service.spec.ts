@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { BehaviorSubject } from 'rxjs';
 
 import { AuthenticationService } from '../authentication/authentication.service';

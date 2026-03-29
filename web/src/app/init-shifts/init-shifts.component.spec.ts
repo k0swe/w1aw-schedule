@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
+import { Auth } from 'firebase/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 
+import { AUTH } from '../firebase-rxjs';
 import { EventInfoService } from '../event-info/event-info.service';
 import { InitShiftsComponent } from './init-shifts.component';
 
@@ -31,7 +32,7 @@ describe('InitShiftsComponent', () => {
       providers: [
         { provide: EventInfoService, useValue: eventInfoService },
         { provide: HttpClient, useValue: http },
-        { provide: Auth, useValue: auth },
+        { provide: AUTH, useValue: auth },
         { provide: MatSnackBar, useValue: snackBar },
       ],
     }).compileComponents();

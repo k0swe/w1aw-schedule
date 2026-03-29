@@ -3,18 +3,17 @@ import {
   Firestore,
   Timestamp,
   collection,
-  collectionData,
   doc,
-  docData,
   query,
   updateDoc,
   where,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { Observable, from, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { Shift, shiftId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
+import { collectionData, docData } from '../firebase-rxjs';
 import { UserSettings } from '../user-settings/user-settings.service';
 
 @Injectable({
