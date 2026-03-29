@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
-import { Firestore, Timestamp } from '@angular/fire/firestore';
-import { Functions } from '@angular/fire/functions';
+import { Auth } from 'firebase/auth';
+import { Firestore, Timestamp } from 'firebase/firestore';
+import { Functions } from 'firebase/functions';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { EventInfoWithId } from 'w1aw-schedule-shared';
 
+import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
 import { ScheduleService } from '../schedule/schedule.service';
@@ -59,8 +60,8 @@ describe('AgendaComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AgendaComponent],
       providers: [
-        { provide: Auth, useValue: authMock },
-        { provide: Functions, useValue: functionsMock },
+        { provide: AUTH, useValue: authMock },
+        { provide: FUNCTIONS, useValue: functionsMock },
         { provide: Firestore, useValue: firestoreMock },
         { provide: Router, useValue: routerMock },
         { provide: ActivatedRoute, useValue: activatedRouteMock },

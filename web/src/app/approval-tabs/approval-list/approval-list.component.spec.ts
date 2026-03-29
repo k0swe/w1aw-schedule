@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { of } from 'rxjs';
 
 import { UserSettingsService } from '../../user-settings/user-settings.service';

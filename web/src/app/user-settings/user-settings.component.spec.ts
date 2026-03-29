@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
+import { Auth } from 'firebase/auth';
+import { Firestore } from 'firebase/firestore';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 
+import { AUTH } from '../firebase-rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettingsComponent } from './user-settings.component';
 import { UserSettingsService } from './user-settings.service';
@@ -35,7 +36,7 @@ describe('UserSettingsComponent', () => {
       imports: [UserSettingsComponent],
       providers: [
         provideRouter([]),
-        { provide: Auth, useValue: authMock },
+        { provide: AUTH, useValue: authMock },
         { provide: Firestore, useValue: firestoreMock },
         { provide: UserSettingsService, useValue: userSettingsServiceMock },
         { provide: AuthenticationService, useValue: authServiceMock },

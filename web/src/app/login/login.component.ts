@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { UserCredential } from '@angular/fire/auth';
+import { UserCredential } from 'firebase/auth';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import {

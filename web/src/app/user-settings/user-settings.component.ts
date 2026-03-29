@@ -8,7 +8,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { User } from '@angular/fire/auth';
+import { User } from 'firebase/auth';
 import {
   FormControl,
   FormGroup,

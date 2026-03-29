@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
-import { Functions } from '@angular/fire/functions';
+import { Auth } from 'firebase/auth';
+import { Firestore } from 'firebase/firestore';
+import { Functions } from 'firebase/functions';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 
+import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { EventInfoService } from '../event-info/event-info.service';
 import { AuthenticationService } from './authentication.service';
 
@@ -30,8 +31,8 @@ describe('AuthenticationService', () => {
     TestBed.configureTestingModule({
       providers: [
         AuthenticationService,
-        { provide: Auth, useValue: authMock },
-        { provide: Functions, useValue: functionsMock },
+        { provide: AUTH, useValue: authMock },
+        { provide: FUNCTIONS, useValue: functionsMock },
         { provide: Firestore, useValue: firestoreMock },
         { provide: Router, useValue: routerMock },
         { provide: ActivatedRoute, useValue: activatedRouteMock },

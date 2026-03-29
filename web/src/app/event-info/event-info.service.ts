@@ -2,17 +2,17 @@ import { Injectable, inject } from '@angular/core';
 import {
   Firestore,
   collection,
-  collectionData,
   doc,
-  docData,
   limit,
   orderBy,
   query,
   where,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { EventInfo, EventInfoWithId } from 'w1aw-schedule-shared';
+
+import { collectionData, docData } from '../firebase-rxjs';
 
 @Injectable({
   providedIn: 'root',

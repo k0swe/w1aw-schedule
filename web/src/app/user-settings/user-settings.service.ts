@@ -4,16 +4,13 @@ import {
   Firestore,
   Timestamp,
   collection,
-  collectionData,
-  collectionSnapshots,
   deleteDoc,
   doc,
-  docData,
   query,
   setDoc,
   updateDoc,
   where,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import {
   BehaviorSubject,
   Observable,
@@ -32,6 +29,7 @@ import {
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
+import { collectionData, collectionSnapshots, docData } from '../firebase-rxjs';
 
 // Re-export UserSettings for backward compatibility
 export { UserSettings } from 'w1aw-schedule-shared';

@@ -5,7 +5,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { User } from '@angular/fire/auth';
+import { User } from 'firebase/auth';
 import { MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';

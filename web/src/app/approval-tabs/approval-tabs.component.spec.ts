@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Firestore, Timestamp } from '@angular/fire/firestore';
+import { Firestore, Timestamp } from 'firebase/firestore';
 import {
   ActivatedRoute,
   convertToParamMap,

@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
-import { Firestore, Timestamp } from '@angular/fire/firestore';
-import { Functions } from '@angular/fire/functions';
+import { Auth } from 'firebase/auth';
+import { Firestore, Timestamp } from 'firebase/firestore';
+import { Functions } from 'firebase/functions';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { EventInfoWithId } from 'w1aw-schedule-shared';
 
+import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
 import { UserSettingsService } from '../user-settings/user-settings.service';
@@ -79,9 +80,9 @@ describe('ScheduleComponent', () => {
       imports: [ScheduleComponent],
       providers: [
         provideRouter([]),
-        { provide: Auth, useValue: authMock },
+        { provide: AUTH, useValue: authMock },
         { provide: Firestore, useValue: firestoreMock },
-        { provide: Functions, useValue: functionsMock },
+        { provide: FUNCTIONS, useValue: functionsMock },
         { provide: ScheduleService, useValue: scheduleServiceMock },
         { provide: AuthenticationService, useValue: authServiceMock },
         { provide: EventInfoService, useValue: eventInfoService },

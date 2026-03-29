@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
+import { Auth } from 'firebase/auth';
+import { Firestore } from 'firebase/firestore';
 import { BehaviorSubject, of } from 'rxjs';
 
+import { AUTH } from '../firebase-rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { UserSettingsService } from './user-settings.service';
 
@@ -24,7 +25,7 @@ describe('UserSettingsService', () => {
     TestBed.configureTestingModule({
       providers: [
         UserSettingsService,
-        { provide: Auth, useValue: authMock },
+        { provide: AUTH, useValue: authMock },
         { provide: Firestore, useValue: firestoreMock },
         { provide: HttpClient, useValue: httpClientMock },
         { provide: AuthenticationService, useValue: authServiceMock },
