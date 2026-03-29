@@ -47,6 +47,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   static activeCount = 0;
   private static nextInstanceId = 0;
   private readonly instanceId = ++ScheduleCellComponent.nextInstanceId;
+  private destroyed = false;
 
   @Input() timeslot!: Date;
   @Input() band!: string;
@@ -67,12 +68,13 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // [DEBUG] Log cell creation with count to detect stale instances overlapping new ones
     ScheduleCellComponent.activeCount++;
+    const shiftPath =
+      `events/${this.eventId}/shifts/` +
+      `(${this.timeslot?.toISOString()} ${this.band}m ${this.mode})`;
     console.log(
       `[DEBUG ScheduleCellComponent] ngOnInit #${this.instanceId}`,
       'activeCount:', ScheduleCellComponent.activeCount,
-      'eventId:', this.eventId,
-      'band:', this.band,
-      'mode:', this.mode,
+      'path:', shiftPath,
     );
 
     this.userSettingsService.init();
@@ -126,6 +128,18 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    // [DEBUG] Guard against double-destroy (would indicate Angular lifecycle bug)
+    if (this.destroyed) {
+      console.error(
+        `[DEBUG ScheduleCellComponent] ngOnDestroy CALLED TWICE on #${this.instanceId}!`,
+        'eventId:', this.eventId,
+        'band:', this.band,
+        'mode:', this.mode,
+        'timeslot:', this.timeslot?.toISOString(),
+      );
+      return;
+    }
+    this.destroyed = true;
     // [DEBUG] Log cell destruction — count should reach 0 after navigation
     ScheduleCellComponent.activeCount--;
     console.log(
@@ -134,6 +148,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       'eventId:', this.eventId,
       'band:', this.band,
       'mode:', this.mode,
+      'timeslot:', this.timeslot?.toISOString(),
     );
     this.shiftSubscription?.unsubscribe();
     this.adminSubscription?.unsubscribe();
