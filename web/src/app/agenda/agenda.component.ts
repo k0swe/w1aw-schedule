@@ -15,8 +15,8 @@ import {
 } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subject, of } from 'rxjs';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subject, merge } from 'rxjs';
+import { map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Shift } from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
@@ -49,6 +49,7 @@ export class AgendaComponent implements OnDestroy {
   private snackBarService = inject(MatSnackBar);
   private route = inject(ActivatedRoute);
   private destroy$ = new Subject<void>();
+  private reinit$ = new Subject<void>();
 
   userShifts$ = new BehaviorSubject<Shift[]>([]);
   icsLink = '';
@@ -65,8 +66,10 @@ export class AgendaComponent implements OnDestroy {
             throw new Error('Event slug is required in route');
           }
 
-          // Query Firestore to find event by slug
+          // Query Firestore to find event by slug - take(1) because we only
+          // need to resolve the slug once per navigation
           return this.eventInfoService.getEventBySlug(slug).pipe(
+            take(1),
             map((eventInfo) => {
               if (!eventInfo) {
                 throw new Error(`Event not found for slug: ${slug}`);
@@ -84,10 +87,13 @@ export class AgendaComponent implements OnDestroy {
   }
 
   private initializeComponent() {
+    // Cancel subscriptions from any previous event before creating new ones
+    this.reinit$.next();
+
     // Get event info for reference date (to handle DST properly)
     this.eventInfoService
       .getEventInfo(this.eventId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
       .subscribe((eventInfo) => {
         if (eventInfo) {
           // Get local timezone label (browser timezone, not event timezone)
@@ -98,7 +104,7 @@ export class AgendaComponent implements OnDestroy {
       });
 
     this.authenticationService.user$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
       .subscribe((user) => {
         if (!user) {
           return;
@@ -106,7 +112,7 @@ export class AgendaComponent implements OnDestroy {
         this.icsLink = `${environment.functionBase}/calendar?uid=${user.uid}&eventId=${this.eventId}`;
         this.scheduleService
           .findUserShifts(user.uid, this.eventId)
-          .pipe(takeUntil(this.destroy$))
+          .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
           .subscribe((shifts) => {
             // sort by timestamp, ascending
             shifts.sort((a, b) => a.time.toMillis() - b.time.toMillis());
@@ -118,6 +124,8 @@ export class AgendaComponent implements OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.reinit$.next();
+    this.reinit$.complete();
   }
 
   copyIcsLink() {
