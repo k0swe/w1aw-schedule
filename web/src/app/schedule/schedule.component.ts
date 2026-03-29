@@ -170,6 +170,12 @@ export class ScheduleComponent implements OnDestroy {
     // Cancel subscriptions from any previous event before creating new ones
     this.reinit$.next();
 
+    // Eagerly clear the schedule table so old ScheduleCellComponent instances
+    // (and their Firestore listeners) are destroyed on the next change detection
+    // cycle, even if the new event's data is incomplete or arrives late.
+    this.timeSlots = [];
+    this.cdr.markForCheck();
+
     this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
     this.viewBandGroup =
       this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
@@ -179,8 +185,16 @@ export class ScheduleComponent implements OnDestroy {
     this.eventInfoService
       .getEventInfo(this.eventId)
       .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
-      .subscribe((eventInfo) => {
-        if (eventInfo) {
+      .subscribe({
+        next: (eventInfo) => {
+          // Guard against new/incomplete events that may be missing required
+          // time fields; without this check, toDate() would throw a TypeError,
+          // preventing changeParams() from running and leaving stale cell
+          // components alive with dangling Firestore listeners.
+          if (!eventInfo?.startTime || !eventInfo?.endTime) {
+            return;
+          }
+
           // Use exact times from event info (no normalization)
           this.eventStartTime = eventInfo.startTime.toDate();
           this.eventEndTime = eventInfo.endTime.toDate();
@@ -218,7 +232,10 @@ export class ScheduleComponent implements OnDestroy {
 
           // Trigger change detection to update the view
           this.cdr.markForCheck();
-        }
+        },
+        error: (err) => {
+          console.error('[ScheduleComponent] Error loading event info:', err);
+        },
       });
 
     this.scheduleService
