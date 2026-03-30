@@ -12,10 +12,11 @@
         @for (entry of entries$ | async; track entry.event.id) {
           <mat-list-item>
             <mat-icon matListItemIcon>event</mat-icon>
-            <span matListItemTitle>{{ entry.event.name }}</span>
+            <span matListItemTitle><strong>{{ entry.event.name }}</strong></span>
             <span matListItemLine>
-              {{ entry.event.startTime.toDate() | date: 'mediumDate' }} –
-              {{ entry.event.endTime.toDate() | date: 'mediumDate' }}
+              {{ entry.event.startTime.toDate() | date: 'mediumDate' : 'UTC' }}
+              –
+              {{ entry.event.endTime.toDate() | date: 'mediumDate' : 'UTC' }}
             </span>
           </mat-list-item>
           <div class="calendar-links">
