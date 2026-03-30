@@ -189,11 +189,17 @@ export class ScheduleComponent implements OnDestroy {
     }
 
     this.icsLink = `${environment.functionBase}/calendar?eventId=${this.eventId}`;
-    this.viewBandGroup =
-      this.route.snapshot.queryParams['bandGroup'] || 'Hi HF';
-    this.viewMode = this.route.snapshot.queryParams['mode'] || 'phone';
 
-    // Get event info to use startTime and endTime
+    // Read saved params for this event from localStorage as fallback before defaults
+    const savedParams = this.eventId
+      ? this.loadScheduleParams(this.eventId)
+      : null;
+    this.viewBandGroup =
+      this.route.snapshot.queryParams['bandGroup'] ||
+      savedParams?.bandGroup ||
+      'Hi HF';
+    this.viewMode =
+      this.route.snapshot.queryParams['mode'] || savedParams?.mode || 'phone';
     this.eventInfoService
       .getEventInfo(this.eventId)
       .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
@@ -233,8 +239,9 @@ export class ScheduleComponent implements OnDestroy {
             this.googleCalendarLink = undefined;
           }
 
-          // Set viewDay based on query params or nearest day to today
-          const dayParam = this.route.snapshot.queryParams['day'];
+          // Set viewDay based on query params, saved localStorage params, or nearest day to today
+          const dayParam =
+            this.route.snapshot.queryParams['day'] || savedParams?.day;
           if (dayParam) {
             this.viewDay = new Date(dayParam);
           } else {
@@ -363,6 +370,10 @@ export class ScheduleComponent implements OnDestroy {
     }
     let isoString = this.viewDay.toISOString();
     let dateString = isoString.substring(0, isoString.indexOf('T'));
+    // Save current params to localStorage for this event
+    if (this.eventId) {
+      this.saveScheduleParams(this.eventId, dateString, this.viewBandGroup, this.viewMode);
+    }
     // Only navigate if the query params actually changed to avoid flooding NavigationEnd
     const currentParams = this.route.snapshot.queryParams;
     if (
@@ -393,6 +404,35 @@ export class ScheduleComponent implements OnDestroy {
     // Use suncalc with user's browser geolocation for accurate sunrise/sunset when available
     // Falls back to browser's local time 6am-6pm model otherwise
     return this.sunCalculationService.getDayNightIcon(timeSlot);
+  }
+
+  private loadScheduleParams(eventId: string): {
+    day?: string;
+    bandGroup?: string;
+    mode?: string;
+  } | null {
+    try {
+      const stored = localStorage.getItem(`w1aw_schedule_params_${eventId}`);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private saveScheduleParams(
+    eventId: string,
+    day: string,
+    bandGroup: string,
+    mode: string,
+  ): void {
+    try {
+      localStorage.setItem(
+        `w1aw_schedule_params_${eventId}`,
+        JSON.stringify({ day, bandGroup, mode }),
+      );
+    } catch {
+      // Ignore localStorage errors (e.g., private browsing mode)
+    }
   }
 
   copyIcsLink() {
