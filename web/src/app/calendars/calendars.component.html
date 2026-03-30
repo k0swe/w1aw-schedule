@@ -19,10 +19,10 @@
             </span>
           </mat-list-item>
           <div class="calendar-links">
-            @if (entry.googleCalendarUrl) {
+            @if (entry.googleCalendarEmbedUrl) {
               <a
                 mat-stroked-button
-                [href]="entry.googleCalendarUrl"
+                [href]="entry.googleCalendarEmbedUrl"
                 target="_blank"
                 rel="noopener noreferrer"
               >

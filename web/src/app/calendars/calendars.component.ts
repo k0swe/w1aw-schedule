@@ -18,8 +18,15 @@ import { EventInfoService } from '../event-info/event-info.service';
 
 interface CalendarEntry {
   event: EventInfoWithId;
-  googleCalendarUrl?: string;
+  googleCalendarEmbedUrl?: string;
   icsUrl: string;
+}
+
+function formatDateAsYYYYMMDD(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
 }
 
 @Component({
@@ -49,11 +56,19 @@ export class CalendarsComponent {
   readonly entries$ = this.eventInfoService.getAllEvents().pipe(
     map((events) =>
       events.map((event): CalendarEntry => {
-        const googleCalendarUrl = event.googleCalendarId
-          ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(event.googleCalendarId + '@import.calendar.google.com')}`
-          : undefined;
+        let googleCalendarEmbedUrl: string | undefined;
+        if (event.googleCalendarId) {
+          const startDate = formatDateAsYYYYMMDD(event.startTime.toDate());
+          const endDate = formatDateAsYYYYMMDD(event.endTime.toDate());
+          const encodedCalendarId = encodeURIComponent(event.googleCalendarId);
+          const encodedTimeZone = encodeURIComponent(event.timeZoneId);
+          const encodedDates = encodeURIComponent(`${startDate}/${endDate}`);
+          googleCalendarEmbedUrl =
+            `https://calendar.google.com/calendar/u/0/embed?src=${encodedCalendarId}@import.calendar.google.com` +
+            `&ctz=${encodedTimeZone}&mode=WEEK&dates=${encodedDates}`;
+        }
         const icsUrl = `${environment.functionBase}/calendar?eventId=${event.id}`;
-        return { event, googleCalendarUrl, icsUrl };
+        return { event, googleCalendarEmbedUrl, icsUrl };
       }),
     ),
   );
