@@ -1,0 +1,43 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Event Calendars</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>
+        Subscribe to or download calendar files for upcoming W1AW/portable
+        events. No login is required to access these links.
+      </p>
+      <mat-list>
+        @for (entry of entries$ | async; track entry.event.id) {
+          <mat-list-item>
+            <mat-icon matListItemIcon>event</mat-icon>
+            <span matListItemTitle>{{ entry.event.name }}</span>
+            <span matListItemLine>
+              {{ entry.event.startTime.toDate() | date: 'mediumDate' }} –
+              {{ entry.event.endTime.toDate() | date: 'mediumDate' }}
+            </span>
+          </mat-list-item>
+          <div class="calendar-links">
+            @if (entry.googleCalendarUrl) {
+              <a
+                mat-stroked-button
+                [href]="entry.googleCalendarUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <mat-icon>open_in_new</mat-icon>
+                View Google Calendar
+              </a>
+            }
+            <a mat-stroked-button [href]="entry.icsUrl">
+              <mat-icon>download</mat-icon>
+              Download iCal (.ics)
+            </a>
+          </div>
+          <mat-divider></mat-divider>
+        }
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+</div>
