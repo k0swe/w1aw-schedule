@@ -186,6 +186,17 @@ export class AppComponent {
       return undefined;
     }
 
+    // Prefer the last event the user explicitly selected
+    const savedEventId = localStorage.getItem('w1aw_last_event_id');
+    if (savedEventId) {
+      const savedEvent = events.find((e) => e.id === savedEventId);
+      if (savedEvent) {
+        return savedEvent;
+      }
+      // Event no longer exists; remove the stale entry
+      localStorage.removeItem('w1aw_last_event_id');
+    }
+
     // Events are already sorted by startTime (ascending)
     // Find the first event that hasn't ended yet (current or future)
     const now = Date.now();
@@ -199,6 +210,7 @@ export class AppComponent {
   }
 
   onEventChange(event: EventInfoWithId): void {
+    localStorage.setItem('w1aw_last_event_id', event.id);
     this.selectedEvent$.next(event);
 
     // Navigate to the corresponding page in the new event if we're on an event-specific page

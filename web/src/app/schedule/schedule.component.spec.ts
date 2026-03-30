@@ -21,6 +21,9 @@ describe('ScheduleComponent', () => {
   let mockEventInfo: EventInfoWithId;
 
   beforeEach(async () => {
+    // Clear any persisted schedule params so tests start from a known state
+    localStorage.removeItem('w1aw_schedule_params_test-event-id');
+
     const authMock = {} as Auth;
     const firestoreMock = {} as Firestore;
     const functionsMock = {} as Functions;
