@@ -46,6 +46,12 @@ jobs:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
+      - name: Show gcloud identity (debug)
+        run: |
+          gcloud --version
+          gcloud auth list
+          gcloud config list
+
       - name: Install Firebase CLI
         run: |
           npm install -g firebase-tools
