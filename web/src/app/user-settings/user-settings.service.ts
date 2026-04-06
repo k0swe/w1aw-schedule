@@ -269,16 +269,16 @@ export class UserSettingsService {
           return of([]);
         }
 
-        // Extract user IDs from the document IDs (which are the userIds)
-        const userIds = snapshots.map((snapshot) => snapshot.id);
-
-        // Get user details for each userId
-        const userObservables = userIds.map((userId) => {
+        // Get user details for each approval snapshot, merging event-scoped fields
+        const userObservables = snapshots.map((snapshot) => {
+          const userId = snapshot.id;
+          const approvalData = snapshot.data() as EventApproval;
           const userDocRef = doc(this.firestore, 'users', userId);
           return docData(userDocRef).pipe(
             map((userData) => ({
               ...(userData as UserSettings),
               id: userId,
+              multiShift: approvalData.multiShift,
             })),
           );
         });
@@ -355,8 +355,11 @@ export class UserSettingsService {
     );
   }
 
-  setMultiShift(userId: string, newValue: boolean) {
-    const docRef = doc(this.firestore, 'users', userId);
+  setMultiShift(userId: string, eventId: string, newValue: boolean) {
+    const docRef = doc(
+      this.firestore,
+      `events/${eventId}/approvals/${userId}`,
+    );
     return from(
       updateDoc(docRef, {
         multiShift: newValue,
