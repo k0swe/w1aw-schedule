@@ -36,7 +36,7 @@ import {
 } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, timer } from 'rxjs';
 import { catchError, debounceTime, filter, switchMap, take, tap } from 'rxjs/operators';
 import { EventApproval, EventInfoWithId } from 'w1aw-schedule-shared';
 
@@ -253,11 +253,13 @@ export class UserSettingsComponent implements OnInit {
           return this.performSave().pipe(
             tap(() => {
               this.saveStatus.set('saved');
-              setTimeout(() => {
-                if (this.saveStatus() === 'saved') {
-                  this.saveStatus.set('idle');
-                }
-              }, 3000);
+              timer(3000)
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe(() => {
+                  if (this.saveStatus() === 'saved') {
+                    this.saveStatus.set('idle');
+                  }
+                });
             }),
             catchError((err: Error) => {
               this.saveStatus.set('error');
