@@ -101,3 +101,27 @@ mat-form-field input.callsign {
   background-color: rgba(0, 0, 0, 0.12);
   color: rgba(0, 0, 0, 0.6);
 }
+
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  padding-right: 8px;
+  min-height: 36px;
+  color: rgba(0, 0, 0, 0.6);
+
+  mat-icon.save-status-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &.saved {
+    color: #2e7d32;
+  }
+
+  &.error {
+    color: #c62828;
+  }
+}
