@@ -1,5 +1,5 @@
 <div class="container">
-  <form [formGroup]="settingsForm" (ngSubmit)="save()">
+  <form [formGroup]="settingsForm">
     <mat-card appearance="outlined">
       <mat-card-header>
         <mat-card-title>User Settings</mat-card-title>
@@ -104,14 +104,18 @@
       </mat-card-content>
 
       <mat-card-actions align="end">
-        <button
-          type="submit"
-          mat-raised-button
-          #saveButton
-          [disabled]="!settingsForm.valid"
-        >
-          Save
-        </button>
+        <span class="save-status" [class]="saveStatus()">
+          @if (saveStatus() === 'saving') {
+            <mat-progress-spinner diameter="18" mode="indeterminate" />
+            <span>Saving…</span>
+          } @else if (saveStatus() === 'saved') {
+            <mat-icon class="save-status-icon">check_circle</mat-icon>
+            <span>Saved</span>
+          } @else if (saveStatus() === 'error') {
+            <mat-icon class="save-status-icon">error</mat-icon>
+            <span>Error saving: {{ saveErrorMessage() }}</span>
+          }
+        </span>
       </mat-card-actions>
     </mat-card>
   </form>

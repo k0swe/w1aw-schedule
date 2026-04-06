@@ -2,12 +2,13 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnInit,
-  ViewChild,
   computed,
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { User } from 'firebase/auth';
 import {
   FormControl,
@@ -17,6 +18,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import {
   MatCard,
   MatCardActions,
@@ -34,8 +36,8 @@ import {
 } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, timer } from 'rxjs';
+import { catchError, debounceTime, filter, switchMap, take, tap } from 'rxjs/operators';
 import { EventApproval, EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -63,12 +65,14 @@ import { UserSettings, UserSettingsService } from './user-settings.service';
     MatCardActions,
     MatButton,
     MatIconButton,
+    MatProgressSpinner,
     AsyncPipe,
     DatePipe,
   ],
 })
 export class UserSettingsComponent implements OnInit {
   private authService = inject(AuthenticationService);
+  private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private settingsService = inject(UserSettingsService);
@@ -111,6 +115,8 @@ export class UserSettingsComponent implements OnInit {
   arrlMemberNumber = new FormControl('');
   discordUsername = new FormControl('');
   discordConnected = signal<boolean>(false);
+  saveStatus = signal<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  saveErrorMessage = signal<string>('');
   settingsForm = new FormGroup({
     callsign: this.callsign,
     gridSquare: this.gridSquare,
@@ -119,26 +125,33 @@ export class UserSettingsComponent implements OnInit {
     arrlMemberNumber: this.arrlMemberNumber,
   });
 
-  @ViewChild('saveButton') saveButton: MatButton | undefined;
-
   constructor() {
     this.user$ = this.authService.user$;
     this.email = new BehaviorSubject<string>(
       this.authService.user$.getValue()?.email || '',
     );
     this.settingsService.settings$.subscribe((settings) => {
-      // when settings are loaded (or changed), re-bind values
+      // when settings are loaded (or changed), re-bind values without
+      // triggering the autosave listener
       this.name.setValue(
         settings.name || this.authService.user$.getValue()?.displayName || '',
+        { emitEvent: false },
       );
-      this.gridSquare.setValue(settings.gridSquare || '');
-      this.phone.setValue(settings.phone || '');
-      this.callsign.setValue(settings.callsign || '');
-      this.arrlMemberNumber.setValue(settings.arrlMemberNumber || '');
-      this.discordUsername.setValue(settings.discordUsername || '');
+      this.gridSquare.setValue(settings.gridSquare || '', {
+        emitEvent: false,
+      });
+      this.phone.setValue(settings.phone || '', { emitEvent: false });
+      this.callsign.setValue(settings.callsign || '', { emitEvent: false });
+      this.arrlMemberNumber.setValue(settings.arrlMemberNumber || '', {
+        emitEvent: false,
+      });
+      this.discordUsername.setValue(settings.discordUsername || '', {
+        emitEvent: false,
+      });
       this.discordConnected.set(
         !!(settings.discordId && settings.discordUsername),
       );
+      this.settingsForm.markAsPristine();
     });
   }
 
@@ -229,9 +242,40 @@ export class UserSettingsComponent implements OnInit {
       );
     }
     this.settingsForm.markAllAsTouched();
+
+    // Autosave: debounce changes, save when valid and dirty
+    this.settingsForm.valueChanges
+      .pipe(
+        debounceTime(1500),
+        filter(() => this.settingsForm.valid && this.settingsForm.dirty),
+        switchMap(() => {
+          this.saveStatus.set('saving');
+          return this.performSave().pipe(
+            tap(() => {
+              this.saveStatus.set('saved');
+              timer(3000)
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe(() => {
+                  if (this.saveStatus() === 'saved') {
+                    this.saveStatus.set('idle');
+                  }
+                });
+            }),
+            catchError((err: Error) => {
+              this.saveStatus.set('error');
+              this.saveErrorMessage.set(
+                err.message || 'Unknown error',
+              );
+              return of(undefined);
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
-  save(): void {
+  private performSave() {
     const formValue: UserSettings = {
       email: this.email.value || '',
       callsign: this.callsign.value?.toUpperCase() || '',
@@ -240,14 +284,10 @@ export class UserSettingsComponent implements OnInit {
       phone: this.phone.value || '',
       arrlMemberNumber: this.arrlMemberNumber.value || '',
     };
-    this.settingsService
-      .set(formValue)
-      .pipe(take(1))
-      .subscribe(() => {
-        this.snackBarService.open('Saved', undefined, {
-          duration: 5000,
-        });
-      });
+    return this.settingsService.set(formValue).pipe(
+      take(1),
+      tap(() => this.settingsForm.markAsPristine()),
+    );
   }
 
   sendVerificationEmail(): void {
