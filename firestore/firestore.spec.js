@@ -725,4 +725,47 @@ describe("Per-event approval", () => {
       }),
     );
   });
+
+  it("should allow event admin to set multi-shift on a user's approval", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
+        {
+          status: "Approved",
+          appliedAt: new Date(),
+          userId: "alice",
+        },
+      );
+    });
+
+    const amandaDb = testEnv.authenticatedContext("amanda").firestore();
+
+    await assertSucceeds(
+      updateDoc(doc(amandaDb, `events/${testEventId}/approvals/alice`), {
+        multiShift: true,
+      }),
+    );
+  });
+
+  it("should not allow user to set their own multi-shift on their approval", async function () {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), `events/${testEventId}/approvals/alice`),
+        {
+          status: "Approved",
+          appliedAt: new Date(),
+          userId: "alice",
+        },
+      );
+    });
+
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+
+    await assertFails(
+      updateDoc(doc(aliceDb, `events/${testEventId}/approvals/alice`), {
+        multiShift: true,
+      }),
+    );
+  });
+
 });

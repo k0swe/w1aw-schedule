@@ -169,7 +169,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       return false;
     }
     if (
-      !this.userSettings$.getValue()?.multiShift &&
+      !this.eventApproval$.getValue()?.multiShift &&
       this.userShifts.some(
         (s) => s.time.toDate().getTime() == this.timeslot.getTime(),
       )

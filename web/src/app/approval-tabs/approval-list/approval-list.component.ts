@@ -109,6 +109,6 @@ export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   setMultiShift(id: string, value: boolean) {
-    this.userSettingsService.setMultiShift(id, value).subscribe();
+    this.userSettingsService.setMultiShift(id, this.eventId, value).subscribe();
   }
 }

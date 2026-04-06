@@ -71,6 +71,7 @@ export interface EventApproval {
   appliedAt: GenericTimestamp;
   statusChangedAt?: GenericTimestamp;
   userId?: string; // User ID for whom this approval is for (useful for queries)
+  multiShift?: boolean; // Event-scoped; only admins may set this
 }
 
 export interface Shift {
