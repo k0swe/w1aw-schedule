@@ -147,7 +147,15 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     return reservedBy != null && reservedBy != this.user$.getValue()?.uid;
   }
 
+  isNotAllowed(): boolean {
+    // 30 meters has no phone allocation; those shifts are never schedulable
+    return this.band === '30' && this.mode === 'phone';
+  }
+
   buttonDisabled(): boolean {
+    if (this.isNotAllowed()) {
+      return true;
+    }
     if (this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid) {
       // This user has reserved this shift, so they can cancel it
       return false;
