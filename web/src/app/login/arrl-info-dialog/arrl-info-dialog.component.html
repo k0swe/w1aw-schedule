@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>Log In with ARRL</h2>
+
+<mat-dialog-content>
+  <p>
+    ARRL doesn't currently offer an OIDC (single sign-on) program, so it's not
+    possible to log in with your ARRL credentials at this time.
+  </p>
+
+  <div class="info-section">
+    <mat-icon class="info-icon">info</mat-icon>
+    <p class="info-text">
+      Single sign-on with ARRL credentials would make it easier for licensed
+      amateur radio operators to access ham radio applications securely while
+      maintaining their privacy. If you'd like to see this feature, consider
+      contacting ARRL leadership and asking them to offer an OIDC program.
+    </p>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button color="primary" type="button" (click)="onClose()">
+    Got it
+  </button>
+</mat-dialog-actions>

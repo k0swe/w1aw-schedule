@@ -9,6 +9,7 @@ import {
   MatCardHeader,
   MatCardTitle,
 } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import {
   MatAccordion,
   MatExpansionPanel,
@@ -24,6 +25,7 @@ import { take } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
+import { ArrlInfoDialogComponent } from './arrl-info-dialog/arrl-info-dialog.component';
 
 @Component({
   selector: 'kel-login',
@@ -53,6 +55,7 @@ export class LoginComponent {
   private authService = inject(AuthenticationService);
   private router = inject(Router);
   private snackBarService = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   appName = environment.appName;
   email: string = '';
@@ -66,6 +69,13 @@ export class LoginComponent {
   loginFacebook(): void {
     const loginObs = this.authService.loginFacebook();
     this.handleLogin(loginObs);
+  }
+
+  showArrlInfo(): void {
+    this.dialog.open(ArrlInfoDialogComponent, {
+      width: '500px',
+      maxWidth: '90vw',
+    });
   }
 
   loginEmailPass() {

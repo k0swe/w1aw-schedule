@@ -1,0 +1,11 @@
+.info-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.info-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
