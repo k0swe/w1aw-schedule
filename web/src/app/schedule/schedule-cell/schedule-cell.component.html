@@ -6,7 +6,9 @@
     [disabled]="buttonDisabled()"
     (click)="toggleShift()"
   >
-    @if ((shift$ | async)?.reservedDetails?.callsign; as callsign) {
+    @if (isNotAllowed()) {
+      <span>not allowed</span>
+    } @else if ((shift$ | async)?.reservedDetails?.callsign; as callsign) {
       <span class="callsign">{{ callsign }}</span>
     } @else {
       <span>open</span>

@@ -68,4 +68,32 @@ describe('ScheduleCellComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  describe('isNotAllowed', () => {
+    it('should return true for 30m phone', () => {
+      component.band = '30';
+      component.mode = 'phone';
+      expect(component.isNotAllowed()).toBeTrue();
+    });
+
+    it('should return false for 30m cw', () => {
+      component.band = '30';
+      component.mode = 'cw';
+      expect(component.isNotAllowed()).toBeFalse();
+    });
+
+    it('should return false for 20m phone', () => {
+      component.band = '20';
+      component.mode = 'phone';
+      expect(component.isNotAllowed()).toBeFalse();
+    });
+  });
+
+  describe('buttonDisabled', () => {
+    it('should be disabled for 30m phone regardless of other conditions', () => {
+      component.band = '30';
+      component.mode = 'phone';
+      expect(component.buttonDisabled()).toBeTrue();
+    });
+  });
 });
