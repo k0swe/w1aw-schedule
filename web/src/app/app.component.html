@@ -56,6 +56,12 @@
             <mat-icon matListItemIcon>event_available</mat-icon>
             My Agenda
           </mat-list-item>
+          <mat-list-item
+            [routerLink]="'/events/' + selectedEvent.slug + '/upload'"
+          >
+            <mat-icon matListItemIcon>upload_file</mat-icon>
+            Upload Log
+          </mat-list-item>
           @if (userIsAdmin$ | async) {
             <mat-list-item
               [routerLink]="'/events/' + selectedEvent.slug + '/approvals'"

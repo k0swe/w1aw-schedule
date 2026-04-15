@@ -8,6 +8,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { Functions } from 'firebase/functions';
+import { FirebaseStorage } from 'firebase/storage';
 import { Observable } from 'rxjs';
 
 /**
@@ -24,6 +25,15 @@ export const AUTH = new InjectionToken<Auth>('firebase/auth Auth');
  */
 export const FUNCTIONS = new InjectionToken<Functions>(
   'firebase/functions Functions',
+);
+
+/**
+ * Angular injection token for the Firebase Storage instance.
+ * Use `inject(STORAGE)` in services/components and provide it with
+ * `{ provide: STORAGE, useFactory: getStorage }` in your app config.
+ */
+export const STORAGE = new InjectionToken<FirebaseStorage>(
+  'firebase/storage FirebaseStorage',
 );
 
 /**
