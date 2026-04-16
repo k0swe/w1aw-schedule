@@ -218,11 +218,14 @@ export class AppComponent {
     const scheduleMatch = currentUrl.match(/\/events\/[^/]+\/schedule/);
     const agendaMatch = currentUrl.match(/\/events\/[^/]+\/agenda/);
     const approvalsMatch = currentUrl.match(/\/events\/[^/]+\/approvals/);
+    const uploadMatch = currentUrl.match(/\/events\/[^/]+\/upload/);
 
     if (scheduleMatch) {
       this.router.navigate(['/events', event.slug, 'schedule']);
     } else if (agendaMatch) {
       this.router.navigate(['/events', event.slug, 'agenda']);
+    } else if (uploadMatch) {
+      this.router.navigate(['/events', event.slug, 'upload']);
     } else if (approvalsMatch) {
       // Check if user is admin for the new event before navigating to approvals
       this.authService

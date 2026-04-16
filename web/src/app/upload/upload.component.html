@@ -1,0 +1,38 @@
+<mat-card class="upload-card">
+  <mat-card-header>
+    <mat-card-title>Upload ADI Log</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>Upload your ADI or ADIF log file for this event.</p>
+    <input
+      #fileInput
+      type="file"
+      accept=".adi,.adif"
+      style="display: none"
+      (change)="onFileSelected($event)"
+    />
+    <button mat-stroked-button (click)="fileInput.click()" [disabled]="uploading()">
+      <mat-icon>attach_file</mat-icon>
+      {{ selectedFile() ? selectedFile()!.name : 'Choose File' }}
+    </button>
+    @if (uploading()) {
+      <mat-progress-bar
+        mode="determinate"
+        [value]="uploadProgress()"
+        class="progress-bar"
+      ></mat-progress-bar>
+      <p>Uploading... {{ uploadProgress() }}%</p>
+    }
+  </mat-card-content>
+  <mat-card-actions>
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="!selectedFile() || uploading()"
+      (click)="upload()"
+    >
+      <mat-icon>upload</mat-icon>
+      Upload
+    </button>
+  </mat-card-actions>
+</mat-card>

@@ -11,10 +11,11 @@ import { getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { Firestore, getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
-import { AUTH, FUNCTIONS } from './firebase-rxjs';
+import { AUTH, FUNCTIONS, STORAGE } from './firebase-rxjs';
 
 // Initialize the Firebase app singleton before any DI factories run.
 // Guard against re-initialization (e.g. HMR, test environments).
@@ -28,6 +29,7 @@ export const appConfig: ApplicationConfig = {
     { provide: AUTH, useFactory: getAuth },
     { provide: Firestore, useFactory: getFirestore },
     { provide: FUNCTIONS, useFactory: getFunctions },
+    { provide: STORAGE, useFactory: getStorage },
     provideHttpClient(withInterceptorsFromDi()),
     provideRouter(routes),
   ],

@@ -51,6 +51,12 @@ export const routes: Routes = [
     canActivate: [AuthenticationGuard, AdminGuard],
   },
   {
+    path: 'events/:slug/upload',
+    loadComponent: () =>
+      import('./upload/upload.component').then((m) => m.UploadComponent),
+    canActivate: [AuthenticationGuard],
+  },
+  {
     path: 'init-shifts',
     loadComponent: () =>
       import('./init-shifts/init-shifts.component').then(
