@@ -1,6 +1,7 @@
 import * as assert from "assert";
+import * as admin from "firebase-admin";
 import { AdifParser } from "adif-parser-ts";
-import { combineAndSortAdif, parseCleansedPath } from "../src/combineAdif";
+import { combineAndSortAdif, getCombineTokenRef, parseCleansedPath } from "../src/combineAdif";
 
 describe("combineAdif helpers", () => {
   describe("parseCleansedPath", () => {
@@ -41,5 +42,54 @@ describe("combineAdif helpers", () => {
       assert.equal(combined.records![1].call, "K2XYZ");
       assert.equal(combined.records![2].call, "K1ABC");
     });
+  });
+});
+
+describe("combineAdif generation token", () => {
+  const eventId = "token-test-event";
+
+  before(() => {
+    if (!admin.apps.length) {
+      admin.initializeApp({ projectId: "w1aw-test" });
+    }
+  });
+
+  afterEach(async () => {
+    await getCombineTokenRef(eventId).delete();
+  });
+
+  it("should write combineToken to Firestore and read it back as the same value", async () => {
+    const token = "test-uuid-1234";
+    const ref = getCombineTokenRef(eventId);
+    await ref.set({ combineToken: token }, { merge: true });
+    const doc = await ref.get();
+    assert.equal(doc.data()?.combineToken, token);
+  });
+
+  it("should detect token match (no concurrent update)", async () => {
+    const token = "test-uuid-match";
+    const ref = getCombineTokenRef(eventId);
+    await ref.set({ combineToken: token }, { merge: true });
+    const doc = await ref.get();
+    const currentToken = doc.data()?.combineToken;
+    // Tokens match: the current run should proceed
+    assert.equal(currentToken, token);
+  });
+
+  it("should detect token mismatch (concurrent update overwrote token)", async () => {
+    const originalToken = "test-uuid-original";
+    const newerToken = "test-uuid-newer";
+    const ref = getCombineTokenRef(eventId);
+
+    // Original invocation writes its token
+    await ref.set({ combineToken: originalToken }, { merge: true });
+    // A newer invocation overwrites with its own token
+    await ref.set({ combineToken: newerToken }, { merge: true });
+
+    const doc = await ref.get();
+    const currentToken = doc.data()?.combineToken;
+    // The original run should abort because tokens differ
+    assert.notEqual(currentToken, originalToken);
+    assert.equal(currentToken, newerToken);
   });
 });

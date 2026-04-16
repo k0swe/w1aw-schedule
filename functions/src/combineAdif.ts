@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/v2";
 import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
@@ -10,6 +11,11 @@ type CleansedSourceInfo = {
 };
 
 type AdifRecord = NonNullable<SimpleAdif["records"]>[number];
+
+/** Shape of the combineToken document stored in events/{eventId}. */
+type CombineTokenDoc = {
+  combineToken: string;
+};
 
 export const parseCleansedPath = (
   objectPath: string | undefined,
@@ -108,6 +114,15 @@ const configuredStorageBucket = (() => {
   }
 })();
 
+export const getCombineTokenRef = (
+  eventId: string,
+): admin.firestore.DocumentReference<CombineTokenDoc> => {
+  return admin
+    .firestore()
+    .collection("events")
+    .doc(eventId) as admin.firestore.DocumentReference<CombineTokenDoc>;
+};
+
 const combineAdifHandler = async (
   event: StorageEvent,
 ) => {
@@ -116,6 +131,12 @@ const combineAdifHandler = async (
   if (!sourceInfo) {
     return;
   }
+
+  // Write a generation token so that concurrent invocations can detect
+  // when a newer run has started and should take precedence.
+  const token = randomUUID();
+  const tokenRef = getCombineTokenRef(sourceInfo.eventId);
+  await tokenRef.set({ combineToken: token }, { merge: true });
 
   const bucket = admin.storage().bucket(file.bucket);
   const prefix = `${sourceInfo.eventId}/cleansed/`;
@@ -137,6 +158,20 @@ const combineAdifHandler = async (
       return [];
     }
   }));
+
+  // Re-read the token after the expensive download phase. If it changed,
+  // a newer invocation has started and will write the correct combined file.
+  const tokenDoc = await tokenRef.get();
+  const currentToken = tokenDoc.data()?.combineToken;
+  if (currentToken !== token) {
+    logger.info("Newer combineAdif invocation detected; aborting this run", {
+      eventId: sourceInfo.eventId,
+      sourcePath: file.name,
+      expectedToken: token,
+      actualToken: currentToken,
+    });
+    return;
+  }
 
   const combined = combineAndSortAdif(parsedAdifGroups.flat());
   const destinationPath = `${sourceInfo.eventId}/combined.adi`;
