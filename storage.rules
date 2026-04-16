@@ -2,7 +2,7 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    match /original/{eventId}/{userId}/{fileName} {
+    match /{eventId}/original/{userId}/{fileName} {
       function isApprovedForEvent() {
         let approval = firestore.get(
           /databases/(default)/documents/events/$(eventId)/approvals/$(request.auth.uid));
