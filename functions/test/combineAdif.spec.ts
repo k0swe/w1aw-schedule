@@ -18,6 +18,7 @@ describe("combineAdif helpers", () => {
   describe("combineAndSortAdif", () => {
     it("should deduplicate and sort records by date/time", () => {
       const adifOne = AdifParser.parseAdi([
+        "Exported by test logger",
         "<adif_ver:5>3.1.0",
         "<eoh>",
         "<call:5>K1ABC<qso_date:8>20250705<time_on:6>090000<eor>",
@@ -25,6 +26,7 @@ describe("combineAdif helpers", () => {
       ].join("\n"));
 
       const adifTwo = AdifParser.parseAdi([
+        "Exported by test logger",
         "<adif_ver:5>3.1.0",
         "<eoh>",
         "<call:5>K1ABC<qso_date:8>20250705<time_on:6>090000<eor>",

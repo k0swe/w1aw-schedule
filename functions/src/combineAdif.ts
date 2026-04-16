@@ -121,24 +121,24 @@ const combineAdifHandler = async (
   const prefix = `${sourceInfo.eventId}/cleansed/`;
   const [files] = await bucket.getFiles({ prefix });
   const cleansedAdiFiles = files.filter((listedFile) =>
-    listedFile.name.startsWith(prefix) && listedFile.name.endsWith(".adi"),
+    listedFile.name.endsWith(".adi"),
   );
 
-  const parsedAdifs = await Promise.all(cleansedAdiFiles.map(async (adiFile) => {
+  const parsedAdifGroups = await Promise.all(cleansedAdiFiles.map(async (adiFile) => {
     try {
       const [content] = await adiFile.download();
-      return AdifParser.parseAdi(content.toString("utf-8"));
+      return [AdifParser.parseAdi(content.toString("utf-8"))];
     } catch (error: unknown) {
       logger.error("Failed to parse cleansed ADIF file", {
         eventId: sourceInfo.eventId,
         sourcePath: adiFile.name,
         error: error instanceof Error ? error.message : String(error),
       });
-      return null;
+      return [];
     }
   }));
 
-  const combined = combineAndSortAdif(parsedAdifs.filter((adif) => adif !== null));
+  const combined = combineAndSortAdif(parsedAdifGroups.flat());
   const destinationPath = `${sourceInfo.eventId}/combined.adi`;
   const combinedAdi = AdifFormatter.formatAdi(combined);
 
