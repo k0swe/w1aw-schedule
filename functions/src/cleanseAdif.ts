@@ -44,7 +44,15 @@ export const normalizeAdif = (
   };
 };
 
-export const cleanseAdif = onObjectFinalized(async (event) => {
+const projectId =
+  process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT;
+const storageBucket =
+  process.env.STORAGE_BUCKET ??
+  (projectId ? `${projectId}.appspot.com` : "local.appspot.com");
+
+export const cleanseAdif = onObjectFinalized({ bucket: storageBucket }, async (
+  event,
+) => {
   const file = event.data;
   const sourceInfo = parseOriginalPath(file.name);
   if (!sourceInfo) {
@@ -102,7 +110,9 @@ export const cleanseAdif = onObjectFinalized(async (event) => {
   const cleansedAdi = AdifFormatter.formatAdi(normalized);
 
   const unixTime = file.timeCreated
-    ? Date.parse(file.timeCreated)
+    ? (typeof file.timeCreated === "string"
+      ? Date.parse(file.timeCreated)
+      : file.timeCreated.getTime())
     : Date.now();
   const destinationPath = `${sourceInfo.eventId}/cleansed/${unixTime}.adi`;
 
