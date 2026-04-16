@@ -49,13 +49,20 @@ describe("cleanseAdif helpers", () => {
 
       const normalized = normalizeAdif(parsed, "W1AW", "N0CALL");
       const formatted = AdifFormatter.formatAdi(normalized);
-      const [headerText] = formatted.split("<eoh>");
 
-      assert.ok(!headerText.includes("<station_callsign:"));
-      assert.ok(!headerText.includes("<operator:"));
-      assert.ok(!headerText.trimEnd().endsWith('"'));
-      assert.ok(formatted.includes("<station_callsign:4>W1AW"));
-      assert.ok(formatted.includes("<operator:6>N0CALL"));
+      const actualLines = formatted.trim().split(/\r?\n/);
+      const expectedLines = [
+        "Exported by test logger",
+        "<adif_ver:5>3.1.0",
+        "<eoh>",
+        "",
+        "<call:5>K1ABC",
+        "<station_callsign:4>W1AW",
+        "<operator:6>N0CALL",
+        "<eor>",
+      ];
+
+      assert.deepStrictEqual(actualLines, expectedLines);
     });
   });
 });
