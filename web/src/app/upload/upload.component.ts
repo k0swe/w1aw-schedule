@@ -24,6 +24,7 @@ import { map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
 import { STORAGE } from '../firebase-rxjs';
+import { UserSettingsService } from '../user-settings/user-settings.service';
 
 @Component({
   selector: 'kel-upload',
@@ -45,6 +46,7 @@ import { STORAGE } from '../firebase-rxjs';
 export class UploadComponent implements OnDestroy {
   private authService = inject(AuthenticationService);
   private eventInfoService = inject(EventInfoService);
+  private userSettingsService = inject(UserSettingsService);
   private route = inject(ActivatedRoute);
   private snackBar = inject(MatSnackBar);
   private storage = inject<FirebaseStorage>(STORAGE);
@@ -54,6 +56,7 @@ export class UploadComponent implements OnDestroy {
   uploading = signal<boolean>(false);
   uploadProgress = signal<number>(0);
   selectedFile = signal<File | null>(null);
+  isApprovedOperator = signal<boolean | null>(null);
 
   constructor() {
     this.route.paramMap
@@ -76,10 +79,21 @@ export class UploadComponent implements OnDestroy {
             }),
           ),
         ),
+        switchMap((eventId) =>
+          this.userSettingsService.getUserEventApproval(eventId).pipe(
+            map((approval) => ({
+              eventId,
+              isApproved: approval?.status === 'Approved',
+            })),
+          ),
+        ),
         takeUntil(this.destroy$),
       )
       .subscribe({
-        next: (eventId) => this.eventId.set(eventId),
+        next: ({ eventId, isApproved }) => {
+          this.eventId.set(eventId);
+          this.isApprovedOperator.set(isApproved);
+        },
         error: (err) => {
           console.error('[UploadComponent] Failed to resolve event:', err);
           this.snackBar.open(
@@ -103,6 +117,15 @@ export class UploadComponent implements OnDestroy {
   }
 
   upload(): void {
+    if (this.isApprovedOperator() !== true) {
+      this.snackBar.open(
+        'You must be approved for this event before uploading logs.',
+        undefined,
+        { duration: 5000 },
+      );
+      return;
+    }
+
     const file = this.selectedFile();
     const user = this.authService.user$.getValue();
     if (!file || !user) return;
