@@ -44,13 +44,7 @@ export const normalizeAdif = (
   };
 };
 
-const projectId =
-  process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT;
-const storageBucket =
-  process.env.STORAGE_BUCKET ??
-  (projectId ? `${projectId}.appspot.com` : "local.appspot.com");
-
-export const cleanseAdif = onObjectFinalized({ bucket: storageBucket }, async (
+export const cleanseAdif = onObjectFinalized(async (
   event,
 ) => {
   const file = event.data;
