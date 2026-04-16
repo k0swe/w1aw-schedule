@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/v2";
-import { onObjectFinalized } from "firebase-functions/v2/storage";
+import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
 import { AdifFormatter, AdifParser, SimpleAdif } from "adif-parser-ts";
 
 const ORIGINAL_PATH_REGEX = /^([^/]+)\/original\/([^/]+)\/(.+)$/;
@@ -44,14 +44,24 @@ export const normalizeAdif = (
   };
 };
 
-const projectId =
-  process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT;
-const storageBucket =
-  process.env.STORAGE_BUCKET ??
-  (projectId ? `${projectId}.appspot.com` : "local.appspot.com");
+const configuredStorageBucket = (() => {
+  if (process.env.STORAGE_BUCKET) {
+    return process.env.STORAGE_BUCKET;
+  }
+  const firebaseConfig = process.env.FIREBASE_CONFIG;
+  if (!firebaseConfig) {
+    return undefined;
+  }
+  try {
+    return (JSON.parse(firebaseConfig) as {storageBucket?: string})
+      .storageBucket;
+  } catch {
+    return undefined;
+  }
+})();
 
-export const cleanseAdif = onObjectFinalized({ bucket: storageBucket }, async (
-  event,
+const cleanseAdifHandler = async (
+  event: StorageEvent,
 ) => {
   const file = event.data;
   const sourceInfo = parseOriginalPath(file.name);
@@ -126,4 +136,9 @@ export const cleanseAdif = onObjectFinalized({ bucket: storageBucket }, async (
     eventId: sourceInfo.eventId,
     userId: sourceInfo.userId,
   });
-});
+};
+
+export const cleanseAdif = onObjectFinalized(
+  configuredStorageBucket ? { bucket: configuredStorageBucket } : {},
+  cleanseAdifHandler,
+);
