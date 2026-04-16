@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { AdifParser } from "adif-parser-ts";
+import { AdifFormatter, AdifParser } from "adif-parser-ts";
 import { normalizeAdif, parseOriginalPath } from "../src/cleanseAdif";
 
 describe("cleanseAdif helpers", () => {
@@ -34,6 +34,28 @@ describe("cleanseAdif helpers", () => {
       assert.equal(normalized.records![0].operator, "N0CALL");
       assert.equal(normalized.records![1].station_callsign, "W1AW");
       assert.equal(normalized.records![1].operator, "N0CALL");
+    });
+
+    it("should remove station fields from header and only set them on records", () => {
+      const source = [
+        "Exported by test logger",
+        "<adif_ver:5>3.1.0",
+        "<station_callsign:5>K0OLD",
+        "<operator:5>K9OLD",
+        "<eoh>",
+        "<call:5>K1ABC<eor>",
+      ].join("\n");
+      const parsed = AdifParser.parseAdi(source);
+
+      const normalized = normalizeAdif(parsed, "W1AW", "N0CALL");
+      const formatted = AdifFormatter.formatAdi(normalized);
+      const [headerText] = formatted.split("<eoh>");
+
+      assert.ok(!headerText.includes("<station_callsign:"));
+      assert.ok(!headerText.includes("<operator:"));
+      assert.ok(!headerText.includes('"'));
+      assert.ok(formatted.includes("<station_callsign:4>W1AW"));
+      assert.ok(formatted.includes("<operator:6>N0CALL"));
     });
   });
 });
