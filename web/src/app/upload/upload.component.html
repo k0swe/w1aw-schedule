@@ -4,6 +4,11 @@
   </mat-card-header>
   <mat-card-content>
     <p>Upload your ADI or ADIF log file for this event.</p>
+    @if (isApprovedOperator() === false) {
+      <p class="approval-required-info">
+        You must be an approved operator for this event before uploading logs.
+      </p>
+    }
     <input
       #fileInput
       type="file"
@@ -11,7 +16,11 @@
       style="display: none"
       (change)="onFileSelected($event)"
     />
-    <button mat-stroked-button (click)="fileInput.click()" [disabled]="uploading()">
+    <button
+      mat-stroked-button
+      (click)="fileInput.click()"
+      [disabled]="uploading() || isApprovedOperator() !== true"
+    >
       <mat-icon>attach_file</mat-icon>
       {{ selectedFile() ? selectedFile()!.name : 'Choose File' }}
     </button>
@@ -28,7 +37,7 @@
     <button
       mat-raised-button
       color="primary"
-      [disabled]="!selectedFile() || uploading()"
+      [disabled]="!selectedFile() || uploading() || isApprovedOperator() !== true"
       (click)="upload()"
     >
       <mat-icon>upload</mat-icon>
