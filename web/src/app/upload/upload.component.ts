@@ -109,7 +109,7 @@ export class UploadComponent implements OnDestroy {
 
     const baseName = file.name.replace(/\.[^.]+$/, '');
     const unixTime = Date.now();
-    const storagePath = `original/${user.uid}/${unixTime}-${baseName}.adi`;
+    const storagePath = `original/${this.eventId()}/${user.uid}/${unixTime}-${baseName}.adi`;
     const storageRef = ref(this.storage, storagePath);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
