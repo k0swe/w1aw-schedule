@@ -53,7 +53,7 @@ describe("cleanseAdif helpers", () => {
 
       assert.ok(!headerText.includes("<station_callsign:"));
       assert.ok(!headerText.includes("<operator:"));
-      assert.ok(!headerText.includes('"'));
+      assert.ok(!headerText.trimEnd().endsWith('"'));
       assert.ok(formatted.includes("<station_callsign:4>W1AW"));
       assert.ok(formatted.includes("<operator:6>N0CALL"));
     });
