@@ -32,6 +32,9 @@ export const normalizeAdif = (
   eventCallsign: string,
   userCallsign: string,
 ): SimpleAdif => {
+  const header = {...(adif.header ?? {})};
+  delete header.station_callsign;
+  delete header.operator;
   const records = (adif.records ?? []).map((record) => ({
     ...record,
     station_callsign: eventCallsign,
@@ -40,6 +43,7 @@ export const normalizeAdif = (
 
   return {
     ...adif,
+    header,
     records,
   };
 };
