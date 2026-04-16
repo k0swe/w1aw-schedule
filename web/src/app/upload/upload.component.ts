@@ -93,9 +93,6 @@ export class UploadComponent implements OnDestroy {
         next: ({ eventId, isApproved }) => {
           this.eventId.set(eventId);
           this.isApprovedOperator.set(isApproved);
-          if (!isApproved) {
-            this.selectedFile.set(null);
-          }
         },
         error: (err) => {
           console.error('[UploadComponent] Failed to resolve event:', err);
