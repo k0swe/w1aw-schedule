@@ -138,6 +138,11 @@ const cleanseAdifHandler = async (
   });
 };
 
-export const cleanseAdif = configuredStorageBucket ?
-  onObjectFinalized({bucket: configuredStorageBucket}, cleanseAdifHandler) :
-  onObjectFinalized(cleanseAdifHandler);
+export const cleanseAdif = (
+  configuredStorageBucket ?
+    onObjectFinalized(
+      { bucket: configuredStorageBucket },
+      cleanseAdifHandler,
+    ) :
+    onObjectFinalized(cleanseAdifHandler)
+);
