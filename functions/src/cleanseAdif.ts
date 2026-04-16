@@ -44,6 +44,7 @@ export const normalizeAdif = (
   };
 };
 
+// Trigger on all finalized objects; parseOriginalPath filters to event originals.
 export const cleanseAdif = onObjectFinalized(async (
   event,
 ) => {
