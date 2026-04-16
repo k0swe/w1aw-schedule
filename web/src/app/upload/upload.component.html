@@ -5,7 +5,7 @@
   <mat-card-content>
     <p>Upload your ADI or ADIF log file for this event.</p>
     @if (isApprovedOperator() === false) {
-      <p class="approval-required-info">
+      <p class="approval-required-info" role="status" aria-live="polite">
         You must be an approved operator for this event before uploading logs.
       </p>
     }
