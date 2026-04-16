@@ -17,7 +17,12 @@ import { MatIcon } from '@angular/material/icon';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
-import { FirebaseStorage, ref, uploadBytesResumable } from 'firebase/storage';
+import {
+  FirebaseStorage,
+  ref,
+  uploadBytesResumable,
+  type UploadMetadata,
+} from 'firebase/storage';
 import { Subject } from 'rxjs';
 import { map, switchMap, take, takeUntil } from 'rxjs/operators';
 
@@ -134,7 +139,10 @@ export class UploadComponent implements OnDestroy {
     const unixTime = Date.now();
     const storagePath = `${this.eventId()}/original/${user.uid}/${unixTime}-${baseName}.adi`;
     const storageRef = ref(this.storage, storagePath);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const metadata: UploadMetadata = {
+      contentType: 'text/plain; charset=utf-8',
+    };
+    const uploadTask = uploadBytesResumable(storageRef, file, metadata);
 
     this.uploading.set(true);
     this.uploadProgress.set(0);
