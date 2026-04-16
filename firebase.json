@@ -25,5 +25,8 @@
         "bash \"$RESOURCE_DIR/prepare-deploy.sh\""
       ]
     }
-  ]
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  }
 }
