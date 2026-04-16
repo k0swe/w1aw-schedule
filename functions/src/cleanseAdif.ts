@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/v2";
-import { onObjectFinalized } from "firebase-functions/v2/storage";
+import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
 import { AdifFormatter, AdifParser, SimpleAdif } from "adif-parser-ts";
 
 const ORIGINAL_PATH_REGEX = /^([^/]+)\/original\/([^/]+)\/(.+)$/;
@@ -44,9 +44,24 @@ export const normalizeAdif = (
   };
 };
 
-// Trigger on all finalized objects; parseOriginalPath filters to event originals.
-export const cleanseAdif = onObjectFinalized(async (
-  event,
+const configuredStorageBucket = (() => {
+  if (process.env.STORAGE_BUCKET) {
+    return process.env.STORAGE_BUCKET;
+  }
+  const firebaseConfig = process.env.FIREBASE_CONFIG;
+  if (!firebaseConfig) {
+    return undefined;
+  }
+  try {
+    return (JSON.parse(firebaseConfig) as {storageBucket?: string})
+      .storageBucket;
+  } catch {
+    return undefined;
+  }
+})();
+
+const cleanseAdifHandler = async (
+  event: StorageEvent,
 ) => {
   const file = event.data;
   const sourceInfo = parseOriginalPath(file.name);
@@ -121,4 +136,8 @@ export const cleanseAdif = onObjectFinalized(async (
     eventId: sourceInfo.eventId,
     userId: sourceInfo.userId,
   });
-});
+};
+
+export const cleanseAdif = configuredStorageBucket ?
+  onObjectFinalized({bucket: configuredStorageBucket}, cleanseAdifHandler) :
+  onObjectFinalized(cleanseAdifHandler);
