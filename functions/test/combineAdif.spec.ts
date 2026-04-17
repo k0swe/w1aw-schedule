@@ -1,7 +1,12 @@
 import * as assert from "assert";
 import * as admin from "firebase-admin";
 import { AdifParser } from "adif-parser-ts";
-import { combineAndSortAdif, getCombineTokenRef, parseCleansedPath } from "../src/combineAdif";
+import {
+  combineAndSortAdif,
+  createCombinedHeader,
+  getCombineTokenRef,
+  parseCleansedPath,
+} from "../src/combineAdif";
 
 describe("combineAdif helpers", () => {
   describe("parseCleansedPath", () => {
@@ -37,10 +42,61 @@ describe("combineAdif helpers", () => {
       const combined = combineAndSortAdif([adifOne, adifTwo]);
 
       assert.ok(combined.records);
+      assert.deepEqual(combined.header, {});
       assert.equal(combined.records!.length, 3);
       assert.equal(combined.records![0].call, "K9QSO");
       assert.equal(combined.records![1].call, "K2XYZ");
       assert.equal(combined.records![2].call, "K1ABC");
+    });
+
+    it("should not carry forward headers from source ADIF files", () => {
+      const adifOne = AdifParser.parseAdi([
+        "Exported by logger one",
+        "<adif_ver:5>3.0.0",
+        "<programid:6>LOGGER",
+        "<eoh>",
+        "<call:5>K1ABC<qso_date:8>20250705<time_on:6>090000<eor>",
+      ].join("\n"));
+      const adifTwo = AdifParser.parseAdi([
+        "Exported by logger two",
+        "<adif_ver:5>2.2.0",
+        "<programid:5>OTHER",
+        "<eoh>",
+        "<call:5>K2XYZ<qso_date:8>20250705<time_on:6>091000<eor>",
+      ].join("\n"));
+
+      const combined = combineAndSortAdif([adifOne, adifTwo]);
+
+      assert.deepEqual(combined.header, {});
+    });
+  });
+
+  describe("createCombinedHeader", () => {
+    it("should build a new ADIF header with preamble and expected tags", () => {
+      const originalProgramVersion = process.env.PROGRAMVERSION;
+      process.env.PROGRAMVERSION = "abcdef123456";
+      try {
+        const generatedAt = new Date("2026-07-05T09:30:00.000Z");
+        const header = createCombinedHeader("Colorado Event", generatedAt);
+
+        assert.equal(
+          header.text,
+          [
+            "W1AW/portable Scheduler",
+            "Colorado Event",
+            "2026-07-05T09:30:00.000Z",
+          ].join("\n"),
+        );
+        assert.equal(header.ADIF_VER, "3.1.1");
+        assert.equal(header.PROGRAMID, "github.com/k0swe/w1aw-schedule");
+        assert.equal(header.PROGRAMVERSION, "abcdef123456");
+      } finally {
+        if (originalProgramVersion === undefined) {
+          delete process.env.PROGRAMVERSION;
+        } else {
+          process.env.PROGRAMVERSION = originalProgramVersion;
+        }
+      }
     });
   });
 });
