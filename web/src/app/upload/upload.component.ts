@@ -19,6 +19,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import {
   FirebaseStorage,
+  getMetadata,
+  listAll,
   ref,
   uploadBytesResumable,
   type UploadMetadata,
@@ -30,6 +32,19 @@ import { AuthenticationService } from '../authentication/authentication.service'
 import { EventInfoService } from '../event-info/event-info.service';
 import { STORAGE } from '../firebase-rxjs';
 import { UserSettingsService } from '../user-settings/user-settings.service';
+
+type UploadedLogFile = {
+  path: string;
+  fileName: string;
+  uploadedAt: number | null;
+  uploadedAtDisplay: string;
+};
+
+const LEGACY_TIMESTAMP_PREFIX_REGEX = /^\d{10,13}-/;
+const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
 
 @Component({
   selector: 'kel-upload',
@@ -62,6 +77,8 @@ export class UploadComponent implements OnDestroy {
   uploadProgress = signal<number>(0);
   selectedFile = signal<File | null>(null);
   isApprovedOperator = signal<boolean | null>(null);
+  loadingUploadedFiles = signal<boolean>(false);
+  uploadedFiles = signal<UploadedLogFile[]>([]);
 
   constructor() {
     this.route.paramMap
@@ -98,6 +115,12 @@ export class UploadComponent implements OnDestroy {
         next: ({ eventId, isApproved }) => {
           this.eventId.set(eventId);
           this.isApprovedOperator.set(isApproved);
+          void this.loadUploadedFiles().catch((error) => {
+            console.error(
+              '[UploadComponent] Failed to initialize uploaded logs list:',
+              error,
+            );
+          });
         },
         error: (err) => {
           console.error('[UploadComponent] Failed to resolve event:', err);
@@ -141,6 +164,9 @@ export class UploadComponent implements OnDestroy {
     const storageRef = ref(this.storage, storagePath);
     const metadata: UploadMetadata = {
       contentType: 'text/plain; charset=utf-8',
+      customMetadata: {
+        originalFileName: file.name,
+      },
     };
     const uploadTask = uploadBytesResumable(storageRef, file, metadata);
 
@@ -166,10 +192,69 @@ export class UploadComponent implements OnDestroy {
       () => {
         this.uploading.set(false);
         this.selectedFile.set(null);
+        void this.loadUploadedFiles().catch((error) => {
+          console.error(
+            '[UploadComponent] Failed to refresh uploaded logs list:',
+            error,
+          );
+        });
         this.snackBar.open('Log uploaded successfully!', undefined, {
           duration: 5000,
         });
       },
     );
+  }
+
+  private async loadUploadedFiles(): Promise<void> {
+    const user = this.authService.user$.getValue();
+    const eventId = this.eventId();
+    if (!user || !eventId) {
+      this.uploadedFiles.set([]);
+      return;
+    }
+
+    this.loadingUploadedFiles.set(true);
+
+    try {
+      const listRef = ref(this.storage, `${eventId}/original/${user.uid}`);
+      const listed = await listAll(listRef);
+
+      const uploadedFiles = await Promise.all(
+        listed.items.map(async (itemRef) => {
+          const metadata = await getMetadata(itemRef);
+          const originalFileName =
+            metadata.customMetadata?.['originalFileName'];
+          const trimmedOriginalFileName = originalFileName?.trim() || '';
+          const uploadDate = metadata.timeCreated
+            ? new Date(metadata.timeCreated)
+            : null;
+          return {
+            path: itemRef.fullPath,
+            fileName:
+              trimmedOriginalFileName ||
+              itemRef.name.replace(LEGACY_TIMESTAMP_PREFIX_REGEX, ''),
+            uploadedAt: uploadDate?.getTime() ?? null,
+            uploadedAtDisplay: uploadDate
+              ? UPLOAD_TIME_FORMATTER.format(uploadDate)
+              : 'Unknown',
+          };
+        }),
+      );
+
+      uploadedFiles.sort(
+        (a, b) =>
+          (b.uploadedAt ?? Number.NEGATIVE_INFINITY) -
+          (a.uploadedAt ?? Number.NEGATIVE_INFINITY),
+      );
+      this.uploadedFiles.set(uploadedFiles);
+    } catch (error) {
+      console.error('[UploadComponent] Failed to list uploaded logs:', error);
+      this.uploadedFiles.set([]);
+      this.snackBar.open('Failed to load uploaded logs.', undefined, {
+        duration: 5000,
+      });
+    } finally {
+      this.loadingUploadedFiles.set(false);
+    }
   }
 }

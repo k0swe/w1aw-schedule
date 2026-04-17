@@ -32,6 +32,26 @@
       ></mat-progress-bar>
       <p>Uploading... {{ uploadProgress() }}%</p>
     }
+
+    <section class="uploaded-files-section">
+      <h3>Uploaded Logs</h3>
+      @if (loadingUploadedFiles()) {
+        <p>Loading uploaded logs...</p>
+      } @else if (uploadedFiles().length === 0) {
+        <p>No logs uploaded yet.</p>
+      } @else {
+        <ul class="uploaded-files-list">
+          @for (uploadedFile of uploadedFiles(); track uploadedFile.path) {
+            <li>
+              <span class="uploaded-file-name">{{ uploadedFile.fileName }}</span>
+              <span class="uploaded-file-time">
+                Uploaded {{ uploadedFile.uploadedAtDisplay }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
   </mat-card-content>
   <mat-card-actions>
     <button
