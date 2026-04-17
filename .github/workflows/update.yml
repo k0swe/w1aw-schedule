@@ -43,3 +43,87 @@ jobs:
           title: npm update
           branch: npm-update
           author: 'github-actions <github-actions@github.com>'
+
+  npm-update-functions:
+    name: npm update functions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cache node deps
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-deps
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('functions/package-lock.json') }}
+
+      - name: npm update functions
+        working-directory: functions
+        run: |
+          npx npm-check-updates -u
+          npm install -f
+          npm update
+          npm install
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: '${{ secrets.GH_PAT }}'
+          add-paths: 'functions/package*.json'
+          commit-message: npm update functions
+          title: npm update functions
+          branch: npm-update-functions
+          author: 'github-actions <github-actions@github.com>'
+
+  npm-update-firestore:
+    name: npm update firestore
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cache node deps
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-deps
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('firestore/package-lock.json') }}
+
+      - name: npm update firestore
+        working-directory: firestore
+        run: |
+          npx npm-check-updates -u
+          npm install -f
+          npm update
+          npm install
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: '${{ secrets.GH_PAT }}'
+          add-paths: 'firestore/package*.json'
+          commit-message: npm update firestore
+          title: npm update firestore
+          branch: npm-update-firestore
+          author: 'github-actions <github-actions@github.com>'
