@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { execSync } from "child_process";
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/v2";
 import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
@@ -16,6 +17,43 @@ type AdifRecord = NonNullable<SimpleAdif["records"]>[number];
 type CombineTokenDoc = {
   combineToken: string;
 };
+
+const COMBINED_ADIF_PREAMBLE_TITLE = "W1AW/portable Scheduler";
+const ADIF_VERSION = "3.1.1";
+const PROGRAM_ID = "github.com/k0swe/w1aw-schedule";
+
+const getProgramVersion = (): string => {
+  const envVersion = (
+    process.env.PROGRAMVERSION ??
+    process.env.GITHUB_SHA ??
+    process.env.COMMIT_SHA
+  )?.trim();
+  if (envVersion) {
+    return envVersion;
+  }
+
+  try {
+    return execSync("git rev-parse --short=12 HEAD", {
+      encoding: "utf-8",
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+};
+
+export const createCombinedHeader = (
+  eventName: string,
+  generatedAt: Date = new Date(),
+): Record<string, string> => ({
+  text: [
+    COMBINED_ADIF_PREAMBLE_TITLE,
+    eventName,
+    generatedAt.toISOString(),
+  ].join("\n"),
+  ADIF_VER: ADIF_VERSION,
+  PROGRAMID: PROGRAM_ID,
+  PROGRAMVERSION: getProgramVersion(),
+});
 
 export const parseCleansedPath = (
   objectPath: string | undefined,
@@ -78,7 +116,6 @@ const recordSortKey = (record: AdifRecord): string => {
 };
 
 export const combineAndSortAdif = (adifs: SimpleAdif[]): SimpleAdif => {
-  const firstHeader = adifs.find((adif) => adif.header)?.header;
   const combinedRecords = adifs.flatMap((adif) => adif.records ?? []);
   const uniqueByCanonical = new Map<string, AdifRecord>();
 
@@ -93,7 +130,7 @@ export const combineAndSortAdif = (adifs: SimpleAdif[]): SimpleAdif => {
     .sort((a, b) => recordSortKey(a).localeCompare(recordSortKey(b)));
 
   return {
-    header: firstHeader ?? {},
+    header: {},
     records,
   };
 };
@@ -140,7 +177,14 @@ const combineAdifHandler = async (
 
   const bucket = admin.storage().bucket(file.bucket);
   const prefix = `${sourceInfo.eventId}/cleansed/`;
-  const [files] = await bucket.getFiles({ prefix });
+  const eventDocRef = admin
+    .firestore()
+    .collection("events")
+    .doc(sourceInfo.eventId);
+  const [[files], eventDoc] = await Promise.all([
+    bucket.getFiles({ prefix }),
+    eventDocRef.get(),
+  ]);
   const cleansedAdiFiles = files.filter((listedFile) =>
     listedFile.name.endsWith(".adi"),
   );
@@ -174,6 +218,9 @@ const combineAdifHandler = async (
   }
 
   const combined = combineAndSortAdif(parsedAdifGroups.flat());
+  const eventName = (eventDoc.data()?.name as string | undefined) ??
+    sourceInfo.eventId;
+  combined.header = createCombinedHeader(eventName);
   const destinationPath = `${sourceInfo.eventId}/combined.adi`;
   const combinedAdi = AdifFormatter.formatAdi(combined);
 
