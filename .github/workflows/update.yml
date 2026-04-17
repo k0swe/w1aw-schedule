@@ -71,7 +71,7 @@ jobs:
       - name: npm update functions
         working-directory: functions
         run: |
-          npx npm-check-updates -u
+          npx npm-check-updates -u -x eslint
           npm install -f
           npm update
           npm install
