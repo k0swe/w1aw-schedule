@@ -1,5 +1,4 @@
 import { randomUUID } from "crypto";
-import { execSync } from "child_process";
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/v2";
 import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
@@ -25,20 +24,15 @@ const PROGRAM_ID = "github.com/k0swe/w1aw-schedule";
 const getProgramVersion = (): string => {
   const envVersion = (
     process.env.PROGRAMVERSION ??
+    process.env.FUNCTIONS_PROGRAM_VERSION ??
+    process.env.K_REVISION ??
     process.env.GITHUB_SHA ??
     process.env.COMMIT_SHA
   )?.trim();
   if (envVersion) {
     return envVersion;
   }
-
-  try {
-    return execSync("git rev-parse --short=12 HEAD", {
-      encoding: "utf-8",
-    }).trim();
-  } catch {
-    return "unknown";
-  }
+  return "unknown";
 };
 
 export const createCombinedHeader = (
@@ -218,7 +212,13 @@ const combineAdifHandler = async (
   }
 
   const combined = combineAndSortAdif(parsedAdifGroups.flat());
-  const eventName = (eventDoc.data()?.name as string | undefined) ??
+  if (!eventDoc.exists) {
+    logger.warn("Event document not found for combined ADIF header", {
+      eventId: sourceInfo.eventId,
+      sourcePath: file.name,
+    });
+  }
+  const eventName = (eventDoc.exists ? eventDoc.data()?.name : undefined) ??
     sourceInfo.eventId;
   combined.header = createCombinedHeader(eventName);
   const destinationPath = `${sourceInfo.eventId}/combined.adi`;

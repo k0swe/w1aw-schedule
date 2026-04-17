@@ -48,6 +48,27 @@ describe("combineAdif helpers", () => {
       assert.equal(combined.records![1].call, "K2XYZ");
       assert.equal(combined.records![2].call, "K1ABC");
     });
+
+    it("should not carry forward headers from source ADIF files", () => {
+      const adifOne = AdifParser.parseAdi([
+        "Exported by logger one",
+        "<adif_ver:5>3.0.0",
+        "<programid:6>LOGGER",
+        "<eoh>",
+        "<call:5>K1ABC<qso_date:8>20250705<time_on:6>090000<eor>",
+      ].join("\n"));
+      const adifTwo = AdifParser.parseAdi([
+        "Exported by logger two",
+        "<adif_ver:5>2.2.0",
+        "<programid:5>OTHER",
+        "<eoh>",
+        "<call:5>K2XYZ<qso_date:8>20250705<time_on:6>091000<eor>",
+      ].join("\n"));
+
+      const combined = combineAndSortAdif([adifOne, adifTwo]);
+
+      assert.deepEqual(combined.header, {});
+    });
   });
 
   describe("createCombinedHeader", () => {
