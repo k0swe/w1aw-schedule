@@ -4,6 +4,7 @@
     "noImplicitReturns": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
+    "types": ["node", "mocha"],
     "outDir": "build",
     "rootDir": ".",
     "sourceMap": true,
