@@ -1,40 +1,57 @@
-<mat-card class="upload-card">
-  <mat-card-header>
-    <mat-card-title>Upload ADI Log</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
-    <p>Upload your ADI or ADIF log file for this event.</p>
-    @if (isApprovedOperator() === false) {
-      <p class="approval-required-info" role="status" aria-live="assertive">
-        You must be an approved operator for this event before uploading logs.
-      </p>
-    }
-    <input
-      #fileInput
-      type="file"
-      accept=".adi,.adif"
-      style="display: none"
-      (change)="onFileSelected($event)"
-    />
-    <button
-      mat-stroked-button
-      (click)="fileInput.click()"
-      [disabled]="uploading() || isApprovedOperator() !== true"
-    >
-      <mat-icon>attach_file</mat-icon>
-      {{ selectedFile() ? selectedFile()!.name : 'Choose File' }}
-    </button>
-    @if (uploading()) {
-      <mat-progress-bar
-        mode="determinate"
-        [value]="uploadProgress()"
-        class="progress-bar"
-      ></mat-progress-bar>
-      <p>Uploading... {{ uploadProgress() }}%</p>
-    }
+<div class="upload-page">
+  <mat-card class="upload-card">
+    <mat-card-header>
+      <mat-card-title>Upload ADI Log</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Upload your ADI or ADIF log file for this event.</p>
+      @if (isApprovedOperator() === false) {
+        <p class="approval-required-info" role="status" aria-live="assertive">
+          You must be an approved operator for this event before uploading logs.
+        </p>
+      }
+      <input
+        #fileInput
+        type="file"
+        accept=".adi,.adif"
+        style="display: none"
+        (change)="onFileSelected($event)"
+      />
+      <button
+        mat-stroked-button
+        (click)="fileInput.click()"
+        [disabled]="uploading() || isApprovedOperator() !== true"
+      >
+        <mat-icon>attach_file</mat-icon>
+        {{ selectedFile() ? selectedFile()!.name : 'Choose File' }}
+      </button>
+      @if (uploading()) {
+        <mat-progress-bar
+          mode="determinate"
+          [value]="uploadProgress()"
+          class="progress-bar"
+        ></mat-progress-bar>
+        <p>Uploading... {{ uploadProgress() }}%</p>
+      }
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        mat-raised-button
+        color="primary"
+        [disabled]="!selectedFile() || uploading() || isApprovedOperator() !== true"
+        (click)="upload()"
+      >
+        <mat-icon>upload</mat-icon>
+        Upload
+      </button>
+    </mat-card-actions>
+  </mat-card>
 
-    <section class="uploaded-files-section">
-      <h3>Uploaded Logs</h3>
+  <mat-card class="uploaded-logs-card">
+    <mat-card-header>
+      <mat-card-title>Uploaded Logs</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
       @if (loadingUploadedFiles()) {
         <p>Loading uploaded logs...</p>
       } @else if (uploadedFiles().length === 0) {
@@ -51,17 +68,6 @@
           }
         </ul>
       }
-    </section>
-  </mat-card-content>
-  <mat-card-actions>
-    <button
-      mat-raised-button
-      color="primary"
-      [disabled]="!selectedFile() || uploading() || isApprovedOperator() !== true"
-      (click)="upload()"
-    >
-      <mat-icon>upload</mat-icon>
-      Upload
-    </button>
-  </mat-card-actions>
-</mat-card>
+    </mat-card-content>
+  </mat-card>
+</div>
