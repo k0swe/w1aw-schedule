@@ -11,3 +11,26 @@
   font-weight: 500;
   margin-bottom: 16px;
 }
+
+.uploaded-files-section {
+  margin-top: 24px;
+}
+
+.uploaded-files-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.uploaded-files-list li {
+  margin-bottom: 8px;
+}
+
+.uploaded-file-name {
+  display: block;
+  font-weight: 500;
+}
+
+.uploaded-file-time {
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.7));
+  font-size: 0.875rem;
+}

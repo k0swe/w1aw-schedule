@@ -3,6 +3,10 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /{eventId}/original/{userId}/{fileName} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
       function isApprovedForEvent() {
         let approval = firestore.get(
           /databases/(default)/documents/events/$(eventId)/approvals/$(request.auth.uid));
@@ -18,12 +22,11 @@ service firebase.storage {
       }
 
       // Only the file owner (an approved operator for this event) may upload
-      allow write: if request.auth != null
-        && request.auth.uid == userId
+      allow write: if isOwner()
         && isApprovedForEvent();
 
-      // Only event admins may read uploaded logs
-      allow read: if request.auth != null && isAdminForEvent();
+      // Owners may read/list their own uploads; event admins may read any upload
+      allow read: if isOwner() || isAdminForEvent();
     }
   }
 }
