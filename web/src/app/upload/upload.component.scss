@@ -1,6 +1,8 @@
-.upload-card {
+.upload-page {
   max-width: 480px;
   margin: 24px auto;
+  display: grid;
+  gap: 24px;
 }
 
 .progress-bar {
@@ -10,10 +12,6 @@
 .approval-required-info {
   font-weight: 500;
   margin-bottom: 16px;
-}
-
-.uploaded-files-section {
-  margin-top: 24px;
 }
 
 .uploaded-files-list {
