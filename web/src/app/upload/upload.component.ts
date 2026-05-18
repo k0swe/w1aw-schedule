@@ -19,13 +19,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import {
   FirebaseStorage,
+  getDownloadURL,
   getMetadata,
   listAll,
   ref,
   uploadBytesResumable,
+  type StorageError,
   type UploadMetadata,
 } from 'firebase/storage';
-import { Subject } from 'rxjs';
+import { Subject, combineLatest } from 'rxjs';
 import { map, switchMap, take, takeUntil } from 'rxjs/operators';
 
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -77,8 +79,11 @@ export class UploadComponent implements OnDestroy {
   uploadProgress = signal<number>(0);
   selectedFile = signal<File | null>(null);
   isApprovedOperator = signal<boolean | null>(null);
+  isEventAdmin = signal<boolean>(false);
   loadingUploadedFiles = signal<boolean>(false);
   uploadedFiles = signal<UploadedLogFile[]>([]);
+  loadingCombinedAdifDownload = signal<boolean>(false);
+  combinedAdifDownloadUrl = signal<string | null>(null);
 
   constructor() {
     this.route.paramMap
@@ -102,22 +107,33 @@ export class UploadComponent implements OnDestroy {
           ),
         ),
         switchMap((eventId) =>
-          this.userSettingsService.getUserEventApproval(eventId).pipe(
-            map((approval) => ({
+          combineLatest([
+            this.userSettingsService.getUserEventApproval(eventId),
+            this.authService.userIsAdmin(eventId),
+          ]).pipe(
+            map(([approval, isAdmin]) => ({
               eventId,
               isApproved: approval?.status === 'Approved',
+              isAdmin,
             })),
           ),
         ),
         takeUntil(this.destroy$),
       )
       .subscribe({
-        next: ({ eventId, isApproved }) => {
+        next: ({ eventId, isApproved, isAdmin }) => {
           this.eventId.set(eventId);
           this.isApprovedOperator.set(isApproved);
+          this.isEventAdmin.set(isAdmin);
           void this.loadUploadedFiles().catch((error) => {
             console.error(
               '[UploadComponent] Failed to initialize uploaded logs list:',
+              error,
+            );
+          });
+          void this.loadCombinedAdifDownloadUrl().catch((error) => {
+            console.error(
+              '[UploadComponent] Failed to load combined ADIF download URL:',
               error,
             );
           });
@@ -255,6 +271,40 @@ export class UploadComponent implements OnDestroy {
       });
     } finally {
       this.loadingUploadedFiles.set(false);
+    }
+  }
+
+  private async loadCombinedAdifDownloadUrl(): Promise<void> {
+    const eventId = this.eventId();
+    if (!eventId || !this.isEventAdmin()) {
+      this.combinedAdifDownloadUrl.set(null);
+      this.loadingCombinedAdifDownload.set(false);
+      return;
+    }
+
+    this.loadingCombinedAdifDownload.set(true);
+
+    try {
+      const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
+      const url = await getDownloadURL(combinedFileRef);
+      this.combinedAdifDownloadUrl.set(url);
+    } catch (error) {
+      if ((error as StorageError).code === 'storage/object-not-found') {
+        this.combinedAdifDownloadUrl.set(null);
+        return;
+      }
+      console.error(
+        '[UploadComponent] Failed to get combined ADIF download URL:',
+        error,
+      );
+      this.combinedAdifDownloadUrl.set(null);
+      this.snackBar.open(
+        'Failed to load final aggregated ADIF link.',
+        undefined,
+        { duration: 5000 },
+      );
+    } finally {
+      this.loadingCombinedAdifDownload.set(false);
     }
   }
 }
