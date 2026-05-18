@@ -24,7 +24,6 @@ import {
   listAll,
   ref,
   uploadBytesResumable,
-  type StorageError,
   type UploadMetadata,
 } from 'firebase/storage';
 import { Subject, combineLatest } from 'rxjs';
@@ -131,12 +130,7 @@ export class UploadComponent implements OnDestroy {
               error,
             );
           });
-          void this.loadCombinedAdifDownloadUrl().catch((error) => {
-            console.error(
-              '[UploadComponent] Failed to load combined ADIF download URL:',
-              error,
-            );
-          });
+          void this.loadCombinedAdifDownloadUrl();
         },
         error: (err) => {
           console.error('[UploadComponent] Failed to resolve event:', err);
@@ -278,7 +272,6 @@ export class UploadComponent implements OnDestroy {
     const eventId = this.eventId();
     if (!eventId || !this.isEventAdmin()) {
       this.combinedAdifDownloadUrl.set(null);
-      this.loadingCombinedAdifDownload.set(false);
       return;
     }
 
@@ -289,20 +282,28 @@ export class UploadComponent implements OnDestroy {
       const url = await getDownloadURL(combinedFileRef);
       this.combinedAdifDownloadUrl.set(url);
     } catch (error) {
-      if ((error as StorageError).code === 'storage/object-not-found') {
+      const errorCode =
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        typeof error.code === 'string'
+          ? error.code
+          : undefined;
+
+      if (errorCode === 'storage/object-not-found') {
         this.combinedAdifDownloadUrl.set(null);
-        return;
+      } else {
+        console.error(
+          '[UploadComponent] Failed to get combined ADIF download URL:',
+          error,
+        );
+        this.combinedAdifDownloadUrl.set(null);
+        this.snackBar.open(
+          'Failed to load final aggregated ADIF link.',
+          undefined,
+          { duration: 5000 },
+        );
       }
-      console.error(
-        '[UploadComponent] Failed to get combined ADIF download URL:',
-        error,
-      );
-      this.combinedAdifDownloadUrl.set(null);
-      this.snackBar.open(
-        'Failed to load final aggregated ADIF link.',
-        undefined,
-        { duration: 5000 },
-      );
     } finally {
       this.loadingCombinedAdifDownload.set(false);
     }
