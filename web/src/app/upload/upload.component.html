@@ -5,6 +5,11 @@
     </mat-card-header>
     <mat-card-content>
       <p>Upload your ADI or ADIF log file for this event.</p>
+      <p>
+        Uploaded contacts will use station callsign
+        <strong>{{ eventCallsignDisplay() }}</strong> and operator callsign
+        <strong>{{ userCallsignDisplay() }}</strong>.
+      </p>
       @if (isApprovedOperator() === false) {
         <p class="approval-required-info" role="status" aria-live="assertive">
           You must be an approved operator for this event before uploading logs.
@@ -49,7 +54,7 @@
 
   <mat-card class="uploaded-logs-card">
     <mat-card-header>
-      <mat-card-title>Uploaded Logs</mat-card-title>
+      <mat-card-title>My Uploaded Logs</mat-card-title>
     </mat-card-header>
     <mat-card-content>
       @if (loadingUploadedFiles()) {
@@ -74,7 +79,7 @@
   @if (isEventAdmin()) {
     <mat-card class="aggregated-adif-card">
       <mat-card-header>
-        <mat-card-title>Final Aggregated ADIF</mat-card-title>
+        <mat-card-title>Admin: Final ADIF</mat-card-title>
       </mat-card-header>
       <mat-card-content>
         @if (loadingCombinedAdifDownload()) {

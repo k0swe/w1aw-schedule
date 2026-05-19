@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -74,15 +75,23 @@ export class UploadComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   eventId = signal<string>('');
+  eventCallsign = signal<string>('');
   uploading = signal<boolean>(false);
   uploadProgress = signal<number>(0);
   selectedFile = signal<File | null>(null);
   isApprovedOperator = signal<boolean | null>(null);
   isEventAdmin = signal<boolean>(false);
+  userCallsign = signal<string>('');
   loadingUploadedFiles = signal<boolean>(false);
   uploadedFiles = signal<UploadedLogFile[]>([]);
   loadingCombinedAdifDownload = signal<boolean>(false);
   combinedAdifDownloadUrl = signal<string | null>(null);
+  eventCallsignDisplay = computed(
+    () => this.eventCallsign().trim() || 'not available yet',
+  );
+  userCallsignDisplay = computed(
+    () => this.userCallsign().trim() || 'not set in your profile yet',
+  );
 
   constructor() {
     this.route.paramMap
@@ -98,32 +107,40 @@ export class UploadComponent implements OnDestroy {
         switchMap((slug) =>
           this.eventInfoService.getEventBySlug(slug).pipe(
             take(1),
-            map((eventInfo) => {
+            switchMap((eventInfo) => {
               if (!eventInfo)
                 throw new Error(`Event not found for slug: ${slug}`);
-              return eventInfo.id;
+              return combineLatest([
+                this.userSettingsService.getUserEventApproval(eventInfo.id),
+                this.authService.userIsAdmin(eventInfo.id),
+                this.userSettingsService.settings(),
+              ]).pipe(
+                map(([approval, isAdmin, userSettings]) => ({
+                  eventId: eventInfo.id,
+                  eventCallsign: eventInfo.eventCallsign,
+                  isApproved: approval?.status === 'Approved',
+                  isAdmin,
+                  userCallsign: userSettings.callsign?.trim() || '',
+                })),
+              );
             }),
-          ),
-        ),
-        switchMap((eventId) =>
-          combineLatest([
-            this.userSettingsService.getUserEventApproval(eventId),
-            this.authService.userIsAdmin(eventId),
-          ]).pipe(
-            map(([approval, isAdmin]) => ({
-              eventId,
-              isApproved: approval?.status === 'Approved',
-              isAdmin,
-            })),
           ),
         ),
         takeUntil(this.destroy$),
       )
       .subscribe({
-        next: ({ eventId, isApproved, isAdmin }) => {
+        next: ({
+          eventId,
+          eventCallsign,
+          isApproved,
+          isAdmin,
+          userCallsign,
+        }) => {
           this.eventId.set(eventId);
+          this.eventCallsign.set(eventCallsign);
           this.isApprovedOperator.set(isApproved);
           this.isEventAdmin.set(isAdmin);
+          this.userCallsign.set(userCallsign);
           void this.loadUploadedFiles().catch((error) => {
             console.error(
               '[UploadComponent] Failed to initialize uploaded logs list:',
