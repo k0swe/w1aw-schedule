@@ -226,6 +226,9 @@ const combineAdifHandler = async (
 
   await bucket.file(destinationPath).save(combinedAdi, {
     contentType: "text/plain; charset=utf-8",
+    metadata: {
+      contentDisposition: "attachment; filename=\"combined.adi\"",
+    },
   });
 
   logger.info("Combined ADIF file written", {
