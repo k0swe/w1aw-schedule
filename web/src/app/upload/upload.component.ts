@@ -47,6 +47,7 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+const DOWNLOAD_OBJECT_URL_REVOKE_DELAY_MS = 100;
 
 @Component({
   selector: 'kel-upload',
@@ -350,7 +351,10 @@ export class UploadComponent implements OnDestroy {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+      setTimeout(
+        () => URL.revokeObjectURL(objectUrl),
+        DOWNLOAD_OBJECT_URL_REVOKE_DELAY_MS,
+      );
     } catch (error) {
       console.error('[UploadComponent] Failed to download combined ADIF:', error);
       this.snackBar.open('Failed to download final aggregated ADIF.', undefined, {
