@@ -47,8 +47,6 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
-// Allow the browser to begin processing the download click before cleanup.
-const DOWNLOAD_OBJECT_URL_REVOKE_DELAY_MS = 100;
 
 @Component({
   selector: 'kel-upload',
@@ -75,7 +73,6 @@ export class UploadComponent implements OnDestroy {
   private snackBar = inject(MatSnackBar);
   private storage = inject<FirebaseStorage>(STORAGE);
   private destroy$ = new Subject<void>();
-  private objectUrlRevokeTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   eventId = signal<string>('');
   eventCallsign = signal<string>('');
@@ -88,7 +85,6 @@ export class UploadComponent implements OnDestroy {
   loadingUploadedFiles = signal<boolean>(false);
   uploadedFiles = signal<UploadedLogFile[]>([]);
   loadingCombinedAdifDownload = signal<boolean>(false);
-  downloadingCombinedAdif = signal<boolean>(false);
   combinedAdifDownloadUrl = signal<string | null>(null);
   eventCallsignDisplay = computed(
     () => this.eventCallsign().trim() || 'not available yet',
@@ -168,10 +164,6 @@ export class UploadComponent implements OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    if (this.objectUrlRevokeTimeoutId !== null) {
-      clearTimeout(this.objectUrlRevokeTimeoutId);
-      this.objectUrlRevokeTimeoutId = null;
-    }
   }
 
   onFileSelected(event: Event): void {
@@ -306,7 +298,7 @@ export class UploadComponent implements OnDestroy {
     try {
       const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
       const url = await getDownloadURL(combinedFileRef);
-      this.combinedAdifDownloadUrl.set(url);
+      this.combinedAdifDownloadUrl.set(this.createAttachmentDownloadUrl(url));
     } catch (error) {
       const errorCode =
         typeof error === 'object' &&
@@ -335,46 +327,20 @@ export class UploadComponent implements OnDestroy {
     }
   }
 
-  async downloadCombinedAdif(): Promise<void> {
-    const url = this.combinedAdifDownloadUrl();
-    if (!url || this.downloadingCombinedAdif()) return;
-
-    this.downloadingCombinedAdif.set(true);
-
+  private createAttachmentDownloadUrl(url: string): string {
     try {
-      const response = await fetch(url);
-      if (!response.ok)
-        throw new Error(
-          `Failed to download combined ADIF: HTTP ${response.status} ${response.statusText}`,
-        );
-
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = 'combined.adi';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      if (this.objectUrlRevokeTimeoutId !== null) {
-        clearTimeout(this.objectUrlRevokeTimeoutId);
-      }
-      this.objectUrlRevokeTimeoutId = setTimeout(
-        () => URL.revokeObjectURL(objectUrl),
-        DOWNLOAD_OBJECT_URL_REVOKE_DELAY_MS,
+      const parsedUrl = new URL(url);
+      parsedUrl.searchParams.set(
+        'response-content-disposition',
+        'attachment; filename="combined.adi"',
       );
-    } catch (error) {
-      console.error('[UploadComponent] Failed to download combined ADIF:', error);
-      this.snackBar.open(
-        'Failed to download final aggregated ADIF. Please try again or contact support if the issue persists.',
-        undefined,
-        {
-          duration: 7000,
-        },
+      return parsedUrl.toString();
+    } catch {
+      const delimiter = url.includes('?') ? '&' : '?';
+      const encodedDisposition = encodeURIComponent(
+        'attachment; filename="combined.adi"',
       );
-    } finally {
-      this.downloadingCombinedAdif.set(false);
+      return `${url}${delimiter}response-content-disposition=${encodedDisposition}`;
     }
   }
 }
