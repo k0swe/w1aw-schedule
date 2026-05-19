@@ -298,7 +298,7 @@ export class UploadComponent implements OnDestroy {
     try {
       const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
       const url = await getDownloadURL(combinedFileRef);
-      this.combinedAdifDownloadUrl.set(url);
+      this.combinedAdifDownloadUrl.set(this.createAttachmentDownloadUrl(url));
     } catch (error) {
       const errorCode =
         typeof error === 'object' &&
@@ -325,5 +325,28 @@ export class UploadComponent implements OnDestroy {
     } finally {
       this.loadingCombinedAdifDownload.set(false);
     }
+  }
+
+  private createAttachmentDownloadUrl(url: string): string {
+    try {
+      const parsedUrl = new URL(url);
+      parsedUrl.searchParams.set(
+        'response-content-disposition',
+        'attachment; filename="combined.adi"',
+      );
+      return parsedUrl.toString();
+    } catch (error) {
+      console.warn(
+        '[UploadComponent] Failed to parse combined ADIF URL; using unmodified download URL:',
+        error,
+      );
+      return url;
+    }
+  }
+
+  openCombinedAdifDownload(): void {
+    const url = this.combinedAdifDownloadUrl();
+    if (!url) return;
+    window.location.assign(url);
   }
 }
