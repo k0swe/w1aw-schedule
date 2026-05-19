@@ -335,11 +335,16 @@ export class UploadComponent implements OnDestroy {
         'attachment; filename="combined.adi"',
       );
       return parsedUrl.toString();
-    } catch {
+    } catch (error) {
       // Fallback for unexpected URL parsing issues; keep original URL shape.
+      console.warn(
+        '[UploadComponent] Falling back to manual combined ADIF attachment URL construction:',
+        error,
+      );
       const delimiter = url.includes('?') ? '&' : '?';
       const disposition = 'attachment; filename="combined.adi"';
-      return `${url}${delimiter}response-content-disposition=${disposition}`;
+      const encodedDisposition = encodeURIComponent(disposition);
+      return `${url}${delimiter}response-content-disposition=${encodedDisposition}`;
     }
   }
 }
