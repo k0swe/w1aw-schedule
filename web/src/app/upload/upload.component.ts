@@ -94,6 +94,7 @@ export class UploadComponent implements OnDestroy {
   );
 
   constructor() {
+    this.userSettingsService.init();
     this.route.paramMap
       .pipe(
         map((params) => {
