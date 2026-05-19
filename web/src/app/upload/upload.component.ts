@@ -85,6 +85,7 @@ export class UploadComponent implements OnDestroy {
   loadingUploadedFiles = signal<boolean>(false);
   uploadedFiles = signal<UploadedLogFile[]>([]);
   loadingCombinedAdifDownload = signal<boolean>(false);
+  downloadingCombinedAdif = signal<boolean>(false);
   combinedAdifDownloadUrl = signal<string | null>(null);
   eventCallsignDisplay = computed(
     () => this.eventCallsign().trim() || 'not available yet',
@@ -324,6 +325,39 @@ export class UploadComponent implements OnDestroy {
       }
     } finally {
       this.loadingCombinedAdifDownload.set(false);
+    }
+  }
+
+  async downloadCombinedAdif(): Promise<void> {
+    const url = this.combinedAdifDownloadUrl();
+    if (!url || this.downloadingCombinedAdif()) return;
+
+    this.downloadingCombinedAdif.set(true);
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok)
+        throw new Error(
+          `Failed to download combined ADIF: HTTP ${response.status}`,
+        );
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = 'combined.adi';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error('[UploadComponent] Failed to download combined ADIF:', error);
+      this.snackBar.open('Failed to download final aggregated ADIF.', undefined, {
+        duration: 5000,
+      });
+    } finally {
+      this.downloadingCombinedAdif.set(false);
     }
   }
 }

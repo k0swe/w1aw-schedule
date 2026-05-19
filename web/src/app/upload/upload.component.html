@@ -86,17 +86,15 @@
         @if (loadingCombinedAdifDownload()) {
           <p>Loading final aggregated ADIF link...</p>
         } @else if (combinedAdifDownloadUrl()) {
-          <a
+          <button
             mat-raised-button
             color="primary"
-            [href]="combinedAdifDownloadUrl()"
-            download="combined.adi"
-            target="_blank"
-            rel="noopener noreferrer"
+            [disabled]="downloadingCombinedAdif()"
+            (click)="downloadCombinedAdif()"
           >
             <mat-icon>download</mat-icon>
             Download Final Aggregated ADIF
-          </a>
+          </button>
         } @else {
           <p>No final aggregated ADIF is available yet.</p>
         }
