@@ -350,7 +350,7 @@ export class UploadComponent implements OnDestroy {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(objectUrl);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
     } catch (error) {
       console.error('[UploadComponent] Failed to download combined ADIF:', error);
       this.snackBar.open('Failed to download final aggregated ADIF.', undefined, {
