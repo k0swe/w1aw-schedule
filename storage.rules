@@ -2,6 +2,15 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function isAdminForEvent(eventId) {
+      let event = firestore.get(
+        /databases/(default)/documents/events/$(eventId));
+      return event != null
+        && request.auth != null
+        && event.data.admins != null
+        && request.auth.uid in event.data.admins;
+    }
+
     match /{eventId}/original/{userId}/{fileName} {
       function isOwner() {
         return request.auth != null && request.auth.uid == userId;
@@ -13,20 +22,17 @@ service firebase.storage {
         return approval != null && approval.data.status == 'Approved';
       }
 
-      function isAdminForEvent() {
-        let event = firestore.get(
-          /databases/(default)/documents/events/$(eventId));
-        return event != null
-          && event.data.admins != null
-          && request.auth.uid in event.data.admins;
-      }
-
       // Only the file owner (an approved operator for this event) may upload
       allow write: if isOwner()
         && isApprovedForEvent();
 
       // Owners may read/list their own uploads; event admins may read any upload
-      allow read: if isOwner() || isAdminForEvent();
+      allow read: if isOwner() || isAdminForEvent(eventId);
+    }
+
+    match /{eventId}/combined.adi {
+      // Only event admins may read the final combined ADIF file.
+      allow read: if isAdminForEvent(eventId);
     }
   }
 }

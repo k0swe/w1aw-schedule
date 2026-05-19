@@ -70,4 +70,31 @@
       }
     </mat-card-content>
   </mat-card>
+
+  @if (isEventAdmin()) {
+    <mat-card class="aggregated-adif-card">
+      <mat-card-header>
+        <mat-card-title>Final Aggregated ADIF</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (loadingCombinedAdifDownload()) {
+          <p>Loading final aggregated ADIF link...</p>
+        } @else if (combinedAdifDownloadUrl()) {
+          <a
+            mat-raised-button
+            color="primary"
+            [href]="combinedAdifDownloadUrl()"
+            download="combined.adi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <mat-icon>download</mat-icon>
+            Download Final Aggregated ADIF
+          </a>
+        } @else {
+          <p>No final aggregated ADIF is available yet.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
 </div>
