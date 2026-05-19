@@ -75,6 +75,7 @@ export class UploadComponent implements OnDestroy {
   private snackBar = inject(MatSnackBar);
   private storage = inject<FirebaseStorage>(STORAGE);
   private destroy$ = new Subject<void>();
+  private objectUrlRevokeTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   eventId = signal<string>('');
   eventCallsign = signal<string>('');
@@ -167,6 +168,10 @@ export class UploadComponent implements OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.objectUrlRevokeTimeoutId !== null) {
+      clearTimeout(this.objectUrlRevokeTimeoutId);
+      this.objectUrlRevokeTimeoutId = null;
+    }
   }
 
   onFileSelected(event: Event): void {
@@ -340,7 +345,7 @@ export class UploadComponent implements OnDestroy {
       const response = await fetch(url);
       if (!response.ok)
         throw new Error(
-          `Failed to download combined ADIF: HTTP ${response.status}`,
+          `Failed to download combined ADIF: HTTP ${response.status} ${response.statusText}`,
         );
 
       const blob = await response.blob();
@@ -352,7 +357,10 @@ export class UploadComponent implements OnDestroy {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      setTimeout(
+      if (this.objectUrlRevokeTimeoutId !== null) {
+        clearTimeout(this.objectUrlRevokeTimeoutId);
+      }
+      this.objectUrlRevokeTimeoutId = setTimeout(
         () => URL.revokeObjectURL(objectUrl),
         DOWNLOAD_OBJECT_URL_REVOKE_DELAY_MS,
       );
