@@ -357,9 +357,13 @@ export class UploadComponent implements OnDestroy {
       );
     } catch (error) {
       console.error('[UploadComponent] Failed to download combined ADIF:', error);
-      this.snackBar.open('Failed to download final aggregated ADIF.', undefined, {
-        duration: 5000,
-      });
+      this.snackBar.open(
+        'Failed to download final aggregated ADIF. Please try again or contact support if the issue persists.',
+        undefined,
+        {
+          duration: 7000,
+        },
+      );
     } finally {
       this.downloadingCombinedAdif.set(false);
     }
