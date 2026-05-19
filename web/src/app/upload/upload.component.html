@@ -6,8 +6,9 @@
     <mat-card-content>
       <p>Upload your ADI or ADIF log file for this event.</p>
       <p>
-        Uploaded contacts will use station callsign
-        <strong>{{ eventCallsignDisplay() }}</strong> and operator callsign
+        When your log is processed, the station callsign will be set to the
+        event callsign <strong>{{ eventCallsignDisplay() }}</strong
+        >, and the operator callsign will be set to your callsign
         <strong>{{ userCallsignDisplay() }}</strong>.
       </p>
       @if (isApprovedOperator() === false) {
