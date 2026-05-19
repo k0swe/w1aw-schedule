@@ -47,6 +47,7 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+// Allow the browser to begin processing the download click before cleanup.
 const DOWNLOAD_OBJECT_URL_REVOKE_DELAY_MS = 100;
 
 @Component({
