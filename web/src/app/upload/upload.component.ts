@@ -336,6 +336,7 @@ export class UploadComponent implements OnDestroy {
       );
       return parsedUrl.toString();
     } catch {
+      // Fallback for unexpected URL parsing issues; keep original URL shape.
       const delimiter = url.includes('?') ? '&' : '?';
       const encodedDisposition = encodeURIComponent(
         'attachment; filename="combined.adi"',
