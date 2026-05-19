@@ -336,15 +336,17 @@ export class UploadComponent implements OnDestroy {
       );
       return parsedUrl.toString();
     } catch (error) {
-      // Fallback for unexpected URL parsing issues; keep original URL shape.
       console.warn(
-        '[UploadComponent] Falling back to manual combined ADIF attachment URL construction:',
+        '[UploadComponent] Failed to parse combined ADIF URL; using unmodified download URL:',
         error,
       );
-      const delimiter = url.includes('?') ? '&' : '?';
-      const disposition = 'attachment; filename="combined.adi"';
-      const encodedDisposition = encodeURIComponent(disposition);
-      return `${url}${delimiter}response-content-disposition=${encodedDisposition}`;
+      return url;
     }
+  }
+
+  openCombinedAdifDownload(): void {
+    const url = this.combinedAdifDownloadUrl();
+    if (!url) return;
+    window.location.assign(url);
   }
 }
