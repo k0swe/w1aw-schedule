@@ -6,7 +6,7 @@ import { AdifFormatter, AdifParser, SimpleAdif } from "adif-parser-ts";
 import { validateFirebaseIdToken } from "./validateFirebaseToken";
 
 const ORIGINAL_PATH_REGEX = /^([^/]+)\/original\/([^/]+)\/(.+)$/;
-const RERUN_CLEANSE_CONCURRENCY = 10;
+const RERUN_CLEANSE_BATCH_SIZE = 10;
 
 type SourceInfo = {
   eventId: string;
@@ -194,8 +194,8 @@ export const rerunCleanseAdif = onRequest(
     let processed = 0;
     const failures: string[] = [];
 
-    for (let i = 0; i < sourceFiles.length; i += RERUN_CLEANSE_CONCURRENCY) {
-      const batch = sourceFiles.slice(i, i + RERUN_CLEANSE_CONCURRENCY);
+    for (let i = 0; i < sourceFiles.length; i += RERUN_CLEANSE_BATCH_SIZE) {
+      const batch = sourceFiles.slice(i, i + RERUN_CLEANSE_BATCH_SIZE);
       const results = await Promise.all(batch.map(async (sourceFile) => {
         try {
           const [metadata] = await sourceFile.getMetadata();
