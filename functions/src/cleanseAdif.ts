@@ -156,9 +156,6 @@ const cleanseAdifHandler = async (
   await cleanseOriginalAdifObject(event.data);
 };
 
-const fileMetadataTime = (metadata: { timeCreated?: string }): string | undefined =>
-  metadata.timeCreated;
-
 export const rerunCleanseAdif = onRequest(
   { cors: true, memory: "512MiB", timeoutSeconds: 540 },
   async (request, response) => {
@@ -198,14 +195,14 @@ export const rerunCleanseAdif = onRequest(
     let processed = 0;
     const failures: string[] = [];
 
-    await Promise.all(sourceFiles.map(async (sourceFile) => {
+    for (const sourceFile of sourceFiles) {
       try {
         const [metadata] = await sourceFile.getMetadata();
         await cleanseOriginalAdifObject({
           name: sourceFile.name,
           bucket: sourceFile.bucket.name,
           contentType: metadata.contentType,
-          timeCreated: fileMetadataTime(metadata),
+          timeCreated: metadata.timeCreated,
         });
         processed += 1;
       } catch (error) {
@@ -216,7 +213,7 @@ export const rerunCleanseAdif = onRequest(
           error: error instanceof Error ? error.message : String(error),
         });
       }
-    }));
+    }
 
     response.send({
       eventId,
