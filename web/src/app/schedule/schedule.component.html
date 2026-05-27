@@ -73,6 +73,7 @@
               <td mat-cell *matCellDef="let timeslot">
                 <kel-schedule-cell
                   [band]="band"
+                  [currentTimeMs]="currentTimeMs"
                   [mode]="mode"
                   [timeslot]="timeslot"
                   [userShifts]="(userShifts$ | async) || []"
@@ -83,7 +84,11 @@
           }
         }
         <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
-        <tr mat-row *matRowDef="let _; columns: columnsToDisplay"></tr>
+        <tr
+          mat-row
+          *matRowDef="let timeSlot; columns: columnsToDisplay"
+          [attr.data-row-state]="getShiftRowState(timeSlot)"
+        ></tr>
       </table>
     </mat-card-content>
     <mat-card-actions>

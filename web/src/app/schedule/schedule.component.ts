@@ -5,6 +5,7 @@ import {
   ChangeDetectorRef,
   Component,
   OnDestroy,
+  OnInit,
   inject,
 } from '@angular/core';
 import { MatButton } from '@angular/material/button';
@@ -32,11 +33,12 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subject, merge } from 'rxjs';
+import { BehaviorSubject, Subject, interval, merge } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
   map,
+  startWith,
   switchMap,
   take,
   takeUntil,
@@ -93,7 +95,7 @@ import { SunCalculationService } from './sun-calculation.service';
     DatePipe,
   ],
 })
-export class ScheduleComponent implements OnDestroy {
+export class ScheduleComponent implements OnInit, OnDestroy {
   private authenticationService = inject(AuthenticationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -109,6 +111,7 @@ export class ScheduleComponent implements OnDestroy {
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
   BANDS = BANDS;
+  currentTimeMs = Date.now();
   timeSlots: Date[] = [];
   bandGroups: Map<string, string[]> = new Map([
     ['LF', LF_BANDS],
@@ -163,6 +166,15 @@ export class ScheduleComponent implements OnDestroy {
       .subscribe(({ eventId }) => {
         this.eventId = eventId;
         this.initializeComponent();
+      });
+  }
+
+  ngOnInit() {
+    interval(30_000)
+      .pipe(startWith(0), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.currentTimeMs = Date.now();
+        this.cdr.markForCheck();
       });
   }
 
@@ -404,6 +416,21 @@ export class ScheduleComponent implements OnDestroy {
     // Use suncalc with user's browser geolocation for accurate sunrise/sunset when available
     // Falls back to browser's local time 6am-6pm model otherwise
     return this.sunCalculationService.getDayNightIcon(timeSlot);
+  }
+
+  getShiftRowState(timeSlot: Date): 'past' | 'current' | 'future' {
+    const shiftStart = timeSlot.getTime();
+    const shiftEnd = shiftStart + TWO_HOURS_IN_MS;
+
+    if (shiftStart <= this.currentTimeMs && this.currentTimeMs < shiftEnd) {
+      return 'current';
+    }
+
+    if (shiftEnd <= this.currentTimeMs) {
+      return 'past';
+    }
+
+    return 'future';
   }
 
   private loadScheduleParams(eventId: string): {

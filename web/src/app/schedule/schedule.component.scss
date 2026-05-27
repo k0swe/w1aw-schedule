@@ -50,3 +50,11 @@ button.button-secondary-color {
 .mat-column-localTimeIcon {
   padding-left: 2px;
 }
+
+tr[data-row-state='past'] .mat-mdc-cell {
+  background-color: #f0f0f0;
+}
+
+tr[data-row-state='current'] .mat-mdc-cell {
+  background-color: #fff9c4;
+}

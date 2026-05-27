@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Auth } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
 import { Functions } from 'firebase/functions';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
+import { TWO_HOURS_IN_MS } from 'w1aw-schedule-shared';
 
 import { AUTH, FUNCTIONS } from '../../firebase-rxjs';
 import { AuthenticationService } from '../../authentication/authentication.service';
@@ -62,6 +64,10 @@ describe('ScheduleCellComponent', () => {
 
     fixture = TestBed.createComponent(ScheduleCellComponent);
     component = fixture.componentInstance;
+    component.timeslot = new Date('2026-05-27T00:00:00Z');
+    component.band = '20';
+    component.mode = 'phone';
+    component.eventId = 'event-1';
     fixture.detectChanges();
   });
 
@@ -94,6 +100,26 @@ describe('ScheduleCellComponent', () => {
       component.band = '30';
       component.mode = 'phone';
       expect(component.buttonDisabled()).toBeTrue();
+    });
+
+    it('should be disabled for past shifts', () => {
+      component.currentTimeMs = component.timeslot.getTime() + TWO_HOURS_IN_MS;
+
+      expect(component.buttonDisabled()).toBeTrue();
+    });
+
+    it('should keep the admin menu trigger enabled for past shifts', () => {
+      component.currentTimeMs = component.timeslot.getTime() + TWO_HOURS_IN_MS;
+      component.isAdmin$.next(true);
+
+      fixture.detectChanges();
+
+      const buttons = fixture.debugElement.queryAll(By.css('button'));
+      const primaryButton = buttons[0].nativeElement as HTMLButtonElement;
+      const adminMenuButton = buttons[1].nativeElement as HTMLButtonElement;
+
+      expect(primaryButton.disabled).toBeTrue();
+      expect(adminMenuButton.disabled).toBeFalse();
     });
   });
 });

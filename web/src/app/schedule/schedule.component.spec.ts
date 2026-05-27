@@ -247,4 +247,39 @@ describe('ScheduleComponent', () => {
       }, 100);
     });
   });
+
+  describe('row highlighting', () => {
+    beforeEach(() => {
+      fixture = TestBed.createComponent(ScheduleComponent);
+      component = fixture.componentInstance;
+    });
+
+    afterEach(() => {
+      fixture.destroy();
+    });
+
+    it('should mark the active two-hour slot as the current shift', () => {
+      component.currentTimeMs = new Date('2026-05-27T01:30:00Z').getTime();
+
+      expect(component.getShiftRowState(new Date('2026-05-27T00:00:00Z'))).toBe(
+        'current',
+      );
+    });
+
+    it('should mark finished two-hour slots as past shifts', () => {
+      component.currentTimeMs = new Date('2026-05-27T02:00:00Z').getTime();
+
+      expect(component.getShiftRowState(new Date('2026-05-27T00:00:00Z'))).toBe(
+        'past',
+      );
+    });
+
+    it('should leave future shifts unhighlighted', () => {
+      component.currentTimeMs = new Date('2026-05-27T01:30:00Z').getTime();
+
+      expect(component.getShiftRowState(new Date('2026-05-27T02:00:00Z'))).toBe(
+        'future',
+      );
+    });
+  });
 });
