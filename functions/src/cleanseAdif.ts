@@ -6,6 +6,7 @@ import { AdifFormatter, AdifParser, SimpleAdif } from "adif-parser-ts";
 import { validateFirebaseIdToken } from "./validateFirebaseToken";
 
 const ORIGINAL_PATH_REGEX = /^([^/]+)\/original\/([^/]+)\/(.+)$/;
+const RERUN_CLEANSE_CONCURRENCY = 10;
 
 type SourceInfo = {
   eventId: string;
@@ -157,7 +158,7 @@ const cleanseAdifHandler = async (
 };
 
 export const rerunCleanseAdif = onRequest(
-  { cors: true, memory: "512MiB", timeoutSeconds: 540 },
+  { cors: true, memory: "512MiB", timeoutSeconds: 1800 },
   async (request, response) => {
     const token = await validateFirebaseIdToken(request, response);
     if (!token) {
@@ -188,31 +189,34 @@ export const rerunCleanseAdif = onRequest(
       : admin.storage().bucket();
     const prefix = `${eventId}/original/`;
     const [files] = await bucket.getFiles({ prefix });
-    const sourceFiles = files.filter((file) =>
-      file.name.startsWith(prefix) && !file.name.endsWith("/"),
-    );
+    const sourceFiles = files.filter((file) => !file.name.endsWith("/"));
 
     let processed = 0;
     const failures: string[] = [];
 
-    for (const sourceFile of sourceFiles) {
-      try {
-        const [metadata] = await sourceFile.getMetadata();
-        await cleanseOriginalAdifObject({
-          name: sourceFile.name,
-          bucket: sourceFile.bucket.name,
-          contentType: metadata.contentType,
-          timeCreated: metadata.timeCreated,
-        });
-        processed += 1;
-      } catch (error) {
-        failures.push(sourceFile.name);
-        logger.error("Failed to re-run ADIF cleanse for original file", {
-          eventId,
-          sourcePath: sourceFile.name,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
+    for (let i = 0; i < sourceFiles.length; i += RERUN_CLEANSE_CONCURRENCY) {
+      const batch = sourceFiles.slice(i, i + RERUN_CLEANSE_CONCURRENCY);
+      const results = await Promise.all(batch.map(async (sourceFile) => {
+        try {
+          const [metadata] = await sourceFile.getMetadata();
+          await cleanseOriginalAdifObject({
+            name: sourceFile.name,
+            bucket: sourceFile.bucket.name,
+            contentType: metadata.contentType,
+            timeCreated: metadata.timeCreated,
+          });
+          return true;
+        } catch (error) {
+          failures.push(sourceFile.name);
+          logger.error("Failed to re-run ADIF cleanse for original file", {
+            eventId,
+            sourcePath: sourceFile.name,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return false;
+        }
+      }));
+      processed += results.filter((result) => result).length;
     }
 
     response.send({
