@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 
 export { calendar } from './calendar';
-export { cleanseAdif } from './cleanseAdif';
+export { cleanseAdif, rerunCleanseAdif } from './cleanseAdif';
 export { combineAdif } from './combineAdif';
 export { deleteUser } from './deleteUser';
 export { discordOAuthCallback, discordOAuthInitiate } from './discordOAuth';

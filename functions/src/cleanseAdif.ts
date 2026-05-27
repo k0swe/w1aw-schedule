@@ -1,13 +1,22 @@
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/v2";
+import { onRequest } from "firebase-functions/v2/https";
 import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
 import { AdifFormatter, AdifParser, SimpleAdif } from "adif-parser-ts";
+import { validateFirebaseIdToken } from "./validateFirebaseToken";
 
 const ORIGINAL_PATH_REGEX = /^([^/]+)\/original\/([^/]+)\/(.+)$/;
 
 type SourceInfo = {
   eventId: string;
   userId: string;
+};
+
+type SourceFileObject = {
+  name?: string;
+  bucket: string;
+  contentType?: string;
+  timeCreated?: string | Date;
 };
 
 export const parseOriginalPath = (
@@ -64,10 +73,9 @@ const configuredStorageBucket = (() => {
   }
 })();
 
-const cleanseAdifHandler = async (
-  event: StorageEvent,
+export const cleanseOriginalAdifObject = async (
+  file: SourceFileObject,
 ) => {
-  const file = event.data;
   const sourceInfo = parseOriginalPath(file.name);
   if (!sourceInfo) {
     return;
@@ -141,6 +149,84 @@ const cleanseAdifHandler = async (
     userId: sourceInfo.userId,
   });
 };
+
+const cleanseAdifHandler = async (
+  event: StorageEvent,
+) => {
+  await cleanseOriginalAdifObject(event.data);
+};
+
+const fileMetadataTime = (metadata: { timeCreated?: string }): string | undefined =>
+  metadata.timeCreated;
+
+export const rerunCleanseAdif = onRequest(
+  { cors: true, memory: "512MiB", timeoutSeconds: 540 },
+  async (request, response) => {
+    const token = await validateFirebaseIdToken(request, response);
+    if (!token) {
+      return;
+    }
+
+    const eventId = request.query.eventId?.toString();
+    if (!eventId) {
+      response.status(400).send({ error: "eventId query parameter is required" });
+      return;
+    }
+
+    const eventDoc = await admin.firestore().collection("events").doc(eventId).get();
+    if (!eventDoc.exists) {
+      response.status(404).send({ error: "Event not found" });
+      return;
+    }
+
+    const admins = eventDoc.data()?.admins;
+    const isEventAdmin = Array.isArray(admins) && admins.includes(token.uid);
+    if (!isEventAdmin) {
+      response.status(403).send({ error: "Unauthorized" });
+      return;
+    }
+
+    const bucket = configuredStorageBucket
+      ? admin.storage().bucket(configuredStorageBucket)
+      : admin.storage().bucket();
+    const prefix = `${eventId}/original/`;
+    const [files] = await bucket.getFiles({ prefix });
+    const sourceFiles = files.filter((file) =>
+      file.name.startsWith(prefix) && !file.name.endsWith("/"),
+    );
+
+    let processed = 0;
+    const failures: string[] = [];
+
+    await Promise.all(sourceFiles.map(async (sourceFile) => {
+      try {
+        const [metadata] = await sourceFile.getMetadata();
+        await cleanseOriginalAdifObject({
+          name: sourceFile.name,
+          bucket: sourceFile.bucket.name,
+          contentType: metadata.contentType,
+          timeCreated: fileMetadataTime(metadata),
+        });
+        processed += 1;
+      } catch (error) {
+        failures.push(sourceFile.name);
+        logger.error("Failed to re-run ADIF cleanse for original file", {
+          eventId,
+          sourcePath: sourceFile.name,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }));
+
+    response.send({
+      eventId,
+      originalFileCount: sourceFiles.length,
+      processed,
+      failed: failures.length,
+      failedPaths: failures,
+    });
+  },
+);
 
 export const cleanseAdif = onObjectFinalized(
   configuredStorageBucket ? { bucket: configuredStorageBucket } : {},
