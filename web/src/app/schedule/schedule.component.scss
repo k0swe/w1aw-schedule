@@ -51,10 +51,10 @@ button.button-secondary-color {
   padding-left: 2px;
 }
 
-.past-shift-row .mat-mdc-cell {
+tr[data-row-state='past'] .mat-mdc-cell {
   background-color: #f0f0f0;
 }
 
-.current-shift-row .mat-mdc-cell {
+tr[data-row-state='current'] .mat-mdc-cell {
   background-color: #fff9c4;
 }

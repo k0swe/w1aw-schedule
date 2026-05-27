@@ -262,6 +262,9 @@ describe('ScheduleComponent', () => {
     it('should mark the active two-hour slot as the current shift', () => {
       jasmine.clock().mockDate(new Date('2026-05-27T01:30:00Z'));
 
+      expect(component.getShiftRowState(new Date('2026-05-27T00:00:00Z'))).toBe(
+        'current',
+      );
       expect(component.isCurrentShift(new Date('2026-05-27T00:00:00Z'))).toBeTrue();
       expect(component.isPastShift(new Date('2026-05-27T00:00:00Z'))).toBeFalse();
     });
@@ -269,6 +272,9 @@ describe('ScheduleComponent', () => {
     it('should mark finished two-hour slots as past shifts', () => {
       jasmine.clock().mockDate(new Date('2026-05-27T02:00:00Z'));
 
+      expect(component.getShiftRowState(new Date('2026-05-27T00:00:00Z'))).toBe(
+        'past',
+      );
       expect(component.isCurrentShift(new Date('2026-05-27T00:00:00Z'))).toBeFalse();
       expect(component.isPastShift(new Date('2026-05-27T00:00:00Z'))).toBeTrue();
     });
@@ -276,6 +282,9 @@ describe('ScheduleComponent', () => {
     it('should leave future shifts unhighlighted', () => {
       jasmine.clock().mockDate(new Date('2026-05-27T01:30:00Z'));
 
+      expect(component.getShiftRowState(new Date('2026-05-27T02:00:00Z'))).toBe(
+        'future',
+      );
       expect(component.isCurrentShift(new Date('2026-05-27T02:00:00Z'))).toBeFalse();
       expect(component.isPastShift(new Date('2026-05-27T02:00:00Z'))).toBeFalse();
     });

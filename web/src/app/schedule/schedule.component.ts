@@ -406,16 +406,28 @@ export class ScheduleComponent implements OnDestroy {
     return this.sunCalculationService.getDayNightIcon(timeSlot);
   }
 
-  isCurrentShift(timeSlot: Date): boolean {
+  getShiftRowState(timeSlot: Date): 'past' | 'current' | 'future' {
     const now = Date.now();
     const shiftStart = timeSlot.getTime();
     const shiftEnd = shiftStart + TWO_HOURS_IN_MS;
-    return shiftStart <= now && now < shiftEnd;
+
+    if (shiftStart <= now && now < shiftEnd) {
+      return 'current';
+    }
+
+    if (shiftEnd <= now) {
+      return 'past';
+    }
+
+    return 'future';
+  }
+
+  isCurrentShift(timeSlot: Date): boolean {
+    return this.getShiftRowState(timeSlot) === 'current';
   }
 
   isPastShift(timeSlot: Date): boolean {
-    const shiftEnd = timeSlot.getTime() + TWO_HOURS_IN_MS;
-    return shiftEnd <= Date.now();
+    return this.getShiftRowState(timeSlot) === 'past';
   }
 
   private loadScheduleParams(eventId: string): {
