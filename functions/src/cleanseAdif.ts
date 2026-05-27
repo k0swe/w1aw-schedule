@@ -219,7 +219,10 @@ export const rerunCleanseAdif = onRequest(
       processed += results.filter((result) => result).length;
     }
 
-    response.send({
+    const success = failures.length === 0;
+    const statusCode = success ? 200 : (processed > 0 ? 207 : 500);
+    response.status(statusCode).send({
+      success,
       eventId,
       originalFileCount: sourceFiles.length,
       processed,
