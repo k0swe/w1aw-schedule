@@ -406,6 +406,18 @@ export class ScheduleComponent implements OnDestroy {
     return this.sunCalculationService.getDayNightIcon(timeSlot);
   }
 
+  isCurrentShift(timeSlot: Date): boolean {
+    const now = Date.now();
+    const shiftStart = timeSlot.getTime();
+    const shiftEnd = shiftStart + TWO_HOURS_IN_MS;
+    return shiftStart <= now && now < shiftEnd;
+  }
+
+  isPastShift(timeSlot: Date): boolean {
+    const shiftEnd = timeSlot.getTime() + TWO_HOURS_IN_MS;
+    return shiftEnd <= Date.now();
+  }
+
   private loadScheduleParams(eventId: string): {
     day?: string;
     bandGroup?: string;

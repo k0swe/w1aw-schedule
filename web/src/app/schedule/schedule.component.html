@@ -83,7 +83,12 @@
           }
         }
         <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
-        <tr mat-row *matRowDef="let _; columns: columnsToDisplay"></tr>
+        <tr
+          mat-row
+          *matRowDef="let timeslot; columns: columnsToDisplay"
+          [class.past-shift-row]="isPastShift(timeslot)"
+          [class.current-shift-row]="isCurrentShift(timeslot)"
+        ></tr>
       </table>
     </mat-card-content>
     <mat-card-actions>

@@ -247,4 +247,37 @@ describe('ScheduleComponent', () => {
       }, 100);
     });
   });
+
+  describe('row highlighting', () => {
+    beforeEach(() => {
+      jasmine.clock().install();
+      fixture = TestBed.createComponent(ScheduleComponent);
+      component = fixture.componentInstance;
+    });
+
+    afterEach(() => {
+      jasmine.clock().uninstall();
+    });
+
+    it('should mark the active two-hour slot as the current shift', () => {
+      jasmine.clock().mockDate(new Date('2026-05-27T01:30:00Z'));
+
+      expect(component.isCurrentShift(new Date('2026-05-27T00:00:00Z'))).toBeTrue();
+      expect(component.isPastShift(new Date('2026-05-27T00:00:00Z'))).toBeFalse();
+    });
+
+    it('should mark finished two-hour slots as past shifts', () => {
+      jasmine.clock().mockDate(new Date('2026-05-27T02:00:00Z'));
+
+      expect(component.isCurrentShift(new Date('2026-05-27T00:00:00Z'))).toBeFalse();
+      expect(component.isPastShift(new Date('2026-05-27T00:00:00Z'))).toBeTrue();
+    });
+
+    it('should leave future shifts unhighlighted', () => {
+      jasmine.clock().mockDate(new Date('2026-05-27T01:30:00Z'));
+
+      expect(component.isCurrentShift(new Date('2026-05-27T02:00:00Z'))).toBeFalse();
+      expect(component.isPastShift(new Date('2026-05-27T02:00:00Z'))).toBeFalse();
+    });
+  });
 });

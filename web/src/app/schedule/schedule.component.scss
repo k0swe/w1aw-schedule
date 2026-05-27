@@ -50,3 +50,11 @@ button.button-secondary-color {
 .mat-column-localTimeIcon {
   padding-left: 2px;
 }
+
+.past-shift-row .mat-mdc-cell {
+  background-color: #f0f0f0;
+}
+
+.current-shift-row .mat-mdc-cell {
+  background-color: #fff9c4;
+}
