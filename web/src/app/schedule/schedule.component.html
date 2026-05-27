@@ -73,6 +73,7 @@
               <td mat-cell *matCellDef="let timeslot">
                 <kel-schedule-cell
                   [band]="band"
+                  [currentTimeMs]="currentTimeMs"
                   [mode]="mode"
                   [timeslot]="timeslot"
                   [userShifts]="(userShifts$ | async) || []"

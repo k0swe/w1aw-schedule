@@ -13,7 +13,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { EventApproval, Shift } from 'w1aw-schedule-shared';
+import { EventApproval, Shift, TWO_HOURS_IN_MS } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from '../../authentication/authentication.service';
 import {
@@ -48,6 +48,7 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() mode!: string;
   @Input() userShifts: Shift[] = [];
   @Input() eventId!: string;
+  @Input() currentTimeMs = Date.now();
   shift$ = new BehaviorSubject<Shift | undefined>(undefined);
   user$ = new BehaviorSubject<User | null>(null);
   userSettings$ = new BehaviorSubject<UserSettings>({});
@@ -152,8 +153,19 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     return this.band === '30' && this.mode === 'phone';
   }
 
+  isPastShift(): boolean {
+    if (!this.timeslot) {
+      return false;
+    }
+
+    return this.timeslot.getTime() + TWO_HOURS_IN_MS <= this.currentTimeMs;
+  }
+
   buttonDisabled(): boolean {
     if (this.isNotAllowed()) {
+      return true;
+    }
+    if (this.isPastShift()) {
       return true;
     }
     if (this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid) {
