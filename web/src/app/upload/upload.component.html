@@ -103,6 +103,12 @@
             mat-stroked-button
             color="primary"
             [disabled]="rerunningCleanse()"
+            [attr.aria-busy]="rerunningCleanse()"
+            [attr.aria-label]="
+              rerunningCleanse()
+                ? 'Re-running ADIF cleanse for this event'
+                : 'Re-run ADIF cleanse for this event'
+            "
             (click)="rerunCleanseAdif()"
           >
             <mat-icon>refresh</mat-icon>
