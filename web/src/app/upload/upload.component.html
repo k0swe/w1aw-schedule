@@ -97,6 +97,22 @@
         } @else {
           <p>No final aggregated ADIF is available yet.</p>
         }
+
+        <div class="admin-actions">
+          <button
+            mat-stroked-button
+            color="primary"
+            [disabled]="rerunningCleanse()"
+            (click)="rerunCleanseAdif()"
+          >
+            <mat-icon>refresh</mat-icon>
+            @if (rerunningCleanse()) {
+              Re-running Cleanse...
+            } @else {
+              Re-run Cleanse for Event
+            }
+          </button>
+        </div>
       </mat-card-content>
     </mat-card>
   }
