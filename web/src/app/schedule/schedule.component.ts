@@ -32,11 +32,18 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subject, Subscription, interval, merge } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject,
+  Subscription,
+  interval,
+  merge,
+} from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
   map,
+  startWith,
   switchMap,
   take,
   takeUntil,
@@ -105,7 +112,7 @@ export class ScheduleComponent implements OnDestroy {
   private sunCalculationService = inject(SunCalculationService);
   private destroy$ = new Subject<void>();
   private reinit$ = new Subject<void>();
-  private clockSubscription: Subscription;
+  private clockSubscription = Subscription.EMPTY;
 
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
@@ -135,10 +142,12 @@ export class ScheduleComponent implements OnDestroy {
   icsLink = '';
 
   constructor() {
-    this.clockSubscription = interval(30_000).subscribe(() => {
-      this.currentTimeMs = Date.now();
-      this.cdr.markForCheck();
-    });
+    this.clockSubscription = interval(30_000)
+      .pipe(startWith(0))
+      .subscribe(() => {
+        this.currentTimeMs = Date.now();
+        this.cdr.markForCheck();
+      });
 
     // React to route parameter changes - slug is required
     this.route.paramMap
