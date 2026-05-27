@@ -5,6 +5,7 @@ import {
   ChangeDetectorRef,
   Component,
   OnDestroy,
+  OnInit,
   inject,
 } from '@angular/core';
 import { MatButton } from '@angular/material/button';
@@ -32,13 +33,7 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  BehaviorSubject,
-  Subject,
-  Subscription,
-  interval,
-  merge,
-} from 'rxjs';
+import { BehaviorSubject, Subject, interval, merge } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
@@ -100,7 +95,7 @@ import { SunCalculationService } from './sun-calculation.service';
     DatePipe,
   ],
 })
-export class ScheduleComponent implements OnDestroy {
+export class ScheduleComponent implements OnInit, OnDestroy {
   private authenticationService = inject(AuthenticationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -112,7 +107,6 @@ export class ScheduleComponent implements OnDestroy {
   private sunCalculationService = inject(SunCalculationService);
   private destroy$ = new Subject<void>();
   private reinit$ = new Subject<void>();
-  private clockSubscription = Subscription.EMPTY;
 
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
@@ -142,13 +136,6 @@ export class ScheduleComponent implements OnDestroy {
   icsLink = '';
 
   constructor() {
-    this.clockSubscription = interval(30_000)
-      .pipe(startWith(0))
-      .subscribe(() => {
-        this.currentTimeMs = Date.now();
-        this.cdr.markForCheck();
-      });
-
     // React to route parameter changes - slug is required
     this.route.paramMap
       .pipe(
@@ -179,6 +166,15 @@ export class ScheduleComponent implements OnDestroy {
       .subscribe(({ eventId }) => {
         this.eventId = eventId;
         this.initializeComponent();
+      });
+  }
+
+  ngOnInit() {
+    interval(30_000)
+      .pipe(startWith(0), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.currentTimeMs = Date.now();
+        this.cdr.markForCheck();
       });
   }
 
@@ -294,7 +290,6 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.clockSubscription.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.reinit$.next();
