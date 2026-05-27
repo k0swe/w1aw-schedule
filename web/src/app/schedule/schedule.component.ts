@@ -32,7 +32,7 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subject, merge } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription, interval, merge } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
@@ -105,10 +105,12 @@ export class ScheduleComponent implements OnDestroy {
   private sunCalculationService = inject(SunCalculationService);
   private destroy$ = new Subject<void>();
   private reinit$ = new Subject<void>();
+  private clockSubscription: Subscription;
 
   ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
   MODES = MODES;
   BANDS = BANDS;
+  currentTimeMs = Date.now();
   timeSlots: Date[] = [];
   bandGroups: Map<string, string[]> = new Map([
     ['LF', LF_BANDS],
@@ -133,6 +135,11 @@ export class ScheduleComponent implements OnDestroy {
   icsLink = '';
 
   constructor() {
+    this.clockSubscription = interval(30_000).subscribe(() => {
+      this.currentTimeMs = Date.now();
+      this.cdr.markForCheck();
+    });
+
     // React to route parameter changes - slug is required
     this.route.paramMap
       .pipe(
@@ -278,6 +285,7 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
+    this.clockSubscription.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
     this.reinit$.next();
@@ -407,27 +415,18 @@ export class ScheduleComponent implements OnDestroy {
   }
 
   getShiftRowState(timeSlot: Date): 'past' | 'current' | 'future' {
-    const now = Date.now();
     const shiftStart = timeSlot.getTime();
     const shiftEnd = shiftStart + TWO_HOURS_IN_MS;
 
-    if (shiftStart <= now && now < shiftEnd) {
+    if (shiftStart <= this.currentTimeMs && this.currentTimeMs < shiftEnd) {
       return 'current';
     }
 
-    if (shiftEnd <= now) {
+    if (shiftEnd <= this.currentTimeMs) {
       return 'past';
     }
 
     return 'future';
-  }
-
-  isCurrentShift(timeSlot: Date): boolean {
-    return this.getShiftRowState(timeSlot) === 'current';
-  }
-
-  isPastShift(timeSlot: Date): boolean {
-    return this.getShiftRowState(timeSlot) === 'past';
   }
 
   private loadScheduleParams(eventId: string): {
