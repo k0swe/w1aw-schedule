@@ -108,7 +108,7 @@ describe('ScheduleCellComponent', () => {
       expect(component.buttonDisabled()).toBeTrue();
     });
 
-    it('keeps the admin menu trigger enabled for past shifts', () => {
+    it('should keep the admin menu trigger enabled for past shifts', () => {
       component.currentTimeMs = component.timeslot.getTime() + TWO_HOURS_IN_MS;
       component.isAdmin$.next(true);
 
