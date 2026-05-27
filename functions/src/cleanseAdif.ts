@@ -158,7 +158,7 @@ const cleanseAdifHandler = async (
 };
 
 export const rerunCleanseAdif = onRequest(
-  { cors: true, memory: "512MiB", timeoutSeconds: 1800 },
+  { cors: true, memory: "512MiB", timeoutSeconds: 3600 },
   async (request, response) => {
     const token = await validateFirebaseIdToken(request, response);
     if (!token) {
