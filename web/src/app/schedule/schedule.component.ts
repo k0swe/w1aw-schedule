@@ -306,9 +306,33 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     this.changeParams();
   }
 
+  goToToday() {
+    this.viewDay = this.getTodayUtcDate();
+    this.changeParams();
+  }
+
+  isViewingToday(): boolean {
+    return this.isSameUtcDay(this.viewDay, this.getTodayUtcDate());
+  }
+
   private updatePrevNextDays() {
     this.prevDay = new Date(this.viewDay.getTime() - this.ONE_DAY_IN_MS);
     this.nextDay = new Date(this.viewDay.getTime() + this.ONE_DAY_IN_MS);
+  }
+
+  private getTodayUtcDate(): Date {
+    const now = new Date();
+    return new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
+  }
+
+  private isSameUtcDay(first: Date, second: Date): boolean {
+    return (
+      first.getUTCFullYear() === second.getUTCFullYear() &&
+      first.getUTCMonth() === second.getUTCMonth() &&
+      first.getUTCDate() === second.getUTCDate()
+    );
   }
 
   /**
@@ -317,10 +341,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
    */
   private getNearestDayInEventRange(): Date {
     // Get today's date at midnight UTC for comparison
-    const now = new Date();
-    const todayUTC = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-    );
+    const todayUTC = this.getTodayUtcDate();
 
     // Normalize event start and end to midnight UTC for day-level comparison
     const eventStart = new Date(

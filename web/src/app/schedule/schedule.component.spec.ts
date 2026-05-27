@@ -208,6 +208,43 @@ describe('ScheduleComponent', () => {
     });
   });
 
+  describe('today button behavior', () => {
+    beforeEach(() => {
+      fixture = TestBed.createComponent(ScheduleComponent);
+      component = fixture.componentInstance;
+    });
+
+    it('should go to today in UTC when goToToday is called', () => {
+      component.viewDay = new Date('2026-05-29T00:00:00Z');
+
+      component.goToToday();
+
+      const now = new Date();
+      const expectedDate = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+      );
+      expect(component.viewDay.getTime()).toBe(expectedDate.getTime());
+    });
+
+    it('should report true for isViewingToday when viewDay is today in UTC', () => {
+      const now = new Date();
+      component.viewDay = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+      );
+
+      expect(component.isViewingToday()).toBeTrue();
+    });
+
+    it('should report false for isViewingToday when viewDay is not today in UTC', () => {
+      const now = new Date();
+      component.viewDay = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1),
+      );
+
+      expect(component.isViewingToday()).toBeFalse();
+    });
+  });
+
   describe('Google Calendar link', () => {
     it('should construct Google Calendar link when googleCalendarId is provided', (done) => {
       fixture = TestBed.createComponent(ScheduleComponent);

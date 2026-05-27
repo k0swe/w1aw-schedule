@@ -38,6 +38,15 @@
         <button
           matButton="filled"
           class="button-secondary-color"
+          aria-label="Today"
+          (click)="goToToday()"
+          [disabled]="isViewingToday()"
+        >
+          Today
+        </button>
+        <button
+          matButton="filled"
+          class="button-secondary-color"
           aria-label="Next Day"
           (click)="goToNextDay()"
           [disabled]="isNextDayAfterEvent()"
