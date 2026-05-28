@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -18,6 +19,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
+import { Auth } from 'firebase/auth';
 import {
   FirebaseStorage,
   getDownloadURL,
@@ -28,11 +30,13 @@ import {
   type UploadMetadata,
 } from 'firebase/storage';
 import { Subject, combineLatest } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { map, switchMap, take, takeUntil } from 'rxjs/operators';
 
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
-import { STORAGE } from '../firebase-rxjs';
+import { AUTH, STORAGE } from '../firebase-rxjs';
 import { UserSettingsService } from '../user-settings/user-settings.service';
 
 type UploadedLogFile = {
@@ -40,6 +44,14 @@ type UploadedLogFile = {
   fileName: string;
   uploadedAt: number | null;
   uploadedAtDisplay: string;
+};
+
+type RerunCleanseAdifResponse = {
+  success: boolean;
+  originalFileCount: number;
+  processed: number;
+  failed: number;
+  failedPaths?: string[];
 };
 
 const LEGACY_TIMESTAMP_PREFIX_REGEX = /^\d{10,13}-/;
@@ -70,6 +82,8 @@ export class UploadComponent implements OnDestroy {
   private eventInfoService = inject(EventInfoService);
   private userSettingsService = inject(UserSettingsService);
   private route = inject(ActivatedRoute);
+  private http = inject(HttpClient);
+  private auth = inject<Auth>(AUTH);
   private snackBar = inject(MatSnackBar);
   private storage = inject<FirebaseStorage>(STORAGE);
   private destroy$ = new Subject<void>();
@@ -86,6 +100,7 @@ export class UploadComponent implements OnDestroy {
   uploadedFiles = signal<UploadedLogFile[]>([]);
   loadingCombinedAdifDownload = signal<boolean>(false);
   combinedAdifDownloadUrl = signal<string | null>(null);
+  rerunningCleanse = signal<boolean>(false);
   eventCallsignDisplay = computed(
     () => this.eventCallsign().trim() || 'not available yet',
   );
@@ -331,5 +346,70 @@ export class UploadComponent implements OnDestroy {
     const url = this.combinedAdifDownloadUrl();
     if (!url) return;
     window.location.assign(url);
+  }
+
+  async rerunCleanseAdif(): Promise<void> {
+    if (!this.isEventAdmin()) {
+      this.snackBar.open(
+        'Only event admins can re-run ADIF cleansing.',
+        undefined,
+        { duration: 5000 },
+      );
+      return;
+    }
+
+    const eventId = this.eventId();
+    if (!eventId) {
+      this.snackBar.open('Missing event ID.', undefined, {
+        duration: 5000,
+      });
+      return;
+    }
+
+    this.rerunningCleanse.set(true);
+    const runningSnackBar = this.snackBar.open(
+      'Re-running ADIF cleanse for all original files...',
+    );
+
+    try {
+      const user = this.auth.currentUser;
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const token = await user.getIdToken();
+      const url = `${environment.functionBase}/rerunCleanseAdif?eventId=${encodeURIComponent(eventId)}`;
+      const result = await firstValueFrom(
+        this.http.get<RerunCleanseAdifResponse>(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      );
+
+      if (result.success) {
+        this.snackBar.open(
+          `Re-cleanse complete. Processed ${result.processed} of ${result.originalFileCount} files.`,
+          undefined,
+          { duration: 6000 },
+        );
+      } else {
+        this.snackBar.open(
+          `Re-cleanse completed with failures (${result.failed} failed, ${result.processed} processed).`,
+          undefined,
+          { duration: 7000 },
+        );
+      }
+    } catch (error) {
+      console.error('[UploadComponent] Failed to re-run ADIF cleanse:', error);
+      this.snackBar.open(
+        'Failed to re-run ADIF cleanse. Please try again.',
+        undefined,
+        { duration: 7000 },
+      );
+    } finally {
+      runningSnackBar.dismiss();
+      this.rerunningCleanse.set(false);
+    }
   }
 }
