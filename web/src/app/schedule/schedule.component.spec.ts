@@ -114,15 +114,14 @@ describe('ScheduleComponent', () => {
     });
 
     it('should return event start date when today is before the event', () => {
-      // Set event dates in the future
-      component.eventStartTime = new Date('2026-05-27T00:00:00Z');
-      component.eventEndTime = new Date('2026-06-02T23:59:59Z');
+      // Set event dates far in the future to ensure today is always before the event
+      component.eventStartTime = new Date('2099-05-27T00:00:00Z');
+      component.eventEndTime = new Date('2099-06-02T23:59:59Z');
 
-      // Mock today to be before the event (assuming test runs before 2026)
       const result = component['getNearestDayInEventRange']();
 
       // Result should be event start date normalized to midnight UTC
-      const expectedDate = new Date(Date.UTC(2026, 4, 27, 0, 0, 0, 0)); // May 27, 2026
+      const expectedDate = new Date(Date.UTC(2099, 4, 27, 0, 0, 0, 0)); // May 27, 2099
       expect(result.getTime()).toBe(expectedDate.getTime());
     });
 
@@ -190,21 +189,26 @@ describe('ScheduleComponent', () => {
       }, 100);
     });
 
-    it('should calculate nearest day when no query param provided', (done) => {
-      const activatedRoute = TestBed.inject(ActivatedRoute);
-      activatedRoute.snapshot.queryParams = {};
+    it('should calculate nearest day when no query param provided', () => {
+      // Freeze time to before the event start (2026-05-27) so the component
+      // always selects the event start date as the nearest day
+      jasmine.clock().install();
+      jasmine.clock().mockDate(new Date('2026-01-01T00:00:00Z'));
 
-      fixture = TestBed.createComponent(ScheduleComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
+      try {
+        const activatedRoute = TestBed.inject(ActivatedRoute);
+        activatedRoute.snapshot.queryParams = {};
 
-      // Allow async operations to complete
-      setTimeout(() => {
-        // Should default to event start (since today is before 2026)
+        fixture = TestBed.createComponent(ScheduleComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+
+        // Should default to event start since mocked today is before 2026-05-27
         const expectedDate = new Date(Date.UTC(2026, 4, 27, 0, 0, 0, 0));
         expect(component.viewDay.getTime()).toBe(expectedDate.getTime());
-        done();
-      }, 100);
+      } finally {
+        jasmine.clock().uninstall();
+      }
     });
   });
 
