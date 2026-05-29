@@ -29,7 +29,7 @@ describe('ScheduleService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should omit undefined fields from reservedDetails when reserving', async () => {
+  it('should remove undefined values from objects', async () => {
     const sanitized = (service as any).removeUndefinedValues({
       callsign: 'K1ABC',
       gridSquare: undefined,
