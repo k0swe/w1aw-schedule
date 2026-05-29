@@ -23,6 +23,12 @@ export class ScheduleService {
   private firestore = inject(Firestore);
   private authenticationService = inject(AuthenticationService);
 
+  private removeUndefinedValues<T extends object>(value: T): T {
+    return Object.fromEntries(
+      Object.entries(value).filter(([, entry]) => entry !== undefined),
+    ) as T;
+  }
+
   public findShift(
     time: Date,
     band: string,
@@ -61,7 +67,7 @@ export class ScheduleService {
         );
         const reservationUpdate = {
           reservedBy: userId,
-          reservedDetails: userDetails,
+          reservedDetails: this.removeUndefinedValues(userDetails),
         };
 
         return from(
