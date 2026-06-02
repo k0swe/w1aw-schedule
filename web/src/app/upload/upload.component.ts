@@ -54,6 +54,8 @@ type RerunCleanseAdifResponse = {
   failedPaths?: string[];
 };
 
+const CONTENT_DISPOSITION_FILENAME_REGEX =
+  /filename\*?=(?:UTF-8''|")?([^\";]+)/i;
 const LEGACY_TIMESTAMP_PREFIX_REGEX = /^\d{10,13}-/;
 const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
@@ -100,6 +102,7 @@ export class UploadComponent implements OnDestroy {
   uploadedFiles = signal<UploadedLogFile[]>([]);
   loadingCombinedAdifDownload = signal<boolean>(false);
   combinedAdifDownloadUrl = signal<string | null>(null);
+  downloadingOriginalAdifZip = signal<boolean>(false);
   rerunningCleanse = signal<boolean>(false);
   eventCallsignDisplay = computed(
     () => this.eventCallsign().trim() || 'not available yet',
@@ -346,6 +349,86 @@ export class UploadComponent implements OnDestroy {
     const url = this.combinedAdifDownloadUrl();
     if (!url) return;
     window.location.assign(url);
+  }
+
+  async downloadOriginalAdifZip(): Promise<void> {
+    if (!this.isEventAdmin()) {
+      this.snackBar.open(
+        'Only event admins can download original ADIF files.',
+        undefined,
+        { duration: 5000 },
+      );
+      return;
+    }
+
+    const eventId = this.eventId();
+    if (!eventId) {
+      this.snackBar.open('Missing event ID.', undefined, {
+        duration: 5000,
+      });
+      return;
+    }
+
+    this.downloadingOriginalAdifZip.set(true);
+    try {
+      const user = this.auth.currentUser;
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const token = await user.getIdToken();
+      const url = `${environment.functionBase}/downloadOriginalAdifZip?eventId=${encodeURIComponent(eventId)}`;
+      const response = await firstValueFrom(
+        this.http.get(url, {
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+          observe: 'response',
+          responseType: 'blob',
+        }),
+      );
+
+      const blob = response.body;
+      if (!blob) {
+        throw new Error('No ZIP payload was returned');
+      }
+
+      const headerValue = response.headers.get('content-disposition');
+      const fileName = this.extractDownloadFilename(headerValue);
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error(
+        '[UploadComponent] Failed to download original ADIF ZIP:',
+        error,
+      );
+      this.snackBar.open(
+        'Failed to download original ADIF ZIP. Please try again.',
+        undefined,
+        { duration: 7000 },
+      );
+    } finally {
+      this.downloadingOriginalAdifZip.set(false);
+    }
+  }
+
+  private extractDownloadFilename(
+    contentDisposition: string | null,
+  ): string {
+    if (!contentDisposition) {
+      return 'original-adif-files.zip';
+    }
+    const match = CONTENT_DISPOSITION_FILENAME_REGEX.exec(contentDisposition);
+    if (!match || !match[1]) {
+      return 'original-adif-files.zip';
+    }
+    return decodeURIComponent(match[1].trim().replace(/\"/g, ''));
   }
 
   async rerunCleanseAdif(): Promise<void> {

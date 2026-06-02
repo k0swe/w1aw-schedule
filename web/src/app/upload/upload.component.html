@@ -99,6 +99,26 @@
         }
 
         <button
+          class="admin-actions-button originals-zip-button"
+          mat-stroked-button
+          [disabled]="downloadingOriginalAdifZip()"
+          [attr.aria-busy]="downloadingOriginalAdifZip()"
+          [attr.aria-label]="
+            downloadingOriginalAdifZip()
+              ? 'Downloading ZIP of original ADIF files'
+              : 'Download ZIP of original ADIF files'
+          "
+          (click)="downloadOriginalAdifZip()"
+        >
+          <mat-icon>folder_zip</mat-icon>
+          @if (downloadingOriginalAdifZip()) {
+            Downloading Originals ZIP...
+          } @else {
+            Download Original ADIF Files (ZIP)
+          }
+        </button>
+
+        <button
           class="admin-actions-button"
           mat-stroked-button
           color="primary"
