@@ -367,6 +367,7 @@ export class UploadComponent implements OnDestroy {
     }
 
     this.rerunningCleanse.set(true);
+    this.combinedAdifDownloadUrl.set(null);
     const runningSnackBar = this.snackBar.open(
       'Regenerating from scratch...',
     );
@@ -410,6 +411,7 @@ export class UploadComponent implements OnDestroy {
     } finally {
       runningSnackBar.dismiss();
       this.rerunningCleanse.set(false);
+      void this.loadCombinedAdifDownloadUrl();
     }
   }
 }
