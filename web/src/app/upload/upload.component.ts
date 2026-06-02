@@ -351,7 +351,7 @@ export class UploadComponent implements OnDestroy {
   async rerunCleanseAdif(): Promise<void> {
     if (!this.isEventAdmin()) {
       this.snackBar.open(
-        'Only event admins can re-run ADIF cleansing.',
+        'Only event admins can regenerate from scratch.',
         undefined,
         { duration: 5000 },
       );
@@ -368,7 +368,7 @@ export class UploadComponent implements OnDestroy {
 
     this.rerunningCleanse.set(true);
     const runningSnackBar = this.snackBar.open(
-      'Re-running ADIF cleanse for all original files...',
+      'Regenerating from scratch...',
     );
 
     try {
@@ -389,21 +389,21 @@ export class UploadComponent implements OnDestroy {
 
       if (result.success) {
         this.snackBar.open(
-          `Re-cleanse complete. Processed ${result.processed} of ${result.originalFileCount} files.`,
+          `Regeneration complete. Processed ${result.processed} of ${result.originalFileCount} files.`,
           undefined,
           { duration: 6000 },
         );
       } else {
         this.snackBar.open(
-          `Re-cleanse completed with failures (${result.failed} failed, ${result.processed} processed).`,
+          `Regeneration completed with failures (${result.failed} failed, ${result.processed} processed).`,
           undefined,
           { duration: 7000 },
         );
       }
     } catch (error) {
-      console.error('[UploadComponent] Failed to re-run ADIF cleanse:', error);
+      console.error('[UploadComponent] Failed to regenerate from scratch:', error);
       this.snackBar.open(
-        'Failed to re-run ADIF cleanse. Please try again.',
+        'Failed to regenerate from scratch. Please try again.',
         undefined,
         { duration: 7000 },
       );

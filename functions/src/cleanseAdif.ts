@@ -187,6 +187,23 @@ export const rerunCleanseAdif = onRequest(
     const bucket = configuredStorageBucket
       ? admin.storage().bucket(configuredStorageBucket)
       : admin.storage().bucket();
+
+    const cleansedPrefix = `${eventId}/cleansed/`;
+    const [cleansedFiles] = await bucket.getFiles({ prefix: cleansedPrefix });
+    const filesToDelete = cleansedFiles.filter((file) => !file.name.endsWith("/"));
+    try {
+      await Promise.all(filesToDelete.map((file) => file.delete()));
+      logger.info("Deleted existing cleansed ADIF files", {
+        eventId,
+        count: filesToDelete.length,
+      });
+    } catch (deleteError) {
+      logger.warn("Some cleansed files could not be deleted; continuing regeneration", {
+        eventId,
+        error: deleteError instanceof Error ? deleteError.message : String(deleteError),
+      });
+    }
+
     const prefix = `${eventId}/original/`;
     const [files] = await bucket.getFiles({ prefix });
     const sourceFiles = files.filter((file) => !file.name.endsWith("/"));
