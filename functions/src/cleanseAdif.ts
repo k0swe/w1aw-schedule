@@ -192,8 +192,15 @@ export const rerunCleanseAdif = onRequest(
     const [cleansedFiles] = await bucket.getFiles({ prefix: cleansedPrefix });
     const filesToDelete = cleansedFiles.filter((file) => !file.name.endsWith("/"));
     try {
-      await Promise.all(filesToDelete.map((file) => file.delete()));
-      logger.info("Deleted existing cleansed ADIF files", {
+      await Promise.all([
+        ...filesToDelete.map((file) => file.delete()),
+        bucket.file(`${eventId}/combined.adi`).delete().catch((err: unknown) => {
+          if ((err as { code?: number })?.code !== 404) {
+            throw err;
+          }
+        }),
+      ]);
+      logger.info("Deleted existing cleansed and combined ADIF files", {
         eventId,
         count: filesToDelete.length,
       });

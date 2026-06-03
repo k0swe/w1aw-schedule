@@ -301,7 +301,11 @@ export class UploadComponent implements OnDestroy {
     }
   }
 
-  private async loadCombinedAdifDownloadUrl(): Promise<void> {
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private async loadCombinedAdifDownloadUrl(maxRetries = 0): Promise<void> {
     const eventId = this.eventId();
     if (!eventId || !this.isEventAdmin()) {
       this.combinedAdifDownloadUrl.set(null);
@@ -310,36 +314,47 @@ export class UploadComponent implements OnDestroy {
 
     this.loadingCombinedAdifDownload.set(true);
 
-    try {
-      const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
-      const url = await getDownloadURL(combinedFileRef);
-      this.combinedAdifDownloadUrl.set(url);
-    } catch (error) {
-      const errorCode =
-        typeof error === 'object' &&
-        error !== null &&
-        'code' in error &&
-        typeof error.code === 'string'
-          ? error.code
-          : undefined;
-
-      if (errorCode === 'storage/object-not-found') {
-        this.combinedAdifDownloadUrl.set(null);
-      } else {
-        console.error(
-          '[UploadComponent] Failed to get combined ADIF download URL:',
-          error,
-        );
-        this.combinedAdifDownloadUrl.set(null);
-        this.snackBar.open(
-          'Failed to load final aggregated ADIF link.',
-          undefined,
-          { duration: 5000 },
-        );
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (attempt > 0) {
+        await this.sleep(5000);
       }
-    } finally {
-      this.loadingCombinedAdifDownload.set(false);
+      try {
+        const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
+        const url = await getDownloadURL(combinedFileRef);
+        this.combinedAdifDownloadUrl.set(url);
+        this.loadingCombinedAdifDownload.set(false);
+        return;
+      } catch (error) {
+        const errorCode =
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          typeof error.code === 'string'
+            ? error.code
+            : undefined;
+
+        if (errorCode === 'storage/object-not-found') {
+          if (attempt < maxRetries) {
+            continue;
+          }
+          this.combinedAdifDownloadUrl.set(null);
+        } else {
+          console.error(
+            '[UploadComponent] Failed to get combined ADIF download URL:',
+            error,
+          );
+          this.combinedAdifDownloadUrl.set(null);
+          this.snackBar.open(
+            'Failed to load final aggregated ADIF link.',
+            undefined,
+            { duration: 5000 },
+          );
+          break;
+        }
+      }
     }
+
+    this.loadingCombinedAdifDownload.set(false);
   }
 
   openCombinedAdifDownload(): void {
@@ -411,7 +426,7 @@ export class UploadComponent implements OnDestroy {
     } finally {
       runningSnackBar.dismiss();
       this.rerunningCleanse.set(false);
-      void this.loadCombinedAdifDownloadUrl();
+      void this.loadCombinedAdifDownloadUrl(10);
     }
   }
 }
