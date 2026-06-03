@@ -4,6 +4,7 @@ export { calendar } from './calendar';
 export { cleanseAdif, rerunCleanseAdif } from './cleanseAdif';
 export { combineAdif } from './combineAdif';
 export { deleteUser } from './deleteUser';
+export { downloadOriginalAdifZip } from './downloadOriginalAdifZip';
 export { discordOAuthCallback, discordOAuthInitiate } from './discordOAuth';
 export { initShifts } from './initShifts';
 export { newUser } from './newUser';
