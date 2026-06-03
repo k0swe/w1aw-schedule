@@ -196,6 +196,10 @@ export const rerunCleanseAdif = onRequest(
         ...filesToDelete.map((file) => file.delete()),
         bucket.file(`${eventId}/combined.adi`).delete().catch((err: unknown) => {
           if ((err as { code?: number })?.code !== 404) {
+            logger.warn("Failed to delete combined ADIF file", {
+              eventId,
+              error: err instanceof Error ? err.message : String(err),
+            });
             throw err;
           }
         }),

@@ -59,6 +59,7 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+const COMBINED_ADIF_RETRY_DELAY_MS = 5000;
 
 @Component({
   selector: 'kel-upload',
@@ -316,7 +317,7 @@ export class UploadComponent implements OnDestroy {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       if (attempt > 0) {
-        await this.sleep(5000);
+        await this.sleep(COMBINED_ADIF_RETRY_DELAY_MS);
       }
       try {
         const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
