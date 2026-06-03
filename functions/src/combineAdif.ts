@@ -241,6 +241,9 @@ const combineAdifHandler = async (
 };
 
 export const combineAdif = onObjectFinalized(
-  configuredStorageBucket ? { bucket: configuredStorageBucket } : {},
+  {
+    ...(configuredStorageBucket ? { bucket: configuredStorageBucket } : {}),
+    memory: "512MiB",
+  },
   combineAdifHandler,
 );
