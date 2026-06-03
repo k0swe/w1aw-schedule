@@ -393,7 +393,10 @@ export class UploadComponent implements OnDestroy {
 
     const currentUserId = this.authService.user$.getValue()?.uid;
     const defaultUserId =
-      uploadOperators.find((operator) => operator.userId === currentUserId)?.userId ??
+      (currentUserId &&
+      uploadOperators.some((operator) => operator.userId === currentUserId)
+        ? currentUserId
+        : null) ??
       uploadOperators[0]?.userId ??
       '';
     this.selectedUploadUserId.set(defaultUserId);
@@ -401,14 +404,11 @@ export class UploadComponent implements OnDestroy {
 
   private toUploadOperators(approvedUsers: UserSettings[]): UploadOperator[] {
     return approvedUsers
-      .flatMap((user) => {
-        const userId = user.id?.trim();
-        const callsign = user.callsign?.trim();
-        if (!userId || !callsign) {
-          return [];
-        }
-        return [{ userId, callsign }];
-      })
+      .filter((user) => !!user.id?.trim() && !!user.callsign?.trim())
+      .map((user) => ({
+        userId: user.id!.trim(),
+        callsign: user.callsign!.trim(),
+      }))
       .sort((a, b) => a.callsign.localeCompare(b.callsign));
   }
 

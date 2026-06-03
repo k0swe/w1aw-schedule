@@ -31,11 +31,12 @@ describe('UploadComponent', () => {
   };
 
   beforeEach(async () => {
-    authService = jasmine.createSpyObj<AuthenticationService>('AuthenticationService', [
-      'userIsAdmin',
-    ]) as jasmine.SpyObj<AuthenticationService> & { user$: BehaviorSubject<any> };
-    authService.user$ = new BehaviorSubject({ uid: 'admin-1' } as any) as
-      unknown as BehaviorSubject<any>;
+    const user$ = new BehaviorSubject<any>({ uid: 'admin-1' });
+    authService = jasmine.createSpyObj<AuthenticationService>(
+      'AuthenticationService',
+      ['userIsAdmin'],
+      { user$ },
+    ) as jasmine.SpyObj<AuthenticationService> & { user$: BehaviorSubject<any> };
     eventInfoService = jasmine.createSpyObj('EventInfoService', ['getEventBySlug']);
     userSettingsService = jasmine.createSpyObj('UserSettingsService', [
       'init',
