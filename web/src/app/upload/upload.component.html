@@ -8,8 +8,13 @@
       <p>
         When your log is processed, the station callsign will be set to the
         event callsign <strong>{{ eventCallsignDisplay() }}</strong
-        >, and the operator callsign will be set to your callsign
-        <strong>{{ userCallsignDisplay() }}</strong>.
+        >, and the operator callsign will be set to
+        @if (isEventAdmin()) {
+          the selected operator callsign
+        } @else {
+          your callsign
+        }
+        <strong>{{ uploadCallsignDisplay() }}</strong>.
       </p>
       @if (isApprovedOperator() === false) {
         <p class="approval-required-info" role="status" aria-live="assertive">
@@ -26,7 +31,7 @@
       <button
         mat-stroked-button
         (click)="fileInput.click()"
-        [disabled]="uploading() || isApprovedOperator() !== true"
+        [disabled]="uploading() || !canUploadTarget()"
       >
         <mat-icon>attach_file</mat-icon>
         {{ selectedFile() ? selectedFile()!.name : 'Choose File' }}
@@ -41,10 +46,25 @@
       }
     </mat-card-content>
     <mat-card-actions>
+      @if (isEventAdmin()) {
+        <mat-form-field class="upload-operator-field">
+          <mat-label>Operator callsign</mat-label>
+          <mat-select
+            [value]="selectedUploadUserId()"
+            (valueChange)="onUploadOperatorChange($event)"
+          >
+            @for (operator of uploadOperators(); track operator.userId) {
+              <mat-option [value]="operator.userId">
+                {{ operator.callsign }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
       <button
         mat-raised-button
         color="primary"
-        [disabled]="!selectedFile() || uploading() || isApprovedOperator() !== true"
+        [disabled]="!selectedFile() || uploading() || !canUploadTarget()"
         (click)="upload()"
       >
         <mat-icon>upload</mat-icon>
@@ -55,7 +75,7 @@
 
   <mat-card class="uploaded-logs-card">
     <mat-card-header>
-      <mat-card-title>My Uploaded Logs</mat-card-title>
+      <mat-card-title>{{ uploadedLogsTitle() }}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
       @if (loadingUploadedFiles()) {

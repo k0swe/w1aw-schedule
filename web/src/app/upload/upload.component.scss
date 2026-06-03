@@ -14,6 +14,17 @@
   margin-bottom: 16px;
 }
 
+.upload-card mat-card-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.upload-operator-field {
+  min-width: 220px;
+}
+
 .uploaded-files-list {
   margin: 0;
   padding-left: 20px;

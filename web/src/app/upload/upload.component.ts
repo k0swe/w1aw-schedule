@@ -16,6 +16,8 @@ import {
   MatCardTitle,
 } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatLabel } from '@angular/material/input';
+import { MatOption, MatSelect } from '@angular/material/select';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
@@ -29,9 +31,10 @@ import {
   uploadBytesResumable,
   type UploadMetadata,
 } from 'firebase/storage';
-import { Subject, combineLatest } from 'rxjs';
+import { Subject, combineLatest, of } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 import { map, switchMap, take, takeUntil } from 'rxjs/operators';
+import { UserSettings } from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -44,6 +47,11 @@ type UploadedLogFile = {
   fileName: string;
   uploadedAt: number | null;
   uploadedAtDisplay: string;
+};
+
+type UploadOperator = {
+  userId: string;
+  callsign: string;
 };
 
 type RerunCleanseAdifResponse = {
@@ -77,6 +85,10 @@ const COMBINED_ADIF_RETRY_DELAY_MS = 5000;
     MatCardActions,
     MatButton,
     MatIcon,
+    MatFormField,
+    MatLabel,
+    MatSelect,
+    MatOption,
     MatProgressBar,
   ],
 })
@@ -99,6 +111,8 @@ export class UploadComponent implements OnDestroy {
   isApprovedOperator = signal<boolean | null>(null);
   isEventAdmin = signal<boolean>(false);
   userCallsign = signal<string>('');
+  uploadOperators = signal<UploadOperator[]>([]);
+  selectedUploadUserId = signal<string>('');
   loadingUploadedFiles = signal<boolean>(false);
   uploadedFiles = signal<UploadedLogFile[]>([]);
   loadingCombinedAdifDownload = signal<boolean>(false);
@@ -111,6 +125,31 @@ export class UploadComponent implements OnDestroy {
   userCallsignDisplay = computed(
     () => this.userCallsign().trim() || 'not set in your profile yet',
   );
+  selectedUploadOperator = computed(
+    () =>
+      this.uploadOperators().find(
+        (operator) => operator.userId === this.selectedUploadUserId(),
+      ) ?? null,
+  );
+  uploadCallsignDisplay = computed(() => {
+    if (!this.isEventAdmin()) {
+      return this.userCallsign().trim() || 'not set in your profile yet';
+    }
+    return this.selectedUploadOperator()?.callsign ?? 'select an approved operator';
+  });
+  canUploadTarget = computed(() => {
+    if (this.isEventAdmin()) {
+      return this.selectedUploadUserId().trim().length > 0;
+    }
+    return this.isApprovedOperator() === true;
+  });
+  uploadedLogsTitle = computed(() => {
+    if (!this.isEventAdmin()) {
+      return 'My Uploaded Logs';
+    }
+    const callsign = this.selectedUploadOperator()?.callsign;
+    return callsign ? `${callsign} Uploaded Logs` : 'Selected Operator Uploaded Logs';
+  });
 
   constructor() {
     this.userSettingsService.init();
@@ -135,13 +174,22 @@ export class UploadComponent implements OnDestroy {
                 this.authService.userIsAdmin(eventInfo.id),
                 this.userSettingsService.settings(),
               ]).pipe(
-                map(([approval, isAdmin, userSettings]) => ({
-                  eventId: eventInfo.id,
-                  eventCallsign: eventInfo.eventCallsign,
-                  isApproved: approval?.status === 'Approved',
-                  isAdmin,
-                  userCallsign: userSettings.callsign?.trim() || '',
-                })),
+                switchMap(([approval, isAdmin, userSettings]) =>
+                  (
+                    isAdmin
+                      ? this.userSettingsService.getApprovedUsers(eventInfo.id)
+                      : of([])
+                  ).pipe(
+                    map((approvedUsers) => ({
+                      eventId: eventInfo.id,
+                      eventCallsign: eventInfo.eventCallsign,
+                      isApproved: approval?.status === 'Approved',
+                      isAdmin,
+                      userCallsign: userSettings.callsign?.trim() || '',
+                      uploadOperators: this.toUploadOperators(approvedUsers),
+                    })),
+                  ),
+                ),
               );
             }),
           ),
@@ -155,12 +203,15 @@ export class UploadComponent implements OnDestroy {
           isApproved,
           isAdmin,
           userCallsign,
+          uploadOperators,
         }) => {
           this.eventId.set(eventId);
           this.eventCallsign.set(eventCallsign);
           this.isApprovedOperator.set(isApproved);
           this.isEventAdmin.set(isAdmin);
           this.userCallsign.set(userCallsign);
+          this.uploadOperators.set(uploadOperators);
+          this.syncSelectedUploadUserId(isAdmin, uploadOperators);
           void this.loadUploadedFiles().catch((error) => {
             console.error(
               '[UploadComponent] Failed to initialize uploaded logs list:',
@@ -191,10 +242,23 @@ export class UploadComponent implements OnDestroy {
     this.selectedFile.set(file);
   }
 
+  onUploadOperatorChange(userId: string): void {
+    this.selectedUploadUserId.set(userId);
+    void this.loadUploadedFiles().catch((error) => {
+      console.error(
+        '[UploadComponent] Failed to refresh uploaded logs list for selected operator:',
+        error,
+      );
+    });
+  }
+
   upload(): void {
-    if (this.isApprovedOperator() !== true) {
+    if (!this.canUploadTarget()) {
+      const message = this.isEventAdmin()
+        ? 'Select an approved operator before uploading logs.'
+        : 'You must be approved for this event before uploading logs.';
       this.snackBar.open(
-        'You must be approved for this event before uploading logs.',
+        message,
         undefined,
         { duration: 5000 },
       );
@@ -203,11 +267,12 @@ export class UploadComponent implements OnDestroy {
 
     const file = this.selectedFile();
     const user = this.authService.user$.getValue();
-    if (!file || !user) return;
+    const uploadUserId = this.getUploadUserId();
+    if (!file || !user || !uploadUserId) return;
 
     const baseName = file.name.replace(/\.[^.]+$/, '');
     const unixTime = Date.now();
-    const storagePath = `${this.eventId()}/original/${user.uid}/${unixTime}-${baseName}.adi`;
+    const storagePath = `${this.eventId()}/original/${uploadUserId}/${unixTime}-${baseName}.adi`;
     const storageRef = ref(this.storage, storagePath);
     const metadata: UploadMetadata = {
       contentType: 'text/plain; charset=utf-8',
@@ -253,9 +318,9 @@ export class UploadComponent implements OnDestroy {
   }
 
   private async loadUploadedFiles(): Promise<void> {
-    const user = this.authService.user$.getValue();
     const eventId = this.eventId();
-    if (!user || !eventId) {
+    const uploadUserId = this.getUploadUserId();
+    if (!uploadUserId || !eventId) {
       this.uploadedFiles.set([]);
       return;
     }
@@ -263,7 +328,7 @@ export class UploadComponent implements OnDestroy {
     this.loadingUploadedFiles.set(true);
 
     try {
-      const listRef = ref(this.storage, `${eventId}/original/${user.uid}`);
+      const listRef = ref(this.storage, `${eventId}/original/${uploadUserId}`);
       const listed = await listAll(listRef);
 
       const uploadedFiles = await Promise.all(
@@ -303,6 +368,48 @@ export class UploadComponent implements OnDestroy {
     } finally {
       this.loadingUploadedFiles.set(false);
     }
+  }
+
+  private getUploadUserId(): string {
+    if (this.isEventAdmin()) {
+      return this.selectedUploadUserId().trim();
+    }
+    return this.authService.user$.getValue()?.uid ?? '';
+  }
+
+  private syncSelectedUploadUserId(
+    isAdmin: boolean,
+    uploadOperators: UploadOperator[],
+  ): void {
+    if (!isAdmin) {
+      this.selectedUploadUserId.set('');
+      return;
+    }
+
+    const currentSelection = this.selectedUploadUserId();
+    if (uploadOperators.some((operator) => operator.userId === currentSelection)) {
+      return;
+    }
+
+    const currentUserId = this.authService.user$.getValue()?.uid;
+    const defaultUserId =
+      (currentUserId &&
+      uploadOperators.some((operator) => operator.userId === currentUserId)
+        ? currentUserId
+        : null) ??
+      uploadOperators[0]?.userId ??
+      '';
+    this.selectedUploadUserId.set(defaultUserId);
+  }
+
+  private toUploadOperators(approvedUsers: UserSettings[]): UploadOperator[] {
+    return approvedUsers
+      .filter((user) => !!user.id?.trim() && !!user.callsign?.trim())
+      .map((user) => ({
+        userId: user.id!.trim(),
+        callsign: user.callsign!.trim(),
+      }))
+      .sort((a, b) => a.callsign.localeCompare(b.callsign));
   }
 
   private sleep(ms: number): Promise<void> {
