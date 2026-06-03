@@ -59,6 +59,7 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+const COMBINED_ADIF_RETRY_DELAY_MS = 5000;
 
 @Component({
   selector: 'kel-upload',
@@ -301,7 +302,11 @@ export class UploadComponent implements OnDestroy {
     }
   }
 
-  private async loadCombinedAdifDownloadUrl(): Promise<void> {
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private async loadCombinedAdifDownloadUrl(maxRetries = 0): Promise<void> {
     const eventId = this.eventId();
     if (!eventId || !this.isEventAdmin()) {
       this.combinedAdifDownloadUrl.set(null);
@@ -310,36 +315,47 @@ export class UploadComponent implements OnDestroy {
 
     this.loadingCombinedAdifDownload.set(true);
 
-    try {
-      const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
-      const url = await getDownloadURL(combinedFileRef);
-      this.combinedAdifDownloadUrl.set(url);
-    } catch (error) {
-      const errorCode =
-        typeof error === 'object' &&
-        error !== null &&
-        'code' in error &&
-        typeof error.code === 'string'
-          ? error.code
-          : undefined;
-
-      if (errorCode === 'storage/object-not-found') {
-        this.combinedAdifDownloadUrl.set(null);
-      } else {
-        console.error(
-          '[UploadComponent] Failed to get combined ADIF download URL:',
-          error,
-        );
-        this.combinedAdifDownloadUrl.set(null);
-        this.snackBar.open(
-          'Failed to load final aggregated ADIF link.',
-          undefined,
-          { duration: 5000 },
-        );
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (attempt > 0) {
+        await this.sleep(COMBINED_ADIF_RETRY_DELAY_MS);
       }
-    } finally {
-      this.loadingCombinedAdifDownload.set(false);
+      try {
+        const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
+        const url = await getDownloadURL(combinedFileRef);
+        this.combinedAdifDownloadUrl.set(url);
+        this.loadingCombinedAdifDownload.set(false);
+        return;
+      } catch (error) {
+        const errorCode =
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          typeof error.code === 'string'
+            ? error.code
+            : undefined;
+
+        if (errorCode === 'storage/object-not-found') {
+          if (attempt < maxRetries) {
+            continue;
+          }
+          this.combinedAdifDownloadUrl.set(null);
+        } else {
+          console.error(
+            '[UploadComponent] Failed to get combined ADIF download URL:',
+            error,
+          );
+          this.combinedAdifDownloadUrl.set(null);
+          this.snackBar.open(
+            'Failed to load final aggregated ADIF link.',
+            undefined,
+            { duration: 5000 },
+          );
+          break;
+        }
+      }
     }
+
+    this.loadingCombinedAdifDownload.set(false);
   }
 
   openCombinedAdifDownload(): void {
@@ -351,7 +367,7 @@ export class UploadComponent implements OnDestroy {
   async rerunCleanseAdif(): Promise<void> {
     if (!this.isEventAdmin()) {
       this.snackBar.open(
-        'Only event admins can re-run ADIF cleansing.',
+        'Only event admins can regenerate from scratch.',
         undefined,
         { duration: 5000 },
       );
@@ -367,8 +383,9 @@ export class UploadComponent implements OnDestroy {
     }
 
     this.rerunningCleanse.set(true);
+    this.combinedAdifDownloadUrl.set(null);
     const runningSnackBar = this.snackBar.open(
-      'Re-running ADIF cleanse for all original files...',
+      'Regenerating from scratch...',
     );
 
     try {
@@ -389,27 +406,28 @@ export class UploadComponent implements OnDestroy {
 
       if (result.success) {
         this.snackBar.open(
-          `Re-cleanse complete. Processed ${result.processed} of ${result.originalFileCount} files.`,
+          `Regeneration complete. Processed ${result.processed} of ${result.originalFileCount} files.`,
           undefined,
           { duration: 6000 },
         );
       } else {
         this.snackBar.open(
-          `Re-cleanse completed with failures (${result.failed} failed, ${result.processed} processed).`,
+          `Regeneration completed with failures (${result.failed} failed, ${result.processed} processed).`,
           undefined,
           { duration: 7000 },
         );
       }
     } catch (error) {
-      console.error('[UploadComponent] Failed to re-run ADIF cleanse:', error);
+      console.error('[UploadComponent] Failed to regenerate from scratch:', error);
       this.snackBar.open(
-        'Failed to re-run ADIF cleanse. Please try again.',
+        'Failed to regenerate from scratch. Please try again.',
         undefined,
         { duration: 7000 },
       );
     } finally {
       runningSnackBar.dismiss();
       this.rerunningCleanse.set(false);
+      void this.loadCombinedAdifDownloadUrl(10);
     }
   }
 }
