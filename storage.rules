@@ -18,12 +18,13 @@ service firebase.storage {
 
       function isApprovedForEvent() {
         let approval = firestore.get(
-          /databases/(default)/documents/events/$(eventId)/approvals/$(request.auth.uid));
+          /databases/(default)/documents/events/$(eventId)/approvals/$(userId));
         return approval != null && approval.data.status == 'Approved';
       }
 
-      // Only the file owner (an approved operator for this event) may upload
-      allow write: if isOwner()
+      // Approved operators may upload their own files, and event admins may upload on their behalf.
+      allow write: if request.auth != null
+        && (isOwner() || isAdminForEvent(eventId))
         && isApprovedForEvent();
 
       // Owners may read/list their own uploads; event admins may read any upload
