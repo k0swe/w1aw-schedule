@@ -22,6 +22,14 @@ describe('UploadComponent', () => {
   let userSettingsService: jasmine.SpyObj<UserSettingsService>;
   let snackBar: jasmine.SpyObj<MatSnackBar>;
 
+  const createComponent = async () => {
+    fixture = TestBed.createComponent(UploadComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+
   beforeEach(async () => {
     authService = jasmine.createSpyObj<AuthenticationService>('AuthenticationService', [
       'userIsAdmin',
@@ -76,11 +84,7 @@ describe('UploadComponent', () => {
   });
 
   it('should show a callsign dropdown for admins', async () => {
-    fixture = TestBed.createComponent(UploadComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    await createComponent();
 
     expect(component.uploadOperators()).toEqual([
       { userId: 'user-1', callsign: 'K1ABC' },
@@ -93,14 +97,104 @@ describe('UploadComponent', () => {
   it('should hide the callsign dropdown for non-admins', async () => {
     authService.userIsAdmin.and.returnValue(of(false));
 
-    fixture = TestBed.createComponent(UploadComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    await createComponent();
 
     expect(component.uploadOperators()).toEqual([]);
     expect(component.canUploadTarget()).toBeFalse();
     expect(fixture.nativeElement.querySelector('mat-select')).toBeNull();
+  });
+
+  it('should filter and sort upload operators by callsign', async () => {
+    await createComponent();
+
+    const uploadOperators = (component as any).toUploadOperators([
+      { id: 'user-3', callsign: 'K3CCC' },
+      { id: 'user-2' },
+      { callsign: 'K2BBB' },
+      { id: 'user-1', callsign: 'K1AAA' },
+    ]);
+
+    expect(uploadOperators).toEqual([
+      { userId: 'user-1', callsign: 'K1AAA' },
+      { userId: 'user-3', callsign: 'K3CCC' },
+    ]);
+  });
+
+  it('should preserve a valid selected upload user', async () => {
+    await createComponent();
+
+    component.selectedUploadUserId.set('user-1');
+
+    (component as any).syncSelectedUploadUserId(true, [
+      { userId: 'user-1', callsign: 'K1ABC' },
+      { userId: 'user-2', callsign: 'K2DEF' },
+    ]);
+
+    expect(component.selectedUploadUserId()).toBe('user-1');
+  });
+
+  it('should clear upload selection for non-admins', async () => {
+    await createComponent();
+
+    component.selectedUploadUserId.set('user-1');
+
+    (component as any).syncSelectedUploadUserId(false, [
+      { userId: 'user-1', callsign: 'K1ABC' },
+    ]);
+
+    expect(component.selectedUploadUserId()).toBe('');
+  });
+
+  it('should default upload selection to the current user when available', async () => {
+    authService.user$.next({ uid: 'user-2' } as any);
+    await createComponent();
+
+    component.selectedUploadUserId.set('');
+
+    (component as any).syncSelectedUploadUserId(true, [
+      { userId: 'user-1', callsign: 'K1ABC' },
+      { userId: 'user-2', callsign: 'K2DEF' },
+    ]);
+
+    expect(component.selectedUploadUserId()).toBe('user-2');
+  });
+
+  it('should default upload selection to the first operator otherwise', async () => {
+    authService.user$.next({ uid: 'admin-1' } as any);
+    await createComponent();
+
+    component.selectedUploadUserId.set('');
+
+    (component as any).syncSelectedUploadUserId(true, [
+      { userId: 'user-1', callsign: 'K1ABC' },
+      { userId: 'user-2', callsign: 'K2DEF' },
+    ]);
+
+    expect(component.selectedUploadUserId()).toBe('user-1');
+  });
+
+  it('should update the selected upload user and reload files when the admin changes operator', async () => {
+    await createComponent();
+
+    const loadUploadedFilesSpy = (component as any)
+      .loadUploadedFiles as jasmine.Spy;
+    loadUploadedFilesSpy.calls.reset();
+
+    component.onUploadOperatorChange('user-2');
+
+    expect(component.selectedUploadUserId()).toBe('user-2');
+    expect(loadUploadedFilesSpy).toHaveBeenCalled();
+  });
+
+  it('should resolve the upload user ID for admins and operators', async () => {
+    await createComponent();
+
+    component.isEventAdmin.set(true);
+    component.selectedUploadUserId.set('user-2');
+    expect((component as any).getUploadUserId()).toBe('user-2');
+
+    component.isEventAdmin.set(false);
+    authService.user$.next({ uid: 'operator-1' } as any);
+    expect((component as any).getUploadUserId()).toBe('operator-1');
   });
 });
