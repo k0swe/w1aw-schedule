@@ -193,6 +193,9 @@ const fetchSourceOriginalFiles = async (
     const uploadTime = metadata.timeCreated ?
       Date.parse(metadata.timeCreated) :
       Number.MAX_SAFE_INTEGER;
+    const customMetadata = metadata.customMetadata as
+      | Record<string, string>
+      | undefined;
 
     return {
       fullPath: sourceFile.name,
@@ -200,7 +203,7 @@ const fetchSourceOriginalFiles = async (
       uploadTime,
       originalFileName: deriveOriginalFileName(
         parsedPath.objectName,
-        metadata.customMetadata?.originalFileName,
+        customMetadata?.["originalFileName"],
       ),
       download: () => sourceFile.download(),
     } satisfies SourceOriginalFile;
