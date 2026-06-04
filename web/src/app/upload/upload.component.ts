@@ -198,8 +198,8 @@ export class UploadComponent implements OnDestroy {
                     map((approvedUsers) => ({
                       eventId: eventInfo.id,
                       eventCallsign: eventInfo.eventCallsign,
-                      eventStartTime: eventInfo.startTime?.toDate?.() ?? null,
-                      eventEndTime: eventInfo.endTime?.toDate?.() ?? null,
+                      eventStartTime: this.toEventDate(eventInfo.startTime),
+                      eventEndTime: this.toEventDate(eventInfo.endTime),
                       isApproved: approval?.status === 'Approved',
                       isAdmin,
                       userCallsign: userSettings.callsign?.trim() || '',
@@ -431,6 +431,21 @@ export class UploadComponent implements OnDestroy {
         callsign: user.callsign!.trim(),
       }))
       .sort((a, b) => a.callsign.localeCompare(b.callsign));
+  }
+
+  private toEventDate(value: unknown): Date | null {
+    if (
+      value &&
+      typeof value === 'object' &&
+      'toDate' in value &&
+      typeof value.toDate === 'function'
+    ) {
+      const parsedDate = value.toDate();
+      if (parsedDate instanceof Date && !Number.isNaN(parsedDate.getTime())) {
+        return parsedDate;
+      }
+    }
+    return null;
   }
 
   private sleep(ms: number): Promise<void> {
