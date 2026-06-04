@@ -14,6 +14,11 @@
   margin-bottom: 16px;
 }
 
+.event-selection-warning {
+  font-weight: 700;
+  color: var(--mat-sys-error, #b3261e);
+}
+
 .upload-card mat-card-actions {
   align-items: center;
   display: flex;

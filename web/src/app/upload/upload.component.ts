@@ -70,6 +70,7 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   timeStyle: 'short',
 });
 const COMBINED_ADIF_RETRY_DELAY_MS = 5000;
+const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
 
 @Component({
   selector: 'kel-upload',
@@ -111,6 +112,8 @@ export class UploadComponent implements OnDestroy {
   isApprovedOperator = signal<boolean | null>(null);
   isEventAdmin = signal<boolean>(false);
   userCallsign = signal<string>('');
+  eventStartTime = signal<Date | null>(null);
+  eventEndTime = signal<Date | null>(null);
   uploadOperators = signal<UploadOperator[]>([]);
   selectedUploadUserId = signal<string>('');
   loadingUploadedFiles = signal<boolean>(false);
@@ -150,6 +153,18 @@ export class UploadComponent implements OnDestroy {
     const callsign = this.selectedUploadOperator()?.callsign;
     return callsign ? `${callsign} Uploaded Logs` : 'Selected Operator Uploaded Logs';
   });
+  shouldShowEventSelectionWarning = computed(() => {
+    const eventStartTime = this.eventStartTime();
+    const eventEndTime = this.eventEndTime();
+    if (!eventStartTime || !eventEndTime) {
+      return false;
+    }
+    const now = Date.now();
+    return (
+      now < eventStartTime.getTime() ||
+      now > eventEndTime.getTime() + ONE_WEEK_IN_MS
+    );
+  });
 
   constructor() {
     this.userSettingsService.init();
@@ -183,6 +198,8 @@ export class UploadComponent implements OnDestroy {
                     map((approvedUsers) => ({
                       eventId: eventInfo.id,
                       eventCallsign: eventInfo.eventCallsign,
+                      eventStartTime: eventInfo.startTime?.toDate?.() ?? null,
+                      eventEndTime: eventInfo.endTime?.toDate?.() ?? null,
                       isApproved: approval?.status === 'Approved',
                       isAdmin,
                       userCallsign: userSettings.callsign?.trim() || '',
@@ -200,6 +217,8 @@ export class UploadComponent implements OnDestroy {
         next: ({
           eventId,
           eventCallsign,
+          eventStartTime,
+          eventEndTime,
           isApproved,
           isAdmin,
           userCallsign,
@@ -207,6 +226,8 @@ export class UploadComponent implements OnDestroy {
         }) => {
           this.eventId.set(eventId);
           this.eventCallsign.set(eventCallsign);
+          this.eventStartTime.set(eventStartTime);
+          this.eventEndTime.set(eventEndTime);
           this.isApprovedOperator.set(isApproved);
           this.isEventAdmin.set(isAdmin);
           this.userCallsign.set(userCallsign);
