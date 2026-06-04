@@ -53,6 +53,7 @@ describe('UploadComponent', () => {
     eventInfoService.getEventBySlug.and.returnValue(
       of({
         id: 'event-1',
+        name: 'Spring Event',
         eventCallsign: 'W1AW',
         startTime: createTimestamp(Date.now() - 60_000),
         endTime: createTimestamp(Date.now() + 60_000),
@@ -210,6 +211,7 @@ describe('UploadComponent', () => {
     eventInfoService.getEventBySlug.and.returnValue(
       of({
         id: 'event-1',
+        name: 'Early Event',
         eventCallsign: 'W1AW',
         startTime: createTimestamp(now + 60_000),
         endTime: createTimestamp(now + 120_000),
@@ -219,7 +221,14 @@ describe('UploadComponent', () => {
     await createComponent();
 
     expect(component.shouldShowEventSelectionWarning()).toBeTrue();
-    expect(fixture.nativeElement.querySelector('.event-selection-warning')).not.toBeNull();
+    const warningElement = fixture.nativeElement.querySelector(
+      '.event-selection-warning',
+    ) as HTMLElement | null;
+    expect(warningElement).not.toBeNull();
+    expect(warningElement?.textContent).toContain('Early Event');
+    expect(warningElement?.textContent).toContain(
+      'left navigation menu',
+    );
   });
 
   it('should show a warning when the event ended more than a week ago', async () => {
@@ -228,6 +237,7 @@ describe('UploadComponent', () => {
     eventInfoService.getEventBySlug.and.returnValue(
       of({
         id: 'event-1',
+        name: 'Past Event',
         eventCallsign: 'W1AW',
         startTime: createTimestamp(now - (eightDaysInMs + 60_000)),
         endTime: createTimestamp(now - eightDaysInMs),
@@ -237,7 +247,11 @@ describe('UploadComponent', () => {
     await createComponent();
 
     expect(component.shouldShowEventSelectionWarning()).toBeTrue();
-    expect(fixture.nativeElement.querySelector('.event-selection-warning')).not.toBeNull();
+    const warningElement = fixture.nativeElement.querySelector(
+      '.event-selection-warning',
+    ) as HTMLElement | null;
+    expect(warningElement).not.toBeNull();
+    expect(warningElement?.textContent).toContain('Past Event');
   });
 
   it('should not show a warning during the event window', async () => {
@@ -245,6 +259,7 @@ describe('UploadComponent', () => {
     eventInfoService.getEventBySlug.and.returnValue(
       of({
         id: 'event-1',
+        name: 'Current Event',
         eventCallsign: 'W1AW',
         startTime: createTimestamp(now - 60_000),
         endTime: createTimestamp(now + 60_000),

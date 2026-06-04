@@ -105,6 +105,7 @@ export class UploadComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   eventId = signal<string>('');
+  eventName = signal<string>('');
   eventCallsign = signal<string>('');
   uploading = signal<boolean>(false);
   uploadProgress = signal<number>(0);
@@ -125,6 +126,17 @@ export class UploadComponent implements OnDestroy {
   eventCallsignDisplay = computed(
     () => this.eventCallsign().trim() || 'not available yet',
   );
+  eventNameDisplay = computed(() => {
+    const eventName = this.eventName().trim();
+    if (eventName) {
+      return eventName;
+    }
+    const eventCallsign = this.eventCallsign().trim();
+    if (eventCallsign) {
+      return eventCallsign;
+    }
+    return 'this event';
+  });
   userCallsignDisplay = computed(
     () => this.userCallsign().trim() || 'not set in your profile yet',
   );
@@ -197,6 +209,7 @@ export class UploadComponent implements OnDestroy {
                   ).pipe(
                     map((approvedUsers) => ({
                       eventId: eventInfo.id,
+                      eventName: eventInfo.name?.trim() || '',
                       eventCallsign: eventInfo.eventCallsign,
                       eventStartTime: this.toEventDate(eventInfo.startTime),
                       eventEndTime: this.toEventDate(eventInfo.endTime),
@@ -216,6 +229,7 @@ export class UploadComponent implements OnDestroy {
       .subscribe({
         next: ({
           eventId,
+          eventName,
           eventCallsign,
           eventStartTime,
           eventEndTime,
@@ -225,6 +239,7 @@ export class UploadComponent implements OnDestroy {
           uploadOperators,
         }) => {
           this.eventId.set(eventId);
+          this.eventName.set(eventName);
           this.eventCallsign.set(eventCallsign);
           this.eventStartTime.set(eventStartTime);
           this.eventEndTime.set(eventEndTime);

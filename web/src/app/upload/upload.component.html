@@ -18,8 +18,10 @@
       </p>
       @if (shouldShowEventSelectionWarning()) {
         <p class="event-selection-warning" role="alert">
-          WARNING: This upload is outside the normal event window. Double-check that
-          you selected the correct event before uploading.
+          WARNING: This upload is outside the normal event window for
+          <strong>{{ eventNameDisplay() }}</strong
+          >. Double-check that you selected the correct event before uploading.
+          You can find and switch to other events using the left navigation menu.
         </p>
       }
       @if (isApprovedOperator() === false) {
