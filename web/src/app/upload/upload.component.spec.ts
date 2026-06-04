@@ -21,6 +21,10 @@ describe('UploadComponent', () => {
   let eventInfoService: jasmine.SpyObj<EventInfoService>;
   let userSettingsService: jasmine.SpyObj<UserSettingsService>;
   let snackBar: jasmine.SpyObj<MatSnackBar>;
+  const createTimestamp = (millis: number) => ({
+    toMillis: () => millis,
+    toDate: () => new Date(millis),
+  });
 
   const createComponent = async () => {
     fixture = TestBed.createComponent(UploadComponent);
@@ -49,7 +53,10 @@ describe('UploadComponent', () => {
     eventInfoService.getEventBySlug.and.returnValue(
       of({
         id: 'event-1',
+        name: 'Spring Event',
         eventCallsign: 'W1AW',
+        startTime: createTimestamp(Date.now() - 60_000),
+        endTime: createTimestamp(Date.now() + 60_000),
       } as any),
     );
     userSettingsService.getUserEventApproval.and.returnValue(
@@ -197,5 +204,71 @@ describe('UploadComponent', () => {
     component.isEventAdmin.set(false);
     authService.user$.next({ uid: 'operator-1' } as any);
     expect((component as any).getUploadUserId()).toBe('operator-1');
+  });
+
+  it('should show a warning when the event has not started yet', async () => {
+    const now = Date.now();
+    eventInfoService.getEventBySlug.and.returnValue(
+      of({
+        id: 'event-1',
+        name: 'Early Event',
+        eventCallsign: 'W1AW',
+        startTime: createTimestamp(now + 60_000),
+        endTime: createTimestamp(now + 120_000),
+      } as any),
+    );
+
+    await createComponent();
+
+    expect(component.shouldShowEventSelectionWarning()).toBeTrue();
+    const warningElement = fixture.nativeElement.querySelector(
+      '.event-selection-warning',
+    ) as HTMLElement | null;
+    expect(warningElement).not.toBeNull();
+    expect(warningElement?.textContent).toContain('Early Event');
+    expect(warningElement?.textContent).toContain(
+      'left navigation menu',
+    );
+  });
+
+  it('should show a warning when the event ended more than a week ago', async () => {
+    const now = Date.now();
+    const eightDaysInMs = 8 * 24 * 60 * 60 * 1000;
+    eventInfoService.getEventBySlug.and.returnValue(
+      of({
+        id: 'event-1',
+        name: 'Past Event',
+        eventCallsign: 'W1AW',
+        startTime: createTimestamp(now - (eightDaysInMs + 60_000)),
+        endTime: createTimestamp(now - eightDaysInMs),
+      } as any),
+    );
+
+    await createComponent();
+
+    expect(component.shouldShowEventSelectionWarning()).toBeTrue();
+    const warningElement = fixture.nativeElement.querySelector(
+      '.event-selection-warning',
+    ) as HTMLElement | null;
+    expect(warningElement).not.toBeNull();
+    expect(warningElement?.textContent).toContain('Past Event');
+  });
+
+  it('should not show a warning during the event window', async () => {
+    const now = Date.now();
+    eventInfoService.getEventBySlug.and.returnValue(
+      of({
+        id: 'event-1',
+        name: 'Current Event',
+        eventCallsign: 'W1AW',
+        startTime: createTimestamp(now - 60_000),
+        endTime: createTimestamp(now + 60_000),
+      } as any),
+    );
+
+    await createComponent();
+
+    expect(component.shouldShowEventSelectionWarning()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.event-selection-warning')).toBeNull();
   });
 });

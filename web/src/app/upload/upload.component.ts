@@ -70,6 +70,7 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   timeStyle: 'short',
 });
 const COMBINED_ADIF_RETRY_DELAY_MS = 5000;
+const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
 
 @Component({
   selector: 'kel-upload',
@@ -104,6 +105,7 @@ export class UploadComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   eventId = signal<string>('');
+  eventName = signal<string>('');
   eventCallsign = signal<string>('');
   uploading = signal<boolean>(false);
   uploadProgress = signal<number>(0);
@@ -111,6 +113,8 @@ export class UploadComponent implements OnDestroy {
   isApprovedOperator = signal<boolean | null>(null);
   isEventAdmin = signal<boolean>(false);
   userCallsign = signal<string>('');
+  eventStartTime = signal<Date | null>(null);
+  eventEndTime = signal<Date | null>(null);
   uploadOperators = signal<UploadOperator[]>([]);
   selectedUploadUserId = signal<string>('');
   loadingUploadedFiles = signal<boolean>(false);
@@ -122,6 +126,17 @@ export class UploadComponent implements OnDestroy {
   eventCallsignDisplay = computed(
     () => this.eventCallsign().trim() || 'not available yet',
   );
+  eventNameDisplay = computed(() => {
+    const eventName = this.eventName().trim();
+    if (eventName) {
+      return eventName;
+    }
+    const eventCallsign = this.eventCallsign().trim();
+    if (eventCallsign) {
+      return eventCallsign;
+    }
+    return 'this event';
+  });
   userCallsignDisplay = computed(
     () => this.userCallsign().trim() || 'not set in your profile yet',
   );
@@ -149,6 +164,18 @@ export class UploadComponent implements OnDestroy {
     }
     const callsign = this.selectedUploadOperator()?.callsign;
     return callsign ? `${callsign} Uploaded Logs` : 'Selected Operator Uploaded Logs';
+  });
+  shouldShowEventSelectionWarning = computed(() => {
+    const eventStartTime = this.eventStartTime();
+    const eventEndTime = this.eventEndTime();
+    if (!eventStartTime || !eventEndTime) {
+      return false;
+    }
+    const now = Date.now();
+    return (
+      now < eventStartTime.getTime() ||
+      now > eventEndTime.getTime() + ONE_WEEK_IN_MS
+    );
   });
 
   constructor() {
@@ -182,7 +209,10 @@ export class UploadComponent implements OnDestroy {
                   ).pipe(
                     map((approvedUsers) => ({
                       eventId: eventInfo.id,
+                      eventName: eventInfo.name?.trim() || '',
                       eventCallsign: eventInfo.eventCallsign,
+                      eventStartTime: this.toEventDate(eventInfo.startTime),
+                      eventEndTime: this.toEventDate(eventInfo.endTime),
                       isApproved: approval?.status === 'Approved',
                       isAdmin,
                       userCallsign: userSettings.callsign?.trim() || '',
@@ -199,14 +229,20 @@ export class UploadComponent implements OnDestroy {
       .subscribe({
         next: ({
           eventId,
+          eventName,
           eventCallsign,
+          eventStartTime,
+          eventEndTime,
           isApproved,
           isAdmin,
           userCallsign,
           uploadOperators,
         }) => {
           this.eventId.set(eventId);
+          this.eventName.set(eventName);
           this.eventCallsign.set(eventCallsign);
+          this.eventStartTime.set(eventStartTime);
+          this.eventEndTime.set(eventEndTime);
           this.isApprovedOperator.set(isApproved);
           this.isEventAdmin.set(isAdmin);
           this.userCallsign.set(userCallsign);
@@ -410,6 +446,21 @@ export class UploadComponent implements OnDestroy {
         callsign: user.callsign!.trim(),
       }))
       .sort((a, b) => a.callsign.localeCompare(b.callsign));
+  }
+
+  private toEventDate(value: unknown): Date | null {
+    if (
+      value &&
+      typeof value === 'object' &&
+      'toDate' in value &&
+      typeof value.toDate === 'function'
+    ) {
+      const parsedDate = value.toDate();
+      if (parsedDate instanceof Date && !Number.isNaN(parsedDate.getTime())) {
+        return parsedDate;
+      }
+    }
+    return null;
   }
 
   private sleep(ms: number): Promise<void> {

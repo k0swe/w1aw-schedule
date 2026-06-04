@@ -16,6 +16,14 @@
         }
         <strong>{{ uploadCallsignDisplay() }}</strong>.
       </p>
+      @if (shouldShowEventSelectionWarning()) {
+        <p class="event-selection-warning" role="alert">
+          WARNING: This upload is outside the normal event window for
+          <strong>{{ eventNameDisplay() }}</strong
+          >. Double-check that you selected the correct event before uploading.
+          You can find and switch to other events using the left navigation menu.
+        </p>
+      }
       @if (isApprovedOperator() === false) {
         <p class="approval-required-info" role="status" aria-live="assertive">
           You must be an approved operator for this event before uploading logs.
