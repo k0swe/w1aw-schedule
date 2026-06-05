@@ -32,7 +32,7 @@ export const routes: Routes = [
   },
   {
     path: 'events/:slug',
-    canActivateChild: [AuthenticationGuard],
+    canActivate: [AuthenticationGuard],
     children: [
       {
         path: 'schedule',
