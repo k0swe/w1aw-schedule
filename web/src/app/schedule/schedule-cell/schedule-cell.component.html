@@ -8,24 +8,24 @@
   >
     @if (isNotAllowed()) {
       <span>not allowed</span>
-    } @else if ((shift$ | async)?.reservedDetails?.callsign; as callsign) {
+    } @else if (shift()?.reservedDetails?.callsign; as callsign) {
       <span class="callsign">{{ callsign }}</span>
     } @else {
       <span>open</span>
     }
   </button>
-  @if (isAdmin$ | async) {
+  @if (isAdmin) {
     <span>
       <button mat-icon-button [matMenuTriggerFor]="adminMenu">
         <mat-icon>expand_more</mat-icon>
       </button>
       <mat-menu #adminMenu="matMenu">
-        @if ((shift$ | async)?.reservedBy) {
+        @if (shift()?.reservedBy) {
           <button mat-menu-item (click)="clearReservation()">
             <span>Clear Reservation</span>
           </button>
         }
-        @for (u of approvedUsers$ | async; track u.id) {
+        @for (u of approvedUsers; track u.id) {
           <button mat-menu-item (click)="reserveFor(u.id!)">
             <span class="callsign">{{ u.callsign }}</span>
           </button>

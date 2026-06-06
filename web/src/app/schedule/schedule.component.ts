@@ -7,7 +7,10 @@ import {
   OnDestroy,
   OnInit,
   inject,
+  signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { User } from 'firebase/auth';
 import { MatButton } from '@angular/material/button';
 import {
   MatCard,
@@ -45,6 +48,7 @@ import {
 } from 'rxjs/operators';
 import {
   BANDS,
+  EventApproval,
   HI_HF_BANDS,
   LF_BANDS,
   LOW_HF_BANDS,
@@ -61,6 +65,10 @@ import { getLocalTimeZoneLabel } from '../timezone-utils';
 import { ScheduleCellComponent } from './schedule-cell/schedule-cell.component';
 import { ScheduleService } from './schedule.service';
 import { SunCalculationService } from './sun-calculation.service';
+import {
+  UserSettings,
+  UserSettingsService,
+} from '../user-settings/user-settings.service';
 
 @Component({
   selector: 'kel-schedule',
@@ -101,6 +109,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private scheduleService = inject(ScheduleService);
   private eventInfoService = inject(EventInfoService);
+  private userSettingsService = inject(UserSettingsService);
   private clipboard = inject(Clipboard);
   private snackBarService = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
@@ -135,7 +144,23 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   googleCalendarLink?: string;
   icsLink = '';
 
+  // Shared state for all cells – subscribed once here instead of once per cell.
+  cellUser = signal<User | null>(null);
+  cellUserSettings = signal<UserSettings>({});
+  cellIsAdmin = signal<boolean>(false);
+  cellApprovedUsers = signal<UserSettings[]>([]);
+  cellEventApproval = signal<EventApproval | undefined>(undefined);
+
   constructor() {
+    // Initialize user settings subscription once for the lifetime of this component.
+    this.userSettingsService.init();
+    this.authenticationService.user$
+      .pipe(takeUntilDestroyed())
+      .subscribe((user) => this.cellUser.set(user));
+    this.userSettingsService.settings$
+      .pipe(takeUntilDestroyed())
+      .subscribe((settings) => this.cellUserSettings.set(settings));
+
     // React to route parameter changes - slug is required
     this.route.paramMap
       .pipe(
@@ -181,6 +206,11 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   private initializeComponent() {
     // Cancel subscriptions from any previous event before creating new ones
     this.reinit$.next();
+
+    // Reset event-scoped shared cell state
+    this.cellIsAdmin.set(false);
+    this.cellApprovedUsers.set([]);
+    this.cellEventApproval.set(undefined);
 
     // Clear the schedule table so old ScheduleCellComponent instances (and their
     // Firestore listeners) are destroyed before any new subscriptions can fire.
@@ -286,6 +316,39 @@ export class ScheduleComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('[ScheduleComponent] Error loading user shifts:', err);
         },
+      });
+
+    // Subscribe to event-scoped shared data once for all cells.
+    this.authenticationService
+      .userIsAdmin(this.eventId)
+      .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
+      .subscribe({
+        next: (isAdmin) => this.cellIsAdmin.set(isAdmin),
+        error: (err) =>
+          console.error('[ScheduleComponent] userIsAdmin error', err),
+      });
+
+    this.userSettingsService
+      .getApprovedUsers(this.eventId)
+      .pipe(
+        map((users) =>
+          users.sort((a, b) => a.callsign!.localeCompare(b.callsign!)),
+        ),
+        takeUntil(merge(this.destroy$, this.reinit$)),
+      )
+      .subscribe({
+        next: (users) => this.cellApprovedUsers.set(users),
+        error: (err) =>
+          console.error('[ScheduleComponent] getApprovedUsers error', err),
+      });
+
+    this.userSettingsService
+      .getUserEventApproval(this.eventId)
+      .pipe(takeUntil(merge(this.destroy$, this.reinit$)))
+      .subscribe({
+        next: (approval) => this.cellEventApproval.set(approval),
+        error: (err) =>
+          console.error('[ScheduleComponent] getUserEventApproval error', err),
       });
   }
 

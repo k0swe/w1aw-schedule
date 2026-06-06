@@ -1,25 +1,20 @@
-import { AsyncPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   Input,
-  OnDestroy,
   OnInit,
   inject,
+  signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { User } from 'firebase/auth';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { EventApproval, Shift, TWO_HOURS_IN_MS } from 'w1aw-schedule-shared';
 
-import { AuthenticationService } from '../../authentication/authentication.service';
-import {
-  UserSettings,
-  UserSettingsService,
-} from '../../user-settings/user-settings.service';
+import { UserSettings } from '../../user-settings/user-settings.service';
 import { ScheduleService } from '../schedule.service';
 
 @Component({
@@ -35,13 +30,11 @@ import { ScheduleService } from '../schedule.service';
     MatIcon,
     MatMenu,
     MatMenuItem,
-    AsyncPipe,
   ],
 })
-export class ScheduleCellComponent implements OnInit, OnDestroy {
+export class ScheduleCellComponent implements OnInit {
   private scheduleService = inject(ScheduleService);
-  private authenticationService = inject(AuthenticationService);
-  private userSettingsService = inject(UserSettingsService);
+  private destroyRef = inject(DestroyRef);
 
   @Input() timeslot!: Date;
   @Input() band!: string;
@@ -49,70 +42,29 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   @Input() userShifts: Shift[] = [];
   @Input() eventId!: string;
   @Input() currentTimeMs = Date.now();
-  shift$ = new BehaviorSubject<Shift | undefined>(undefined);
-  user$ = new BehaviorSubject<User | null>(null);
-  userSettings$ = new BehaviorSubject<UserSettings>({});
-  isAdmin$ = new BehaviorSubject<boolean>(false);
-  approvedUsers$ = new BehaviorSubject<UserSettings[]>([]);
-  eventApproval$ = new BehaviorSubject<EventApproval | undefined>(undefined);
-  private shiftSubscription: Subscription | null = null;
-  private adminSubscription: Subscription | null = null;
-  private approvedUsersSubscription: Subscription | null = null;
-  private eventApprovalSubscription: Subscription | null = null;
+  @Input() user: User | null = null;
+  @Input() userSettings: UserSettings = {};
+  @Input() isAdmin = false;
+  @Input() approvedUsers: UserSettings[] = [];
+  @Input() eventApproval: EventApproval | undefined = undefined;
+
+  shift = signal<Shift | undefined>(undefined);
 
   ngOnInit(): void {
-    this.userSettingsService.init();
-    this.shiftSubscription = this.scheduleService
+    this.scheduleService
       .findShift(this.timeslot, this.band, this.mode, this.eventId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (sh) => this.shift$.next(sh),
+        next: (sh) => this.shift.set(sh),
         error: (err) =>
           console.error('[ScheduleCellComponent] findShift error', err),
       });
-    this.user$ = this.authenticationService.user$;
-    this.adminSubscription = this.authenticationService
-      .userIsAdmin(this.eventId)
-      .subscribe({
-        next: (isAdmin) => this.isAdmin$.next(isAdmin),
-        error: (err) =>
-          console.error('[ScheduleCellComponent] userIsAdmin error', err),
-      });
-    this.userSettings$ = this.userSettingsService.settings$;
-    this.approvedUsersSubscription = this.userSettingsService
-      .getApprovedUsers(this.eventId)
-      .pipe(
-        map((users: UserSettings[]) =>
-          users.sort((a, b) => a.callsign!.localeCompare(b.callsign!)),
-        ),
-      )
-      .subscribe({
-        next: (users) => this.approvedUsers$.next(users),
-        error: (err) =>
-          console.error('[ScheduleCellComponent] getApprovedUsers error', err),
-      });
-    this.eventApprovalSubscription = this.userSettingsService
-      .getUserEventApproval(this.eventId)
-      .subscribe({
-        next: (approval) => this.eventApproval$.next(approval),
-        error: (err) =>
-          console.error(
-            '[ScheduleCellComponent] getUserEventApproval error',
-            err,
-          ),
-      });
-  }
-
-  ngOnDestroy() {
-    this.shiftSubscription?.unsubscribe();
-    this.adminSubscription?.unsubscribe();
-    this.approvedUsersSubscription?.unsubscribe();
-    this.eventApprovalSubscription?.unsubscribe();
   }
 
   toggleShift() {
-    const shift = this.shift$.getValue();
-    const userId = this.user$.getValue()?.uid;
-    const userDetails = this.userSettings$.getValue();
+    const shift = this.shift();
+    const userId = this.user?.uid;
+    const userDetails = this.userSettings;
 
     if (!userId || !userDetails) {
       console.error(
@@ -133,19 +85,19 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
       this.scheduleService
         .reserveShift(shift, userId, userDetails, this.eventId)
         .subscribe();
-    } else if (shift.reservedBy == userId || this.isAdmin$.getValue()) {
+    } else if (shift.reservedBy == userId || this.isAdmin) {
       // If it's ours (or we're an admin) and we want to cancel
       this.scheduleService.cancelShift(shift, userId, this.eventId).subscribe();
     }
   }
 
   isReservedByUser(): boolean {
-    return this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid;
+    return this.shift()?.reservedBy == this.user?.uid;
   }
 
   isReservedByOther(): boolean {
-    const reservedBy = this.shift$.getValue()?.reservedBy;
-    return reservedBy != null && reservedBy != this.user$.getValue()?.uid;
+    const reservedBy = this.shift()?.reservedBy;
+    return reservedBy != null && reservedBy != this.user?.uid;
   }
 
   isNotAllowed(): boolean {
@@ -168,28 +120,28 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
     if (this.isPastShift()) {
       return true;
     }
-    if (this.shift$.getValue()?.reservedBy == this.user$.getValue()?.uid) {
+    if (this.shift()?.reservedBy == this.user?.uid) {
       // This user has reserved this shift, so they can cancel it
       return false;
     }
-    if (!this.userSettings$.getValue()?.callsign) {
+    if (!this.userSettings?.callsign) {
       // The user hasn't filled out their user profile
       return true;
     }
-    if (this.eventApproval$.getValue()?.status != 'Approved') {
+    if (this.eventApproval?.status != 'Approved') {
       // The user is not yet approved for this specific event
       return true;
     }
     if (
-      !!this.shift$.getValue()?.reservedBy &&
-      this.shift$.getValue()?.reservedBy != this.user$.getValue()?.uid
+      !!this.shift()?.reservedBy &&
+      this.shift()?.reservedBy != this.user?.uid
     ) {
       // This shift is already reserved by someone else, but we want it to be primary color,
       // and the service will stop it from being toggled
       return false;
     }
     if (
-      !this.eventApproval$.getValue()?.multiShift &&
+      !this.eventApproval?.multiShift &&
       this.userShifts.some(
         (s) => s.time.toDate().getTime() == this.timeslot.getTime(),
       )
@@ -202,19 +154,14 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   reserveFor(userId: string) {
-    const shift = this.shift$.getValue();
+    const shift = this.shift();
     if (!shift) {
       console.error(
         'Cannot reserve shift: shift has not been created by an administrator',
       );
       return;
     }
-    const approvedUsers = this.approvedUsers$.getValue();
-    if (!approvedUsers) {
-      console.error('Cannot reserve shift: approved users list not loaded');
-      return;
-    }
-    const userDetails = approvedUsers.find((u) => u.id === userId);
+    const userDetails = this.approvedUsers.find((u) => u.id === userId);
     if (!userDetails) {
       console.error(`User ${userId} not found in approved users list`);
       return;
@@ -225,8 +172,8 @@ export class ScheduleCellComponent implements OnInit, OnDestroy {
   }
 
   clearReservation() {
-    const shift = this.shift$.getValue();
-    const userId = this.user$.getValue()?.uid;
+    const shift = this.shift();
+    const userId = this.user?.uid;
     if (!shift || !userId) {
       console.error(
         'Cannot clear reservation: shift not found or user not authenticated',

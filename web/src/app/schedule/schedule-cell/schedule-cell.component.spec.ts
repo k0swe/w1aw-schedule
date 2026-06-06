@@ -1,16 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Auth } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
 import { Functions } from 'firebase/functions';
-import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
+import { of } from 'rxjs';
 import { TWO_HOURS_IN_MS } from 'w1aw-schedule-shared';
 
-import { AUTH, FUNCTIONS } from '../../firebase-rxjs';
-import { AuthenticationService } from '../../authentication/authentication.service';
-import { EventInfoService } from '../../event-info/event-info.service';
-import { UserSettingsService } from '../../user-settings/user-settings.service';
+import { FUNCTIONS } from '../../firebase-rxjs';
 import { ScheduleService } from '../schedule.service';
 import { ScheduleCellComponent } from './schedule-cell.component';
 
@@ -19,46 +14,18 @@ describe('ScheduleCellComponent', () => {
   let fixture: ComponentFixture<ScheduleCellComponent>;
 
   beforeEach(async () => {
-    const authMock = {
-      onAuthStateChanged: () => () => {},
-    } as unknown as Auth;
     const functionsMock = {} as Functions;
     const firestoreMock = {} as Firestore;
-    const routerMock = {
-      navigate: jasmine.createSpy('navigate'),
-    };
-    const activatedRouteMock = {
-      snapshot: { queryParams: {} },
-    };
-    const eventInfoServiceMock = {
-      getAdminList: () => of([]),
-    };
     const scheduleServiceMock = {
       findShift: jasmine.createSpy('findShift').and.returnValue(of(undefined)),
-    };
-    const userSettingsServiceMock = {
-      userSettings$: new BehaviorSubject(null),
-      settings$: new BehaviorSubject(null),
-      init: jasmine.createSpy('init'),
-      getApprovedUsers: jasmine
-        .createSpy('getApprovedUsers')
-        .and.returnValue(of([])),
-      getUserEventApproval: jasmine
-        .createSpy('getUserEventApproval')
-        .and.returnValue(of(null)),
     };
 
     await TestBed.configureTestingModule({
       imports: [ScheduleCellComponent],
       providers: [
-        { provide: AUTH, useValue: authMock },
         { provide: FUNCTIONS, useValue: functionsMock },
         { provide: Firestore, useValue: firestoreMock },
-        { provide: Router, useValue: routerMock },
-        { provide: ActivatedRoute, useValue: activatedRouteMock },
-        { provide: EventInfoService, useValue: eventInfoServiceMock },
         { provide: ScheduleService, useValue: scheduleServiceMock },
-        { provide: UserSettingsService, useValue: userSettingsServiceMock },
       ],
     }).compileComponents();
 
@@ -110,7 +77,7 @@ describe('ScheduleCellComponent', () => {
 
     it('should keep the admin menu trigger enabled for past shifts', () => {
       component.currentTimeMs = component.timeslot.getTime() + TWO_HOURS_IN_MS;
-      component.isAdmin$.next(true);
+      fixture.componentRef.setInput('isAdmin', true);
 
       fixture.detectChanges();
 

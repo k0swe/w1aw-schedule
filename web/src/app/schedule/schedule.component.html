@@ -87,6 +87,11 @@
                   [timeslot]="timeslot"
                   [userShifts]="(userShifts$ | async) || []"
                   [eventId]="eventId"
+                  [user]="cellUser()"
+                  [userSettings]="cellUserSettings()"
+                  [isAdmin]="cellIsAdmin()"
+                  [approvedUsers]="cellApprovedUsers()"
+                  [eventApproval]="cellEventApproval()"
                 />
               </td>
             </ng-container>
