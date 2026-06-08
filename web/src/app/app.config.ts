@@ -1,6 +1,7 @@
 import {
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr,
 } from '@angular/common/http';
 import {
   ApplicationConfig,
@@ -30,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     { provide: Firestore, useFactory: getFirestore },
     { provide: FUNCTIONS, useFactory: getFunctions },
     { provide: STORAGE, useFactory: getStorage },
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     provideRouter(routes),
   ],
 };
