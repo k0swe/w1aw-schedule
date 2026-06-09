@@ -140,10 +140,15 @@ export class LoginComponent {
 
   private navigateAfterLogin(): void {
     const continuation = this.route.snapshot.queryParams['continue'];
-    const safeContinuation =
+    const isSafeContinuation =
       typeof continuation === 'string' &&
+      continuation.length > 0 &&
       continuation.startsWith('/') &&
-      !continuation.startsWith('//') ?
+      !continuation.startsWith('//') &&
+      !continuation.startsWith('/\\') &&
+      !/[\\\r\n\t]/.test(continuation);
+    const safeContinuation =
+      isSafeContinuation ?
         continuation
       : '/user';
     this.router.navigateByUrl(

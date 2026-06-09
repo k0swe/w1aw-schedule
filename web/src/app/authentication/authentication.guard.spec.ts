@@ -6,7 +6,7 @@ import {
   UrlTree,
 } from '@angular/router';
 import { User } from 'firebase/auth';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 import { AuthenticationGuard } from './authentication.guard';
 import { AuthenticationService } from './authentication.service';
@@ -46,9 +46,9 @@ describe('AuthenticationGuard', () => {
     const result = guard.canActivate(
       {} as ActivatedRouteSnapshot,
       { url: '/events/test/schedule' } as RouterStateSnapshot,
-    );
+    ) as Observable<boolean | UrlTree>;
 
-    (result as any).subscribe((canActivate: boolean | UrlTree) => {
+    result.subscribe((canActivate: boolean | UrlTree) => {
       expect(canActivate).toBe(true);
       done();
     });
@@ -62,9 +62,9 @@ describe('AuthenticationGuard', () => {
     const result = guard.canActivate(
       {} as ActivatedRouteSnapshot,
       { url: '/events/test/schedule?day=2026-06-01' } as RouterStateSnapshot,
-    );
+    ) as Observable<boolean | UrlTree>;
 
-    (result as any).subscribe((canActivate: boolean | UrlTree) => {
+    result.subscribe((canActivate: boolean | UrlTree) => {
       expect(canActivate).toBe(loginUrlTree);
       expect(router.createUrlTree).toHaveBeenCalledWith(['/login'], {
         queryParams: { continue: '/events/test/schedule?day=2026-06-01' },
@@ -78,8 +78,8 @@ describe('AuthenticationGuard', () => {
     const result = guard.canActivate(
       {} as ActivatedRouteSnapshot,
       { url: '/events/test/schedule' } as RouterStateSnapshot,
-    );
-    (result as any).subscribe(() => {
+    ) as Observable<boolean | UrlTree>;
+    result.subscribe(() => {
       emitted = true;
     });
 
