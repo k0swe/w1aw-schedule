@@ -1,5 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
+import { User } from 'firebase/auth';
 import { BehaviorSubject } from 'rxjs';
 
 import { AuthenticationGuard } from './authentication.guard';
@@ -8,12 +14,12 @@ import { AuthenticationService } from './authentication.service';
 describe('AuthenticationGuard', () => {
   let guard: AuthenticationGuard;
   let authReady$: BehaviorSubject<boolean>;
-  let user$: BehaviorSubject<any>;
+  let user$: BehaviorSubject<User | null>;
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
     authReady$ = new BehaviorSubject<boolean>(false);
-    user$ = new BehaviorSubject<any>(null);
+    user$ = new BehaviorSubject<User | null>(null);
     router = jasmine.createSpyObj<Router>('Router', ['createUrlTree']);
 
     TestBed.configureTestingModule({
@@ -34,11 +40,11 @@ describe('AuthenticationGuard', () => {
   });
 
   it('allows activation when auth is ready and user exists', (done) => {
-    user$.next({ uid: 'user-1' });
+    user$.next({ uid: 'user-1' } as User);
     authReady$.next(true);
 
     const result = guard.canActivate(
-      {} as any,
+      {} as ActivatedRouteSnapshot,
       { url: '/events/test/schedule' } as RouterStateSnapshot,
     );
 
@@ -54,7 +60,7 @@ describe('AuthenticationGuard', () => {
     authReady$.next(true);
 
     const result = guard.canActivate(
-      {} as any,
+      {} as ActivatedRouteSnapshot,
       { url: '/events/test/schedule?day=2026-06-01' } as RouterStateSnapshot,
     );
 
@@ -70,7 +76,7 @@ describe('AuthenticationGuard', () => {
   it('waits for auth readiness before deciding', () => {
     let emitted = false;
     const result = guard.canActivate(
-      {} as any,
+      {} as ActivatedRouteSnapshot,
       { url: '/events/test/schedule' } as RouterStateSnapshot,
     );
     (result as any).subscribe(() => {
