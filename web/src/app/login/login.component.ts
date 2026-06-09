@@ -19,7 +19,7 @@ import {
 } from '@angular/material/expansion';
 import { MatFormField, MatInput, MatLabel } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -54,6 +54,7 @@ import { ArrlInfoDialogComponent } from './arrl-info-dialog/arrl-info-dialog.com
 export class LoginComponent {
   private authService = inject(AuthenticationService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private snackBarService = inject(MatSnackBar);
   private dialog = inject(MatDialog);
 
@@ -104,11 +105,11 @@ export class LoginComponent {
               undefined,
               { duration: 10000 },
             );
-            this.router.navigateByUrl('/user');
+            this.navigateAfterLogin();
           },
           error: (err) => {
             console.error('Error sending verification email:', err);
-            this.router.navigateByUrl('/user');
+            this.navigateAfterLogin();
           },
         });
       },
@@ -129,12 +130,21 @@ export class LoginComponent {
   private handleLogin(loginObs: Observable<UserCredential>): void {
     loginObs.pipe(take(1)).subscribe({
       next: (_) => {
-        this.router.navigateByUrl('/user');
+        this.navigateAfterLogin();
       },
       error: (err) => {
         this.handleLoginError(err);
       },
     });
+  }
+
+  private navigateAfterLogin(): void {
+    const continuation = this.route.snapshot.queryParams['continue'];
+    this.router.navigateByUrl(
+      typeof continuation === 'string' && continuation.length > 0 ?
+        continuation
+      : '/user',
+    );
   }
 
   private handleLoginError(err: any): void {
