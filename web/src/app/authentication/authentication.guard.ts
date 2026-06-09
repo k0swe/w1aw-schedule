@@ -6,8 +6,8 @@ import {
   RouterStateSnapshot,
   UrlTree,
 } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable, combineLatest } from 'rxjs';
+import { filter, map, take } from 'rxjs/operators';
 
 import { AuthenticationService } from './authentication.service';
 
@@ -26,16 +26,16 @@ export class AuthenticationGuard implements CanActivate {
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    return this.authService.user$.pipe(
-      switchMap((u) => {
-        if (u != null) {
-          return of(true);
+    return combineLatest([this.authService.authReady$, this.authService.user$]).pipe(
+      filter(([authReady]) => authReady),
+      take(1),
+      map(([, user]) => {
+        if (user != null) {
+          return true;
         }
-        return of(
-          this.router.createUrlTree(['/login'], {
-            queryParams: { continue: state.url },
-          }),
-        );
+        return this.router.createUrlTree(['/login'], {
+          queryParams: { continue: state.url },
+        });
       }),
     );
   }

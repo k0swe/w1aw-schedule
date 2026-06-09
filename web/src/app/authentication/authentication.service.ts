@@ -14,7 +14,6 @@ import {
   signOut,
 } from 'firebase/auth';
 import { Functions, httpsCallable } from 'firebase/functions';
-import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
@@ -28,11 +27,10 @@ import { AUTH, FUNCTIONS, authState } from '../firebase-rxjs';
 export class AuthenticationService {
   private auth = inject<Auth>(AUTH);
   private functions = inject<Functions>(FUNCTIONS);
-  private route = inject(ActivatedRoute);
   private eventInfoService = inject(EventInfoService);
-  private router = inject(Router);
 
   user$ = new BehaviorSubject<User | null>(null);
+  authReady$ = new BehaviorSubject<boolean>(false);
   private syncEmailVerificationFn: ReturnType<typeof httpsCallable>;
 
   constructor() {
@@ -44,14 +42,12 @@ export class AuthenticationService {
 
     authState(this.auth).subscribe((u) => {
       this.user$.next(u);
+      if (!this.authReady$.value) {
+        this.authReady$.next(true);
+      }
       if (!!u) {
         // Sync email verification status when user logs in
         this.syncEmailVerification().subscribe();
-        if (this.route.snapshot.queryParams['continue']) {
-          this.router.navigateByUrl(
-            this.route.snapshot.queryParams['continue'],
-          );
-        }
       }
     });
   }
