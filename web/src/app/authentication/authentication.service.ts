@@ -31,7 +31,6 @@ export class AuthenticationService {
 
   user$ = new BehaviorSubject<User | null>(null);
   authReady$ = new BehaviorSubject<boolean>(false);
-  private authInitialized = false;
   private syncEmailVerificationFn: ReturnType<typeof httpsCallable>;
 
   constructor() {
@@ -43,8 +42,7 @@ export class AuthenticationService {
 
     authState(this.auth).subscribe((u) => {
       this.user$.next(u);
-      if (!this.authInitialized) {
-        this.authInitialized = true;
+      if (!this.authReady$.value) {
         this.authReady$.next(true);
       }
       if (!!u) {

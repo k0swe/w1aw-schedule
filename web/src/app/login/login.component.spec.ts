@@ -80,4 +80,14 @@ describe('LoginComponent', () => {
 
     expect(router.navigateByUrl).toHaveBeenCalledWith('/user');
   });
+
+  it('navigates to /user for unsafe continuation URLs', () => {
+    activatedRouteMock.snapshot.queryParams = { continue: '//evil.example/path' };
+    component.email = 'test@example.com';
+    component.password = 'pw';
+
+    component.loginEmailPass();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/user');
+  });
 });
