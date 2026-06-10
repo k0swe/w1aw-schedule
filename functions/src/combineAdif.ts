@@ -12,6 +12,9 @@ type CleansedSourceInfo = {
 
 type AdifRecord = NonNullable<SimpleAdif["records"]>[number];
 
+/** Bucket type inferred from the firebase-admin storage API. */
+type StorageBucket = ReturnType<ReturnType<typeof admin.storage>["bucket"]>;
+
 /** Shape of the combineToken document stored in events/{eventId}. */
 type CombineTokenDoc = {
   combineToken: string;
@@ -154,74 +157,60 @@ export const getCombineTokenRef = (
     .doc(eventId) as admin.firestore.DocumentReference<CombineTokenDoc>;
 };
 
-const combineAdifHandler = async (
-  event: StorageEvent,
-) => {
-  const file = event.data;
-  const sourceInfo = parseCleansedPath(file.name);
-  if (!sourceInfo) {
-    return;
-  }
+/**
+ * How long a rerunStartedAt timestamp is considered active. combineAdif will
+ * skip processing while a rerun is in progress, and rerunCleanseAdif will
+ * reject concurrent requests within this window.
+ */
+export const RERUN_LOCK_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
-  // Write a generation token so that concurrent invocations can detect
-  // when a newer run has started and should take precedence.
-  const token = randomUUID();
-  const tokenRef = getCombineTokenRef(sourceInfo.eventId);
-  await tokenRef.set({ combineToken: token }, { merge: true });
-
-  const bucket = admin.storage().bucket(file.bucket);
-  const prefix = `${sourceInfo.eventId}/cleansed/`;
-  const eventDocRef = admin
-    .firestore()
-    .collection("events")
-    .doc(sourceInfo.eventId);
+/**
+ * Reads all cleansed ADIF files for an event, combines and sorts them, then
+ * writes the result to `{eventId}/combined.adi`. An optional `preWriteCheck`
+ * callback is invoked after downloads but before the write; returning `false`
+ * from it cancels the write (used by the token mechanism in combineAdifHandler).
+ */
+export const triggerCombineForEvent = async (
+  eventId: string,
+  bucket: StorageBucket,
+  preWriteCheck?: () => Promise<boolean>,
+): Promise<void> => {
+  const prefix = `${eventId}/cleansed/`;
+  const eventDocRef = admin.firestore().collection("events").doc(eventId);
   const [[files], eventDoc] = await Promise.all([
     bucket.getFiles({ prefix }),
     eventDocRef.get(),
   ]);
-  const cleansedAdiFiles = files.filter((listedFile) =>
-    listedFile.name.endsWith(".adi"),
+  const cleansedAdiFiles = files.filter((f) => f.name.endsWith(".adi"));
+
+  const parsedAdifGroups = await Promise.all(
+    cleansedAdiFiles.map(async (adiFile) => {
+      try {
+        const [content] = await adiFile.download();
+        return [AdifParser.parseAdi(content.toString("utf-8"))];
+      } catch (error: unknown) {
+        logger.error("Failed to parse cleansed ADIF file", {
+          eventId,
+          sourcePath: adiFile.name,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return [];
+      }
+    }),
   );
 
-  const parsedAdifGroups = await Promise.all(cleansedAdiFiles.map(async (adiFile) => {
-    try {
-      const [content] = await adiFile.download();
-      return [AdifParser.parseAdi(content.toString("utf-8"))];
-    } catch (error: unknown) {
-      logger.error("Failed to parse cleansed ADIF file", {
-        eventId: sourceInfo.eventId,
-        sourcePath: adiFile.name,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return [];
-    }
-  }));
-
-  // Re-read the token after the expensive download phase. If it changed,
-  // a newer invocation has started and will write the correct combined file.
-  const tokenDoc = await tokenRef.get();
-  const currentToken = tokenDoc.data()?.combineToken;
-  if (currentToken !== token) {
-    logger.info("Newer combineAdif invocation detected; aborting this run", {
-      eventId: sourceInfo.eventId,
-      sourcePath: file.name,
-      expectedToken: token,
-      actualToken: currentToken,
-    });
+  if (preWriteCheck && !(await preWriteCheck())) {
     return;
   }
 
   const combined = combineAndSortAdif(parsedAdifGroups.flat());
   if (!eventDoc.exists) {
-    logger.warn("Event document not found for combined ADIF header", {
-      eventId: sourceInfo.eventId,
-      sourcePath: file.name,
-    });
+    logger.warn("Event document not found for combined ADIF header", { eventId });
   }
-  const eventName = (eventDoc.exists ? eventDoc.data()?.name : undefined) ??
-    sourceInfo.eventId;
+  const eventName =
+    (eventDoc.exists ? eventDoc.data()?.name : undefined) ?? eventId;
   combined.header = createCombinedHeader(eventName);
-  const destinationPath = `${sourceInfo.eventId}/combined.adi`;
+  const destinationPath = `${eventId}/combined.adi`;
   const combinedAdi = AdifFormatter.formatAdi(combined);
 
   await bucket.file(destinationPath).save(combinedAdi, {
@@ -232,11 +221,67 @@ const combineAdifHandler = async (
   });
 
   logger.info("Combined ADIF file written", {
-    sourcePath: file.name,
     destinationPath,
-    eventId: sourceInfo.eventId,
+    eventId,
     sourceFileCount: cleansedAdiFiles.length,
     totalRecords: combined.records?.length ?? 0,
+  });
+};
+
+const combineAdifHandler = async (
+  event: StorageEvent,
+) => {
+  const file = event.data;
+  const sourceInfo = parseCleansedPath(file.name);
+  if (!sourceInfo) {
+    return;
+  }
+
+  // Read the event doc to check whether a rerun is in progress. If so, the
+  // rerun will call triggerCombineForEvent directly once all files are ready,
+  // so individual triggers can be skipped.
+  const eventDocRef = admin
+    .firestore()
+    .collection("events")
+    .doc(sourceInfo.eventId);
+  const eventDoc = await eventDocRef.get();
+  const rerunStartedAt = eventDoc.data()?.rerunStartedAt as
+    | admin.firestore.Timestamp
+    | undefined;
+  if (
+    rerunStartedAt &&
+    Date.now() - rerunStartedAt.toMillis() < RERUN_LOCK_TTL_MS
+  ) {
+    logger.info("Rerun in progress; skipping automatic combineAdif", {
+      eventId: sourceInfo.eventId,
+      sourcePath: file.name,
+    });
+    return;
+  }
+
+  // Write a generation token so that concurrent invocations can detect
+  // when a newer run has started and should take precedence.
+  const token = randomUUID();
+  const tokenRef = getCombineTokenRef(sourceInfo.eventId);
+  await tokenRef.set({ combineToken: token }, { merge: true });
+
+  const bucket = admin.storage().bucket(file.bucket);
+
+  // Re-read the token after the expensive download phase. If it changed,
+  // a newer invocation has started and will write the correct combined file.
+  await triggerCombineForEvent(sourceInfo.eventId, bucket, async () => {
+    const tokenDoc = await tokenRef.get();
+    const currentToken = tokenDoc.data()?.combineToken;
+    if (currentToken !== token) {
+      logger.info("Newer combineAdif invocation detected; aborting this run", {
+        eventId: sourceInfo.eventId,
+        sourcePath: file.name,
+        expectedToken: token,
+        actualToken: currentToken,
+      });
+      return false;
+    }
+    return true;
   });
 };
 

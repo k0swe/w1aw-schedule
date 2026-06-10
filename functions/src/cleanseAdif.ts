@@ -4,6 +4,10 @@ import { onRequest } from "firebase-functions/v2/https";
 import { onObjectFinalized, StorageEvent } from "firebase-functions/v2/storage";
 import { AdifFormatter, AdifParser, SimpleAdif } from "adif-parser-ts";
 import { validateFirebaseIdToken } from "./validateFirebaseToken";
+import {
+  RERUN_LOCK_TTL_MS,
+  triggerCombineForEvent,
+} from "./combineAdif";
 
 const ORIGINAL_PATH_REGEX = /^([^/]+)\/original\/([^/]+)\/(.+)$/;
 const RERUN_CLEANSE_BATCH_SIZE = 10;
@@ -171,7 +175,8 @@ export const rerunCleanseAdif = onRequest(
       return;
     }
 
-    const eventDoc = await admin.firestore().collection("events").doc(eventId).get();
+    const eventRef = admin.firestore().collection("events").doc(eventId);
+    const eventDoc = await eventRef.get();
     if (!eventDoc.exists) {
       response.status(404).send({ error: "Event not found" });
       return;
@@ -184,78 +189,135 @@ export const rerunCleanseAdif = onRequest(
       return;
     }
 
+    // Prevent concurrent reruns: reject if a rerun started recently.
+    const existingRerunAt = eventDoc.data()?.rerunStartedAt as
+      | admin.firestore.Timestamp
+      | undefined;
+    if (
+      existingRerunAt &&
+      Date.now() - existingRerunAt.toMillis() < RERUN_LOCK_TTL_MS
+    ) {
+      response.status(429).send({ error: "A rerun is already in progress" });
+      return;
+    }
+
+    // Acquire the rerun lock. While held, combineAdif triggers will skip
+    // processing and defer to the direct combine at the end of this function.
+    await eventRef.set(
+      { rerunStartedAt: admin.firestore.FieldValue.serverTimestamp() },
+      { merge: true },
+    );
+
     const bucket = configuredStorageBucket
       ? admin.storage().bucket(configuredStorageBucket)
       : admin.storage().bucket();
 
-    const cleansedPrefix = `${eventId}/cleansed/`;
-    const [cleansedFiles] = await bucket.getFiles({ prefix: cleansedPrefix });
-    const filesToDelete = cleansedFiles.filter((file) => !file.name.endsWith("/"));
-    try {
-      await Promise.all([
-        ...filesToDelete.map((file) => file.delete()),
-        bucket.file(`${eventId}/combined.adi`).delete().catch((err: unknown) => {
-          if ((err as { code?: number })?.code !== 404) {
-            logger.warn("Failed to delete combined ADIF file", {
-              eventId,
-              error: err instanceof Error ? err.message : String(err),
-            });
-            throw err;
-          }
-        }),
-      ]);
-      logger.info("Deleted existing cleansed and combined ADIF files", {
-        eventId,
-        count: filesToDelete.length,
-      });
-    } catch (deleteError) {
-      logger.warn("Some cleansed files could not be deleted; continuing regeneration", {
-        eventId,
-        error: deleteError instanceof Error ? deleteError.message : String(deleteError),
-      });
-    }
-
-    const prefix = `${eventId}/original/`;
-    const [files] = await bucket.getFiles({ prefix });
-    const sourceFiles = files.filter((file) => !file.name.endsWith("/"));
-
     let processed = 0;
     const failures: string[] = [];
+    let originalFileCount = 0;
+    let combineError: string | undefined;
 
-    for (let i = 0; i < sourceFiles.length; i += RERUN_CLEANSE_BATCH_SIZE) {
-      const batch = sourceFiles.slice(i, i + RERUN_CLEANSE_BATCH_SIZE);
-      const results = await Promise.all(batch.map(async (sourceFile) => {
-        try {
-          const [metadata] = await sourceFile.getMetadata();
-          await cleanseOriginalAdifObject({
-            name: sourceFile.name,
-            bucket: sourceFile.bucket.name,
-            contentType: metadata.contentType,
-            timeCreated: metadata.timeCreated,
-          });
-          return true;
-        } catch (error) {
-          failures.push(sourceFile.name);
-          logger.error("Failed to re-run ADIF cleanse for original file", {
+    try {
+      const cleansedPrefix = `${eventId}/cleansed/`;
+      const [cleansedFiles] = await bucket.getFiles({ prefix: cleansedPrefix });
+      const filesToDelete = cleansedFiles.filter((file) => !file.name.endsWith("/"));
+      try {
+        await Promise.all([
+          ...filesToDelete.map((file) => file.delete()),
+          bucket.file(`${eventId}/combined.adi`).delete().catch((err: unknown) => {
+            if ((err as { code?: number })?.code !== 404) {
+              logger.warn("Failed to delete combined ADIF file", {
+                eventId,
+                error: err instanceof Error ? err.message : String(err),
+              });
+              throw err;
+            }
+          }),
+        ]);
+        logger.info("Deleted existing cleansed and combined ADIF files", {
+          eventId,
+          count: filesToDelete.length,
+        });
+      } catch (deleteError) {
+        logger.warn(
+          "Some cleansed files could not be deleted; continuing regeneration",
+          {
             eventId,
-            sourcePath: sourceFile.name,
-            error: error instanceof Error ? error.message : String(error),
-          });
-          return false;
-        }
-      }));
-      processed += results.filter((result) => result).length;
+            error:
+              deleteError instanceof Error ?
+                deleteError.message :
+                String(deleteError),
+          },
+        );
+      }
+
+      const prefix = `${eventId}/original/`;
+      const [files] = await bucket.getFiles({ prefix });
+      const sourceFiles = files.filter((file) => !file.name.endsWith("/"));
+      originalFileCount = sourceFiles.length;
+
+      for (let i = 0; i < sourceFiles.length; i += RERUN_CLEANSE_BATCH_SIZE) {
+        const batch = sourceFiles.slice(i, i + RERUN_CLEANSE_BATCH_SIZE);
+        const results = await Promise.all(batch.map(async (sourceFile) => {
+          try {
+            const [metadata] = await sourceFile.getMetadata();
+            await cleanseOriginalAdifObject({
+              name: sourceFile.name,
+              bucket: sourceFile.bucket.name,
+              contentType: metadata.contentType,
+              timeCreated: metadata.timeCreated,
+            });
+            return true;
+          } catch (error) {
+            failures.push(sourceFile.name);
+            logger.error("Failed to re-run ADIF cleanse for original file", {
+              eventId,
+              sourcePath: sourceFile.name,
+              error: error instanceof Error ? error.message : String(error),
+            });
+            return false;
+          }
+        }));
+        processed += results.filter((result) => result).length;
+      }
+
+      // Perform one authoritative combine now that all files are ready.
+      // This avoids the race where individual combineAdif triggers fire before
+      // all cleansed files exist.
+      try {
+        await triggerCombineForEvent(eventId, bucket);
+        logger.info("Rerun combine completed", { eventId });
+      } catch (err) {
+        combineError =
+          err instanceof Error ? err.message : String(err);
+        logger.error("Failed to combine ADIF after rerun", {
+          eventId,
+          error: combineError,
+        });
+      }
+
+      // Release the lock after the combine so the frontend can treat its
+      // removal as a signal that combined.adi is ready to download.
+      await eventRef.update({
+        rerunStartedAt: admin.firestore.FieldValue.delete(),
+      });
+    } finally {
+      // Ensure the lock is always released, even on unexpected errors.
+      await eventRef
+        .update({ rerunStartedAt: admin.firestore.FieldValue.delete() })
+        .catch(() => undefined);
     }
 
-    const success = failures.length === 0;
+    const success = failures.length === 0 && !combineError;
     const statusCode = success ? 200 : (processed > 0 ? 207 : 500);
     response.status(statusCode).send({
       success,
       eventId,
-      originalFileCount: sourceFiles.length,
+      originalFileCount,
       processed,
       failed: failures.length,
       failedPaths: failures,
+      ...(combineError ? { combineError } : {}),
     });
   },
 );
