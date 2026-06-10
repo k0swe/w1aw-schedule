@@ -6,6 +6,8 @@ import {
   createCombinedHeader,
   getCombineTokenRef,
   parseCleansedPath,
+  RERUN_LOCK_TTL_MS,
+  triggerCombineForEvent,
 } from "../src/combineAdif";
 
 describe("combineAdif helpers", () => {
@@ -147,5 +149,66 @@ describe("combineAdif generation token", () => {
     // The original run should abort because tokens differ
     assert.notEqual(currentToken, originalToken);
     assert.equal(currentToken, newerToken);
+  });
+});
+
+describe("RERUN_LOCK_TTL_MS", () => {
+  it("should be a positive number (30 minutes in ms)", () => {
+    assert.equal(typeof RERUN_LOCK_TTL_MS, "number");
+    assert.ok(RERUN_LOCK_TTL_MS > 0);
+    assert.equal(RERUN_LOCK_TTL_MS, 30 * 60 * 1000);
+  });
+});
+
+describe("triggerCombineForEvent", () => {
+  it("should abort without writing when preWriteCheck returns false", async () => {
+    let writeCalled = false;
+    const fakeFile = {
+      save: async () => {
+        writeCalled = true;
+      },
+    };
+    const fakeBucket = {
+      getFiles: async () => [[]], // no cleansed files
+      file: () => fakeFile,
+    };
+
+    await triggerCombineForEvent(
+      "test-event",
+      fakeBucket as any,
+      async () => false,
+    );
+
+    assert.equal(writeCalled, false, "file.save should not be called when preWriteCheck returns false");
+  });
+
+  it("should proceed to write when preWriteCheck returns true", async () => {
+    let writeCalled = false;
+    const fakeFile = {
+      save: async () => {
+        writeCalled = true;
+      },
+    };
+    const fakeBucket = {
+      getFiles: async () => [[]], // no cleansed files
+      file: () => fakeFile,
+    };
+    // Stub Firestore: return a mock event doc
+    // (Firestore is not available in unit tests, so we only verify the write
+    // happens when the bucket and preWriteCheck cooperate.)
+    try {
+      await triggerCombineForEvent(
+        "test-event",
+        fakeBucket as any,
+        async () => true,
+      );
+      // If Firestore is unavailable this throws; we only care the write was
+      // attempted before the Firestore call for eventDoc (or that the function
+      // runs through without the preWriteCheck blocking it).
+    } catch {
+      // Firestore unavailable in unit test environment – expected.
+    }
+    // preWriteCheck returned true so write should have been attempted
+    assert.equal(writeCalled, true, "file.save should be called when preWriteCheck returns true");
   });
 });
