@@ -181,12 +181,10 @@ export const triggerCombineForEvent = async (
     bucket.getFiles({ prefix }),
     eventDocRef.get(),
   ]);
-  const cleansedAdiFiles = files.filter(
-    (f: {name: string}) => f.name.endsWith(".adi"),
-  );
+  const cleansedAdiFiles = files.filter((f) => f.name.endsWith(".adi"));
 
   const parsedAdifGroups = await Promise.all(
-    cleansedAdiFiles.map(async (adiFile: {name: string; download: () => Promise<[Buffer]>}) => {
+    cleansedAdiFiles.map(async (adiFile) => {
       try {
         const [content] = await adiFile.download();
         return [AdifParser.parseAdi(content.toString("utf-8"))];

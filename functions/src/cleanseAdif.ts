@@ -214,6 +214,7 @@ export const rerunCleanseAdif = onRequest(
 
     let processed = 0;
     const failures: string[] = [];
+    let originalFileCount = 0;
     let combineError: string | undefined;
 
     try {
@@ -253,6 +254,7 @@ export const rerunCleanseAdif = onRequest(
       const prefix = `${eventId}/original/`;
       const [files] = await bucket.getFiles({ prefix });
       const sourceFiles = files.filter((file) => !file.name.endsWith("/"));
+      originalFileCount = sourceFiles.length;
 
       for (let i = 0; i < sourceFiles.length; i += RERUN_CLEANSE_BATCH_SIZE) {
         const batch = sourceFiles.slice(i, i + RERUN_CLEANSE_BATCH_SIZE);
@@ -312,6 +314,7 @@ export const rerunCleanseAdif = onRequest(
     response.status(statusCode).send({
       success,
       eventId,
+      originalFileCount,
       processed,
       failed: failures.length,
       failedPaths: failures,
