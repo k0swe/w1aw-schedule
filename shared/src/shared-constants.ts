@@ -33,6 +33,8 @@ export interface EventInfo {
   endTime: GenericTimestamp;
   timeZoneId: string;
   googleCalendarId?: string;
+  /** Set while rerunCleanseAdif is running; cleared when combined.adi is ready. */
+  rerunStartedAt?: GenericTimestamp;
 }
 
 export interface EventInfoWithId extends EventInfo {

@@ -111,7 +111,12 @@
         <mat-card-title>Admin: Final ADIF</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        @if (loadingCombinedAdifDownload()) {
+        @if (rerunInProgress()) {
+          <p class="rerun-in-progress" role="status" aria-live="polite">
+            <mat-icon inline>sync</mat-icon>
+            Regeneration in progress...
+          </p>
+        } @else if (loadingCombinedAdifDownload()) {
           <p>Loading final aggregated ADIF link...</p>
         } @else if (combinedAdifDownloadUrl()) {
           <button
@@ -150,17 +155,17 @@
           class="admin-actions-button"
           mat-stroked-button
           color="primary"
-          [disabled]="rerunningCleanse()"
-          [attr.aria-busy]="rerunningCleanse()"
+          [disabled]="rerunningCleanse() || rerunInProgress()"
+          [attr.aria-busy]="rerunningCleanse() || rerunInProgress()"
           [attr.aria-label]="
-            rerunningCleanse()
+            rerunningCleanse() || rerunInProgress()
               ? 'Regenerating from scratch'
               : 'Regenerate from scratch'
           "
           (click)="rerunCleanseAdif()"
         >
           <mat-icon>refresh</mat-icon>
-          @if (rerunningCleanse()) {
+          @if (rerunningCleanse() || rerunInProgress()) {
             Regenerating...
           } @else {
             Regenerate from scratch

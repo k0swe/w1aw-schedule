@@ -281,13 +281,6 @@ export const rerunCleanseAdif = onRequest(
         processed += results.filter((result) => result).length;
       }
 
-      // All cleansed files are now written. Release the lock before the final
-      // combine so any concurrent combineAdif triggers that arrive after this
-      // point can proceed normally.
-      await eventRef.update({
-        rerunStartedAt: admin.firestore.FieldValue.delete(),
-      });
-
       // Perform one authoritative combine now that all files are ready.
       // This avoids the race where individual combineAdif triggers fire before
       // all cleansed files exist.
@@ -302,6 +295,12 @@ export const rerunCleanseAdif = onRequest(
           error: combineError,
         });
       }
+
+      // Release the lock after the combine so the frontend can treat its
+      // removal as a signal that combined.adi is ready to download.
+      await eventRef.update({
+        rerunStartedAt: admin.firestore.FieldValue.delete(),
+      });
     } finally {
       // Ensure the lock is always released, even on unexpected errors.
       await eventRef

@@ -33,8 +33,8 @@ import {
 } from 'firebase/storage';
 import { Subject, combineLatest, of } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
-import { map, switchMap, take, takeUntil } from 'rxjs/operators';
-import { UserSettings } from 'w1aw-schedule-shared';
+import { map, pairwise, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
+import { GenericTimestamp, UserSettings } from 'w1aw-schedule-shared';
 
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from '../authentication/authentication.service';
@@ -69,8 +69,9 @@ const UPLOAD_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
-const COMBINED_ADIF_RETRY_DELAY_MS = 5000;
 const ONE_WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
+/** Must match RERUN_LOCK_TTL_MS in functions/src/combineAdif.ts (30 minutes). */
+const RERUN_LOCK_TTL_MS = 30 * 60 * 1000;
 
 @Component({
   selector: 'kel-upload',
@@ -123,6 +124,12 @@ export class UploadComponent implements OnDestroy {
   combinedAdifDownloadUrl = signal<string | null>(null);
   downloadingOriginalAdifZip = signal<boolean>(false);
   rerunningCleanse = signal<boolean>(false);
+  rerunStartedAt = signal<GenericTimestamp | null>(null);
+  rerunInProgress = computed(() => {
+    const ts = this.rerunStartedAt();
+    if (!ts) return false;
+    return Date.now() - ts.toMillis() < RERUN_LOCK_TTL_MS;
+  });
   eventCallsignDisplay = computed(
     () => this.eventCallsign().trim() || 'not available yet',
   );
@@ -254,7 +261,7 @@ export class UploadComponent implements OnDestroy {
               error,
             );
           });
-          void this.loadCombinedAdifDownloadUrl();
+          this.subscribeToEventRerunState(eventId);
         },
         error: (err) => {
           console.error('[UploadComponent] Failed to resolve event:', err);
@@ -463,11 +470,7 @@ export class UploadComponent implements OnDestroy {
     return null;
   }
 
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  private async loadCombinedAdifDownloadUrl(maxRetries = 0): Promise<void> {
+  private async loadCombinedAdifDownloadUrl(): Promise<void> {
     const eventId = this.eventId();
     if (!eventId || !this.isEventAdmin()) {
       this.combinedAdifDownloadUrl.set(null);
@@ -476,47 +479,36 @@ export class UploadComponent implements OnDestroy {
 
     this.loadingCombinedAdifDownload.set(true);
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      if (attempt > 0) {
-        await this.sleep(COMBINED_ADIF_RETRY_DELAY_MS);
-      }
-      try {
-        const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
-        const url = await getDownloadURL(combinedFileRef);
-        this.combinedAdifDownloadUrl.set(url);
-        this.loadingCombinedAdifDownload.set(false);
-        return;
-      } catch (error) {
-        const errorCode =
-          typeof error === 'object' &&
-          error !== null &&
-          'code' in error &&
-          typeof error.code === 'string'
-            ? error.code
-            : undefined;
+    try {
+      const combinedFileRef = ref(this.storage, `${eventId}/combined.adi`);
+      const url = await getDownloadURL(combinedFileRef);
+      this.combinedAdifDownloadUrl.set(url);
+    } catch (error) {
+      const errorCode =
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        typeof error.code === 'string'
+          ? error.code
+          : undefined;
 
-        if (errorCode === 'storage/object-not-found') {
-          if (attempt < maxRetries) {
-            continue;
-          }
-          this.combinedAdifDownloadUrl.set(null);
-        } else {
-          console.error(
-            '[UploadComponent] Failed to get combined ADIF download URL:',
-            error,
-          );
-          this.combinedAdifDownloadUrl.set(null);
-          this.snackBar.open(
-            'Failed to load final aggregated ADIF link.',
-            undefined,
-            { duration: 5000 },
-          );
-          break;
-        }
+      if (errorCode === 'storage/object-not-found') {
+        this.combinedAdifDownloadUrl.set(null);
+      } else {
+        console.error(
+          '[UploadComponent] Failed to get combined ADIF download URL:',
+          error,
+        );
+        this.combinedAdifDownloadUrl.set(null);
+        this.snackBar.open(
+          'Failed to load final aggregated ADIF link.',
+          undefined,
+          { duration: 5000 },
+        );
       }
+    } finally {
+      this.loadingCombinedAdifDownload.set(false);
     }
-
-    this.loadingCombinedAdifDownload.set(false);
   }
 
   openCombinedAdifDownload(): void {
@@ -625,9 +617,6 @@ export class UploadComponent implements OnDestroy {
 
     this.rerunningCleanse.set(true);
     this.combinedAdifDownloadUrl.set(null);
-    const runningSnackBar = this.snackBar.open(
-      'Regenerating from scratch...',
-    );
 
     try {
       const user = this.auth.currentUser;
@@ -666,9 +655,39 @@ export class UploadComponent implements OnDestroy {
         { duration: 7000 },
       );
     } finally {
-      runningSnackBar.dismiss();
       this.rerunningCleanse.set(false);
-      void this.loadCombinedAdifDownloadUrl(10);
+      // The Firestore subscription on the event doc drives loadCombinedAdifDownloadUrl
+      // when rerunStartedAt is cleared; no blind polling needed here.
     }
+  }
+
+  /**
+   * Subscribes to the live Firestore event document to track rerun state.
+   * - Shows "Regeneration in progress" while rerunStartedAt is set.
+   * - Loads the combined ADIF download URL as soon as the lock is cleared
+   *   (which the backend does only *after* combined.adi is written).
+   */
+  private subscribeToEventRerunState(eventId: string): void {
+    this.eventInfoService.getEventInfo(eventId).pipe(
+      map((eventInfo) => {
+        const ts = eventInfo?.rerunStartedAt ?? null;
+        return !!ts && Date.now() - ts.toMillis() < RERUN_LOCK_TTL_MS ? ts : null;
+      }),
+      startWith(undefined as GenericTimestamp | null | undefined),
+      pairwise(),
+      takeUntil(this.destroy$),
+    ).subscribe(([prev, curr]) => {
+      this.rerunStartedAt.set(curr ?? null);
+      if (prev === undefined) {
+        // Initial emission: load URL only if no rerun is active.
+        // If a rerun is active, the URL will be loaded once the lock clears.
+        if (!curr && this.isEventAdmin()) {
+          void this.loadCombinedAdifDownloadUrl();
+        }
+      } else if (prev && !curr) {
+        // Rerun just completed — combined.adi is now ready.
+        void this.loadCombinedAdifDownloadUrl();
+      }
+    });
   }
 }

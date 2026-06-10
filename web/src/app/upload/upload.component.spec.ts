@@ -41,7 +41,8 @@ describe('UploadComponent', () => {
       ['userIsAdmin'],
       { user$ },
     ) as jasmine.SpyObj<AuthenticationService> & { user$: BehaviorSubject<any> };
-    eventInfoService = jasmine.createSpyObj('EventInfoService', ['getEventBySlug']);
+    eventInfoService = jasmine.createSpyObj('EventInfoService', ['getEventBySlug', 'getEventInfo']);
+    eventInfoService.getEventInfo.and.returnValue(of({} as any));
     userSettingsService = jasmine.createSpyObj('UserSettingsService', [
       'init',
       'getUserEventApproval',
@@ -270,5 +271,56 @@ describe('UploadComponent', () => {
 
     expect(component.shouldShowEventSelectionWarning()).toBeFalse();
     expect(fixture.nativeElement.querySelector('.event-selection-warning')).toBeNull();
+  });
+
+  it('should show regeneration in progress when rerunStartedAt is recent', async () => {
+    const recentTimestamp = createTimestamp(Date.now() - 5_000);
+    eventInfoService.getEventInfo.and.returnValue(
+      of({ rerunStartedAt: recentTimestamp } as any),
+    );
+
+    await createComponent();
+
+    expect(component.rerunInProgress()).toBeTrue();
+    const statusEl = fixture.nativeElement.querySelector('.rerun-in-progress') as HTMLElement | null;
+    expect(statusEl).not.toBeNull();
+    expect(statusEl?.textContent).toContain('Regeneration in progress');
+  });
+
+  it('should not show regeneration in progress when rerunStartedAt is absent', async () => {
+    eventInfoService.getEventInfo.and.returnValue(of({} as any));
+
+    await createComponent();
+
+    expect(component.rerunInProgress()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.rerun-in-progress')).toBeNull();
+  });
+
+  it('should not show regeneration in progress when rerunStartedAt is stale', async () => {
+    const staleTimestamp = createTimestamp(Date.now() - 31 * 60 * 1000);
+    eventInfoService.getEventInfo.and.returnValue(
+      of({ rerunStartedAt: staleTimestamp } as any),
+    );
+
+    await createComponent();
+
+    expect(component.rerunInProgress()).toBeFalse();
+  });
+
+  it('should load the combined ADIF URL when the rerun lock clears', async () => {
+    const rerunSubject = new BehaviorSubject<any>(
+      { rerunStartedAt: createTimestamp(Date.now() - 5_000) },
+    );
+    eventInfoService.getEventInfo.and.returnValue(rerunSubject.asObservable());
+
+    await createComponent();
+
+    // Reset the call count captured during initialization (rerun was active, so no call)
+    const loadUrlSpy = (component as any).loadCombinedAdifDownloadUrl as jasmine.Spy;
+    loadUrlSpy.calls.reset();
+
+    // Simulate the rerun completing (lock cleared)
+    rerunSubject.next({});
+    expect(loadUrlSpy).toHaveBeenCalledTimes(1);
   });
 });
