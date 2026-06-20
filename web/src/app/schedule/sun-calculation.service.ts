@@ -78,7 +78,9 @@ export class SunCalculationService {
         location.latitude,
         location.longitude,
       );
-      return time >= times.sunrise && time < times.sunset;
+      if (times.sunrise && times.sunset) {
+        return time >= times.sunrise && time < times.sunset;
+      }
     }
 
     // Fallback to simple 6am-6pm model using browser's local time
