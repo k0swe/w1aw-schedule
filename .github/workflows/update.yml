@@ -71,7 +71,7 @@ jobs:
       - name: npm update functions
         working-directory: functions
         run: |
-          npx npm-check-updates -u -x eslint
+          npx npm-check-updates -u -x eslint,firebase-admin
           npm install -f
           npm update
           npm install
