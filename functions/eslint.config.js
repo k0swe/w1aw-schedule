@@ -1,6 +1,5 @@
 const eslint = require("@eslint/js");
 const tseslint = require("typescript-eslint");
-const importPlugin = require("eslint-plugin-import");
 const prettierConfig = require("eslint-config-prettier");
 
 module.exports = [
@@ -36,9 +35,6 @@ module.exports = [
         clearInterval: "readonly",
       },
     },
-    plugins: {
-      import: importPlugin,
-    },
     rules: {
       // Google style guide rules (adapted for flat config)
       "no-var": "warn",
@@ -49,6 +45,7 @@ module.exports = [
       "no-new-func": "error",
       "no-new-wrappers": "error",
       "no-throw-literal": "warn",
+      "no-useless-assignment": "off",
       "block-scoped-var": "warn",
       curly: ["warn", "multi-line"],
       eqeqeq: "warn",
@@ -88,7 +85,6 @@ module.exports = [
       "spaced-comment": ["warn", "always"],
 
       // Custom rules from original config
-      "import/no-unresolved": 0,
       indent: ["error", 2],
     },
   },

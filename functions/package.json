@@ -27,6 +27,7 @@
     "w1aw-schedule-shared": "file:../shared"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/mocha": "^10.0.10",
@@ -35,7 +36,6 @@
     "eslint": "^10.0.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.32.0",
     "firebase-functions-test": "^3.5.0",
     "mocha": "^11.7.6",
     "prettier": "^3.8.4",
