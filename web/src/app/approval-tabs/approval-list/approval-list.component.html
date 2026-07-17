@@ -126,8 +126,9 @@
         <mat-form-field appearance="outline" class="notes-field">
           <input
             matInput
+            #notesInput
             [value]="user.adminNotes || ''"
-            (blur)="updateAdminNotes(user.id, $any($event.target).value)"
+            (blur)="updateAdminNotes(user.id, notesInput.value)"
             placeholder="Add notes..."
           />
         </mat-form-field>
