@@ -35,6 +35,40 @@
               'arrlMemberNumber',
               'discordUsername',
               'approve',
+              'under-review',
+              'decline',
+            ]"
+          >
+          </kel-approval-list>
+        </mat-tab>
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <div
+              [matBadge]="(underReviewCount$ | async) || ''"
+              [matBadgeHidden]="
+                !(
+                  (underReviewCount$ | async) &&
+                  (underReviewCount$ | async)! > 0
+                )
+              "
+              matBadgeColor="accent"
+              matBadgeOverlap="false"
+            >
+              Under Review
+            </div>
+          </ng-template>
+          <kel-approval-list
+            [userList]="underReviewUsers$"
+            [eventId]="evtId"
+            [displayColumns]="[
+              'name',
+              'callsign',
+              'email',
+              'phone',
+              'arrlMemberNumber',
+              'discordUsername',
+              'adminNotes',
+              'approve',
               'decline',
             ]"
           >

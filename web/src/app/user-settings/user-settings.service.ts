@@ -254,7 +254,7 @@ export class UserSettingsService {
   // Query event approvals by status for a specific event
   private getEventApprovalsByStatus(
     eventId: string,
-    status: 'Applied' | 'Approved' | 'Declined',
+    status: 'Applied' | 'Approved' | 'Declined' | 'UnderReview',
   ): Observable<UserSettings[]> {
     // Query the approvals collection directly under the event
     const approvalsCol = collection(
@@ -279,6 +279,7 @@ export class UserSettingsService {
               ...(userData as UserSettings),
               id: userId,
               multiShift: approvalData.multiShift,
+              adminNotes: approvalData.adminNotes,
             })),
           );
         });
@@ -315,6 +316,11 @@ export class UserSettingsService {
     return this.getEventApprovalsByStatus(eventId, 'Declined');
   }
 
+  // Admin only - Get users under review for a specific event
+  public getUnderReviewUsers(eventId: string): Observable<UserSettings[]> {
+    return this.getEventApprovalsByStatus(eventId, 'UnderReview');
+  }
+
   // Admin only - Approve user for a specific event
   public approve(userId: string, eventId: string): Observable<void> {
     const adminId = this.authService.user$.getValue()!.uid;
@@ -341,6 +347,30 @@ export class UserSettingsService {
         statusChangedAt: Timestamp.now(),
       }),
     );
+  }
+
+  // Admin only - Mark user as under review for a specific event
+  public markUnderReview(userId: string, eventId: string): Observable<void> {
+    const adminId = this.authService.user$.getValue()!.uid;
+
+    const docRef = doc(this.firestore, `events/${eventId}/approvals/${userId}`);
+    return from(
+      updateDoc(docRef, {
+        status: 'UnderReview',
+        reviewedBy: adminId,
+        statusChangedAt: Timestamp.now(),
+      }),
+    );
+  }
+
+  // Admin only - Update admin notes for a user's approval
+  public updateAdminNotes(
+    userId: string,
+    eventId: string,
+    notes: string,
+  ): Observable<void> {
+    const docRef = doc(this.firestore, `events/${eventId}/approvals/${userId}`);
+    return from(updateDoc(docRef, { adminNotes: notes }));
   }
 
   delete(userId: string): Observable<any> {

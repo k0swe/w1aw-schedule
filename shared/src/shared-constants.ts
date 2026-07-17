@@ -64,12 +64,15 @@ export interface UserSettings {
   discordId?: string;
   discordDiscriminator?: string;
   discordAvatar?: string;
+  adminNotes?: string;
 }
 
 export interface EventApproval {
-  status: 'Applied' | 'Approved' | 'Declined';
+  status: 'Applied' | 'Approved' | 'Declined' | 'UnderReview';
   approvedBy?: string;
   declinedBy?: string;
+  reviewedBy?: string;
+  adminNotes?: string;
   appliedAt: GenericTimestamp;
   statusChangedAt?: GenericTimestamp;
   userId?: string; // User ID for whom this approval is for (useful for queries)

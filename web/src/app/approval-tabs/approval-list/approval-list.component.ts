@@ -9,8 +9,11 @@ import {
   ViewChild,
   inject,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
+import { MatFormField } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import {
@@ -57,6 +60,9 @@ import {
     MatRowDef,
     MatRow,
     MatNoDataRow,
+    MatFormField,
+    MatInput,
+    FormsModule,
   ],
 })
 export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
@@ -102,6 +108,14 @@ export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
 
   decline(id: string) {
     this.userSettingsService.decline(id, this.eventId).subscribe();
+  }
+
+  markUnderReview(id: string) {
+    this.userSettingsService.markUnderReview(id, this.eventId).subscribe();
+  }
+
+  updateAdminNotes(id: string, notes: string) {
+    this.userSettingsService.updateAdminNotes(id, this.eventId, notes).subscribe();
   }
 
   delete(id: string) {
