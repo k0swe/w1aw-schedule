@@ -360,6 +360,16 @@ export class UserSettingsService {
         reviewedBy: adminId,
         statusChangedAt: Timestamp.now(),
       }),
+    ).pipe(
+      catchError((error) => {
+        console.error(
+          '[UserSettingsService] markUnderReview error',
+          'eventId:', eventId,
+          'userId:', userId,
+          error,
+        );
+        throw error;
+      }),
     );
   }
 

@@ -10,7 +10,7 @@ import {
   inject,
 } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
-import { MatFormField } from '@angular/material/form-field';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
@@ -60,6 +60,7 @@ import {
     MatRow,
     MatNoDataRow,
     MatFormField,
+    MatLabel,
     MatInput,
   ],
 })
