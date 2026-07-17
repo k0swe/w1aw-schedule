@@ -10,7 +10,7 @@ import {
   inject,
 } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatFormField } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
@@ -60,7 +60,6 @@ import {
     MatRow,
     MatNoDataRow,
     MatFormField,
-    MatLabel,
     MatInput,
   ],
 })
@@ -117,8 +116,10 @@ export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   updateAdminNotes(id: string, notes: string, originalNotes?: string) {
+    // Treat undefined (no previous notes) the same as empty string to avoid
+    // unnecessary Firestore writes when the field was never set
     if (notes === (originalNotes || '')) {
-      return; // No change, skip unnecessary write
+      return;
     }
     this.userSettingsService
       .updateAdminNotes(id, this.eventId, notes)
