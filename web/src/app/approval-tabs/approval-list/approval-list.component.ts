@@ -9,7 +9,6 @@ import {
   ViewChild,
   inject,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
 import { MatFormField } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
@@ -62,7 +61,6 @@ import {
     MatNoDataRow,
     MatFormField,
     MatInput,
-    FormsModule,
   ],
 })
 export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {

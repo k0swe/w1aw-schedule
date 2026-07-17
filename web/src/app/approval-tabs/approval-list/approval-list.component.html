@@ -126,8 +126,8 @@
         <mat-form-field appearance="outline" class="notes-field">
           <input
             matInput
-            [ngModel]="user.adminNotes || ''"
-            (ngModelChange)="updateAdminNotes(user.id, $event)"
+            [value]="user.adminNotes || ''"
+            (blur)="updateAdminNotes(user.id, $any($event.target).value)"
             placeholder="Add notes..."
           />
         </mat-form-field>

@@ -141,9 +141,8 @@
             }
           </div>
           <div class="event-status">
-            @if (event.approvalStatus === 'Applied' || event.approvalStatus === 'UnderReview') {
+            @if (event.approvalStatus === 'Applied') {
               <span class="status-badge pending">Pending Approval</span>
-              @if (event.approvalStatus === 'Applied') {
               <button
                 mat-button
                 color="warn"
@@ -151,7 +150,8 @@
               >
                 Withdraw
               </button>
-              }
+            } @else if (event.approvalStatus === 'UnderReview') {
+              <span class="status-badge pending">Pending Approval</span>
             } @else if (event.approvalStatus === 'Approved') {
               <span class="status-badge approved">Approved</span>
             } @else if (event.approvalStatus === 'Declined') {
