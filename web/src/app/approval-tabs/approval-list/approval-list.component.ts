@@ -109,11 +109,22 @@ export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   markUnderReview(id: string) {
-    this.userSettingsService.markUnderReview(id, this.eventId).subscribe();
+    this.userSettingsService.markUnderReview(id, this.eventId).subscribe({
+      error: (err) =>
+        console.error('[ApprovalList] Failed to mark under review:', err),
+    });
   }
 
-  updateAdminNotes(id: string, notes: string) {
-    this.userSettingsService.updateAdminNotes(id, this.eventId, notes).subscribe();
+  updateAdminNotes(id: string, notes: string, originalNotes?: string) {
+    if (notes === (originalNotes || '')) {
+      return; // No change, skip unnecessary write
+    }
+    this.userSettingsService
+      .updateAdminNotes(id, this.eventId, notes)
+      .subscribe({
+        error: (err) =>
+          console.error('[ApprovalList] Failed to update admin notes:', err),
+      });
   }
 
   delete(id: string) {

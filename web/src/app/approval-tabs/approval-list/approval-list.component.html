@@ -128,7 +128,7 @@
             matInput
             #notesInput
             [value]="user.adminNotes || ''"
-            (blur)="updateAdminNotes(user.id, notesInput.value)"
+            (blur)="updateAdminNotes(user.id, notesInput.value, user.adminNotes)"
             placeholder="Add notes..."
           />
         </mat-form-field>

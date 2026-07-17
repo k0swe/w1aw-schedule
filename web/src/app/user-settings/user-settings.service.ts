@@ -370,7 +370,17 @@ export class UserSettingsService {
     notes: string,
   ): Observable<void> {
     const docRef = doc(this.firestore, `events/${eventId}/approvals/${userId}`);
-    return from(updateDoc(docRef, { adminNotes: notes }));
+    return from(updateDoc(docRef, { adminNotes: notes })).pipe(
+      catchError((error) => {
+        console.error(
+          '[UserSettingsService] updateAdminNotes error',
+          'eventId:', eventId,
+          'userId:', userId,
+          error,
+        );
+        throw error;
+      }),
+    );
   }
 
   delete(userId: string): Observable<any> {
