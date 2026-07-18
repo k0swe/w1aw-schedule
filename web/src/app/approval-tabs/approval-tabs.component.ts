@@ -56,18 +56,22 @@ export class ApprovalTabsComponent implements OnInit {
   eventId = signal<string | undefined>(undefined);
   eventInfo$: Observable<EventInfo | undefined>;
   provisionalUsers$: Observable<UserSettings[]>;
+  underReviewUsers$: Observable<UserSettings[]>;
   approvedUsers$: Observable<UserSettings[]>;
   declinedUsers$: Observable<UserSettings[]>;
   pendingCount$: Observable<number>;
-  selectedTabIndex = signal<number>(1); // Default to Approved tab (index 1)
+  underReviewCount$: Observable<number>;
+  selectedTabIndex = signal<number>(2); // Default to Approved tab (index 2)
 
   constructor() {
     // Initialize with empty observables - will be set in ngOnInit based on route
     this.eventInfo$ = of(undefined);
     this.provisionalUsers$ = of([]);
+    this.underReviewUsers$ = of([]);
     this.approvedUsers$ = of([]);
     this.declinedUsers$ = of([]);
     this.pendingCount$ = of(0);
+    this.underReviewCount$ = of(0);
   }
 
   ngOnInit(): void {
@@ -96,6 +100,9 @@ export class ApprovalTabsComponent implements OnInit {
         this.provisionalUsers$ = this.userSettingsService.getProvisionalUsers(
           eventInfo.id,
         );
+        this.underReviewUsers$ = this.userSettingsService.getUnderReviewUsers(
+          eventInfo.id,
+        );
         this.approvedUsers$ = this.userSettingsService.getApprovedUsers(
           eventInfo.id,
         );
@@ -107,24 +114,31 @@ export class ApprovalTabsComponent implements OnInit {
         this.pendingCount$ = this.provisionalUsers$.pipe(
           map((users) => users.length),
         );
+
+        // Count under-review users for badge
+        this.underReviewCount$ = this.underReviewUsers$.pipe(
+          map((users) => users.length),
+        );
       });
 
     // Handle URL fragment for tab selection
     this.route.fragment.subscribe((fragment) => {
       if (fragment === 'pending') {
         this.selectedTabIndex.set(0);
-      } else if (fragment === 'approved') {
+      } else if (fragment === 'under-review') {
         this.selectedTabIndex.set(1);
-      } else if (fragment === 'declined') {
+      } else if (fragment === 'approved') {
         this.selectedTabIndex.set(2);
+      } else if (fragment === 'declined') {
+        this.selectedTabIndex.set(3);
       }
-      // If no fragment, default to Approved (index 1)
+      // If no fragment, default to Approved (index 2)
     });
   }
 
   onTabChange(index: number): void {
     // Update URL fragment when tab changes
-    const fragments = ['pending', 'approved', 'declined'];
+    const fragments = ['pending', 'under-review', 'approved', 'declined'];
     this.router.navigate([], {
       fragment: fragments[index],
       relativeTo: this.route,

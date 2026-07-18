@@ -10,7 +10,9 @@ import {
   inject,
 } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
+import { MatFormField } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import {
@@ -57,6 +59,8 @@ import {
     MatRowDef,
     MatRow,
     MatNoDataRow,
+    MatFormField,
+    MatInput,
   ],
 })
 export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
@@ -102,6 +106,27 @@ export class ApprovalListComponent implements OnInit, OnChanges, OnDestroy {
 
   decline(id: string) {
     this.userSettingsService.decline(id, this.eventId).subscribe();
+  }
+
+  markUnderReview(id: string) {
+    this.userSettingsService.markUnderReview(id, this.eventId).subscribe({
+      error: (err) =>
+        console.error('[ApprovalList] Failed to mark under review:', err),
+    });
+  }
+
+  updateAdminNotes(id: string, notes: string, originalNotes?: string) {
+    // Treat undefined (no previous notes) the same as empty string to avoid
+    // unnecessary Firestore writes when the field was never set
+    if (notes === (originalNotes || '')) {
+      return;
+    }
+    this.userSettingsService
+      .updateAdminNotes(id, this.eventId, notes)
+      .subscribe({
+        error: (err) =>
+          console.error('[ApprovalList] Failed to update admin notes:', err),
+      });
   }
 
   delete(id: string) {

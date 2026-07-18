@@ -22,6 +22,7 @@ describe('ApprovalTabsComponent', () => {
       getProvisionalUsers: () => of([]),
       getApprovedUsers: () => of([]),
       getDeclinedUsers: () => of([]),
+      getUnderReviewUsers: () => of([]),
     };
 
     const mockEventInfo: EventInfoWithId = {
@@ -66,8 +67,8 @@ describe('ApprovalTabsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should default to Approved tab (index 1)', () => {
-    expect(component.selectedTabIndex()).toBe(1);
+  it('should default to Approved tab (index 2)', () => {
+    expect(component.selectedTabIndex()).toBe(2);
   });
 
   it('should set tab index based on URL fragment', () => {

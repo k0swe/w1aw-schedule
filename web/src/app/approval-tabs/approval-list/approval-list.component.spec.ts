@@ -16,6 +16,8 @@ describe('ApprovalListComponent', () => {
       decline: () => of(undefined),
       delete: () => of({}),
       setMultiShift: () => of(undefined),
+      markUnderReview: () => of(undefined),
+      updateAdminNotes: () => of(undefined),
     };
 
     await TestBed.configureTestingModule({
