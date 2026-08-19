@@ -32,20 +32,14 @@
     "w1aw-schedule-shared": "file:../shared"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "22.1.4",
+    "@angular/build": "^22.1.4",
     "@angular/cli": "22.1.4",
     "@angular/compiler-cli": "22.1.2",
     "@trivago/prettier-plugin-sort-imports": "6.0.2",
-    "@types/jasmine": "6.0.0",
     "@types/suncalc": "^1.9.2",
-    "istanbul-lib-instrument": "^6.0.3",
-    "jasmine-core": "6.3.0",
-    "karma": "6.4.4",
-    "karma-chrome-launcher": "3.2.0",
-    "karma-coverage": "2.2.1",
-    "karma-jasmine": "5.1.0",
-    "karma-jasmine-html-reporter": "2.2.0",
+    "jsdom": "^30.0.1",
     "prettier": "3.9.6",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "^4.0.8"
   }
 }

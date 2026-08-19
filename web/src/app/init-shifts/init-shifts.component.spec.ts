@@ -1,31 +1,38 @@
 import { HttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Auth } from 'firebase/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Auth } from 'firebase/auth';
 import { of } from 'rxjs';
+import type { MockedObject } from 'vitest';
 
-import { AUTH } from '../firebase-rxjs';
 import { EventInfoService } from '../event-info/event-info.service';
+import { AUTH } from '../firebase-rxjs';
 import { InitShiftsComponent } from './init-shifts.component';
 
 describe('InitShiftsComponent', () => {
   let component: InitShiftsComponent;
   let fixture: ComponentFixture<InitShiftsComponent>;
-  let eventInfoService: jasmine.SpyObj<EventInfoService>;
-  let http: jasmine.SpyObj<HttpClient>;
-  let auth: jasmine.SpyObj<Auth>;
-  let snackBar: jasmine.SpyObj<MatSnackBar>;
+  let eventInfoService: MockedObject<EventInfoService>;
+  let http: MockedObject<HttpClient>;
+  let auth: MockedObject<Auth>;
+  let snackBar: MockedObject<MatSnackBar>;
 
   beforeEach(async () => {
-    eventInfoService = jasmine.createSpyObj('EventInfoService', [
-      'getAllEvents',
-    ]);
-    http = jasmine.createSpyObj('HttpClient', ['get']);
-    auth = jasmine.createSpyObj('Auth', [], { currentUser: null });
-    snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    eventInfoService = {
+      getAllEvents: vi.fn().mockName('EventInfoService.getAllEvents'),
+    };
+    http = {
+      get: vi.fn().mockName('HttpClient.get'),
+    };
+    auth = {
+      currentUser: null,
+    };
+    snackBar = {
+      open: vi.fn().mockName('MatSnackBar.open'),
+    };
 
-    eventInfoService.getAllEvents.and.returnValue(of([]));
+    eventInfoService.getAllEvents.mockReturnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [InitShiftsComponent, BrowserAnimationsModule],

@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Auth } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
 import { Functions } from 'firebase/functions';
-import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { EventInfoService } from '../event-info/event-info.service';
+import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { AuthenticationService } from './authentication.service';
 
 describe('AuthenticationService', () => {
@@ -19,7 +19,7 @@ describe('AuthenticationService', () => {
     const functionsMock = {} as Functions;
     const firestoreMock = {} as Firestore;
     const routerMock = {
-      navigate: jasmine.createSpy('navigate'),
+      navigate: vi.fn().mockName('navigate'),
     };
     const activatedRouteMock = {
       snapshot: { queryParams: {} },

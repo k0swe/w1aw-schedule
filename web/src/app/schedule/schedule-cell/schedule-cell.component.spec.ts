@@ -17,7 +17,7 @@ describe('ScheduleCellComponent', () => {
     const functionsMock = {} as Functions;
     const firestoreMock = {} as Firestore;
     const scheduleServiceMock = {
-      findShift: jasmine.createSpy('findShift').and.returnValue(of(undefined)),
+      findShift: vi.fn().mockName('findShift').mockReturnValue(of(undefined)),
     };
 
     await TestBed.configureTestingModule({
@@ -46,19 +46,19 @@ describe('ScheduleCellComponent', () => {
     it('should return true for 30m phone', () => {
       component.band = '30';
       component.mode = 'phone';
-      expect(component.isNotAllowed()).toBeTrue();
+      expect(component.isNotAllowed()).toBe(true);
     });
 
     it('should return false for 30m cw', () => {
       component.band = '30';
       component.mode = 'cw';
-      expect(component.isNotAllowed()).toBeFalse();
+      expect(component.isNotAllowed()).toBe(false);
     });
 
     it('should return false for 20m phone', () => {
       component.band = '20';
       component.mode = 'phone';
-      expect(component.isNotAllowed()).toBeFalse();
+      expect(component.isNotAllowed()).toBe(false);
     });
   });
 
@@ -66,13 +66,13 @@ describe('ScheduleCellComponent', () => {
     it('should be disabled for 30m phone regardless of other conditions', () => {
       component.band = '30';
       component.mode = 'phone';
-      expect(component.buttonDisabled()).toBeTrue();
+      expect(component.buttonDisabled()).toBe(true);
     });
 
     it('should be disabled for past shifts', () => {
       component.currentTimeMs = component.timeslot.getTime() + TWO_HOURS_IN_MS;
 
-      expect(component.buttonDisabled()).toBeTrue();
+      expect(component.buttonDisabled()).toBe(true);
     });
 
     it('should keep the admin menu trigger enabled for past shifts', () => {
@@ -85,8 +85,8 @@ describe('ScheduleCellComponent', () => {
       const primaryButton = buttons[0].nativeElement as HTMLButtonElement;
       const adminMenuButton = buttons[1].nativeElement as HTMLButtonElement;
 
-      expect(primaryButton.disabled).toBeTrue();
-      expect(adminMenuButton.disabled).toBeFalse();
+      expect(primaryButton.disabled).toBe(true);
+      expect(adminMenuButton.disabled).toBe(false);
     });
   });
 });

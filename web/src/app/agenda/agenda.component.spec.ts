@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { Auth } from 'firebase/auth';
 import { Firestore, Timestamp } from 'firebase/firestore';
 import { Functions } from 'firebase/functions';
-import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { EventInfoWithId } from 'w1aw-schedule-shared';
 
-import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
+import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { ScheduleService } from '../schedule/schedule.service';
 import { AgendaComponent } from './agenda.component';
 
@@ -23,7 +23,7 @@ describe('AgendaComponent', () => {
     const functionsMock = {} as Functions;
     const firestoreMock = {} as Firestore;
     const routerMock = {
-      navigate: jasmine.createSpy('navigate'),
+      navigate: vi.fn().mockName('navigate'),
     };
     const activatedRouteMock = {
       paramMap: of(convertToParamMap({ slug: 'test-slug' })),
@@ -49,9 +49,10 @@ describe('AgendaComponent', () => {
       getEventInfo: () => of(mockEventInfo),
     };
     const scheduleServiceMock = {
-      findUserShifts: jasmine
-        .createSpy('findUserShifts')
-        .and.returnValue(of([])),
+      findUserShifts: vi
+        .fn()
+        .mockName('findUserShifts')
+        .mockReturnValue(of([])),
     };
     const authenticationServiceMock = {
       user$: new BehaviorSubject(null),

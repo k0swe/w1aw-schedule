@@ -40,7 +40,7 @@ jobs:
 
       - name: Test
         working-directory: web
-        run: npm test -- --browsers=ChromeHeadless --watch=false
+        run: npm test -- --watch=false
 
       - name: Build
         working-directory: web

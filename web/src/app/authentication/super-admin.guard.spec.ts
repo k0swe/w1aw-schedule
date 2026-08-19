@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import type { MockedObject } from 'vitest';
 import { SUPER_ADMIN_ID } from 'w1aw-schedule-shared';
 
 import { AuthenticationService } from './authentication.service';
@@ -8,14 +9,14 @@ import { SuperAdminGuard } from './super-admin.guard';
 
 describe('SuperAdminGuard', () => {
   let guard: SuperAdminGuard;
-  let authService: jasmine.SpyObj<AuthenticationService>;
+  let authService: MockedObject<AuthenticationService>;
   let user$: BehaviorSubject<any>;
 
   beforeEach(() => {
     user$ = new BehaviorSubject<any>(null);
-    authService = jasmine.createSpyObj('AuthenticationService', [], {
+    authService = {
       user$: user$,
-    });
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -30,7 +31,7 @@ describe('SuperAdminGuard', () => {
     expect(guard).toBeTruthy();
   });
 
-  it('should return false when user is not logged in', (done) => {
+  it('should return false when user is not logged in', async () => {
     user$.next(null);
 
     const result = guard.canActivate(
@@ -44,14 +45,13 @@ describe('SuperAdminGuard', () => {
     ) {
       (result as any).subscribe((canActivate: boolean) => {
         expect(canActivate).toBe(false);
-        done();
       });
     } else {
-      fail('Expected Observable');
+      throw new Error('Expected Observable');
     }
   });
 
-  it('should return true when user is super-admin', (done) => {
+  it('should return true when user is super-admin', async () => {
     user$.next({ uid: SUPER_ADMIN_ID });
 
     const result = guard.canActivate(
@@ -65,14 +65,13 @@ describe('SuperAdminGuard', () => {
     ) {
       (result as any).subscribe((canActivate: boolean) => {
         expect(canActivate).toBe(true);
-        done();
       });
     } else {
-      fail('Expected Observable');
+      throw new Error('Expected Observable');
     }
   });
 
-  it('should return false when user is not super-admin', (done) => {
+  it('should return false when user is not super-admin', async () => {
     user$.next({ uid: 'some-other-user-id' });
 
     const result = guard.canActivate(
@@ -86,10 +85,9 @@ describe('SuperAdminGuard', () => {
     ) {
       (result as any).subscribe((canActivate: boolean) => {
         expect(canActivate).toBe(false);
-        done();
       });
     } else {
-      fail('Expected Observable');
+      throw new Error('Expected Observable');
     }
   });
 });

@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UserCredential } from 'firebase/auth';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
+import { UserCredential } from 'firebase/auth';
 import { of } from 'rxjs';
+import type { MockedObject } from 'vitest';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { LoginComponent } from './login.component';
@@ -11,32 +12,37 @@ import { LoginComponent } from './login.component';
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
-  let authService: jasmine.SpyObj<AuthenticationService>;
-  let router: jasmine.SpyObj<Router>;
+  let authService: MockedObject<AuthenticationService>;
+  let router: MockedObject<Router>;
   let activatedRouteMock: {
-    snapshot: { queryParams: Record<string, unknown> };
+    snapshot: {
+      queryParams: Record<string, unknown>;
+    };
   };
 
   beforeEach(async () => {
-    authService = jasmine.createSpyObj<AuthenticationService>(
-      'AuthenticationService',
-      [
-        'loginGoogle',
-        'loginFacebook',
-        'loginEmailPass',
-        'createEmailPass',
-        'sendVerificationEmail',
-        'forgotPassword',
-      ],
-    );
-    authService.loginGoogle.and.returnValue(of({} as UserCredential));
-    authService.loginFacebook.and.returnValue(of({} as UserCredential));
-    authService.loginEmailPass.and.returnValue(of({} as UserCredential));
-    authService.createEmailPass.and.returnValue(of({} as UserCredential));
-    authService.sendVerificationEmail.and.returnValue(of(void 0));
-    authService.forgotPassword.and.returnValue(of(void 0));
+    authService = {
+      loginGoogle: vi.fn().mockName('AuthenticationService.loginGoogle'),
+      loginFacebook: vi.fn().mockName('AuthenticationService.loginFacebook'),
+      loginEmailPass: vi.fn().mockName('AuthenticationService.loginEmailPass'),
+      createEmailPass: vi
+        .fn()
+        .mockName('AuthenticationService.createEmailPass'),
+      sendVerificationEmail: vi
+        .fn()
+        .mockName('AuthenticationService.sendVerificationEmail'),
+      forgotPassword: vi.fn().mockName('AuthenticationService.forgotPassword'),
+    };
+    authService.loginGoogle.mockReturnValue(of({} as UserCredential));
+    authService.loginFacebook.mockReturnValue(of({} as UserCredential));
+    authService.loginEmailPass.mockReturnValue(of({} as UserCredential));
+    authService.createEmailPass.mockReturnValue(of({} as UserCredential));
+    authService.sendVerificationEmail.mockReturnValue(of(void 0));
+    authService.forgotPassword.mockReturnValue(of(void 0));
 
-    router = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
+    router = {
+      navigateByUrl: vi.fn().mockName('Router.navigateByUrl'),
+    };
     activatedRouteMock = {
       snapshot: { queryParams: {} },
     };
@@ -47,8 +53,18 @@ describe('LoginComponent', () => {
         { provide: AuthenticationService, useValue: authService },
         { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: activatedRouteMock },
-        { provide: MatSnackBar, useValue: jasmine.createSpyObj('MatSnackBar', ['open']) },
-        { provide: MatDialog, useValue: jasmine.createSpyObj('MatDialog', ['open']) },
+        {
+          provide: MatSnackBar,
+          useValue: {
+            open: vi.fn().mockName('MatSnackBar.open'),
+          },
+        },
+        {
+          provide: MatDialog,
+          useValue: {
+            open: vi.fn().mockName('MatDialog.open'),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -62,7 +78,9 @@ describe('LoginComponent', () => {
   });
 
   it('navigates to continuation URL after email/password login', () => {
-    activatedRouteMock.snapshot.queryParams = { continue: '/events/test/agenda' };
+    activatedRouteMock.snapshot.queryParams = {
+      continue: '/events/test/agenda',
+    };
     component.email = 'test@example.com';
     component.password = 'pw';
 
@@ -82,7 +100,9 @@ describe('LoginComponent', () => {
   });
 
   it('navigates to /user for unsafe continuation URLs', () => {
-    activatedRouteMock.snapshot.queryParams = { continue: '//evil.example/path' };
+    activatedRouteMock.snapshot.queryParams = {
+      continue: '//evil.example/path',
+    };
     component.email = 'test@example.com';
     component.password = 'pw';
 
@@ -92,7 +112,9 @@ describe('LoginComponent', () => {
   });
 
   it('navigates to /user for backslash-based continuation URLs', () => {
-    activatedRouteMock.snapshot.queryParams = { continue: '/\\evil.example/path' };
+    activatedRouteMock.snapshot.queryParams = {
+      continue: '/\\evil.example/path',
+    };
     component.email = 'test@example.com';
     component.password = 'pw';
 

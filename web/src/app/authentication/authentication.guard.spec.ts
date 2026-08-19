@@ -7,6 +7,7 @@ import {
 } from '@angular/router';
 import { User } from 'firebase/auth';
 import { BehaviorSubject, Observable } from 'rxjs';
+import type { MockedObject } from 'vitest';
 
 import { AuthenticationGuard } from './authentication.guard';
 import { AuthenticationService } from './authentication.service';
@@ -15,12 +16,14 @@ describe('AuthenticationGuard', () => {
   let guard: AuthenticationGuard;
   let authReady$: BehaviorSubject<boolean>;
   let user$: BehaviorSubject<User | null>;
-  let router: jasmine.SpyObj<Router>;
+  let router: MockedObject<Router>;
 
   beforeEach(() => {
     authReady$ = new BehaviorSubject<boolean>(false);
     user$ = new BehaviorSubject<User | null>(null);
-    router = jasmine.createSpyObj<Router>('Router', ['createUrlTree']);
+    router = {
+      createUrlTree: vi.fn().mockName('Router.createUrlTree'),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -39,7 +42,7 @@ describe('AuthenticationGuard', () => {
     guard = TestBed.inject(AuthenticationGuard);
   });
 
-  it('allows activation when auth is ready and user exists', (done) => {
+  it('allows activation when auth is ready and user exists', async () => {
     user$.next({ uid: 'user-1' } as User);
     authReady$.next(true);
 
@@ -50,13 +53,12 @@ describe('AuthenticationGuard', () => {
 
     result.subscribe((canActivate: boolean | UrlTree) => {
       expect(canActivate).toBe(true);
-      done();
     });
   });
 
-  it('redirects to login with continuation when auth is ready and user is null', (done) => {
+  it('redirects to login with continuation when auth is ready and user is null', async () => {
     const loginUrlTree = {} as UrlTree;
-    router.createUrlTree.and.returnValue(loginUrlTree);
+    router.createUrlTree.mockReturnValue(loginUrlTree);
     authReady$.next(true);
 
     const result = guard.canActivate(
@@ -69,7 +71,6 @@ describe('AuthenticationGuard', () => {
       expect(router.createUrlTree).toHaveBeenCalledWith(['/login'], {
         queryParams: { continue: '/events/test/schedule?day=2026-06-01' },
       });
-      done();
     });
   });
 
