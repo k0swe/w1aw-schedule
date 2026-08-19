@@ -8,4 +8,4 @@ on:
 
 jobs:
   test:
-    uses: k0swe/w1aw-schedule/.github/workflows/test-shared.yml@main
+    uses: ./.github/workflows/test-shared.yml
