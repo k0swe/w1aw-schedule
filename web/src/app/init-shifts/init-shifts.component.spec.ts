@@ -21,16 +21,16 @@ describe('InitShiftsComponent', () => {
   beforeEach(async () => {
     eventInfoService = {
       getAllEvents: vi.fn().mockName('EventInfoService.getAllEvents'),
-    };
+    } as unknown as MockedObject<EventInfoService>;
     http = {
       get: vi.fn().mockName('HttpClient.get'),
-    };
+    } as unknown as MockedObject<HttpClient>;
     auth = {
       currentUser: null,
-    };
+    } as unknown as MockedObject<Auth>;
     snackBar = {
       open: vi.fn().mockName('MatSnackBar.open'),
-    };
+    } as unknown as MockedObject<MatSnackBar>;
 
     eventInfoService.getAllEvents.mockReturnValue(of([]));
 

@@ -16,7 +16,7 @@ describe('SuperAdminGuard', () => {
     user$ = new BehaviorSubject<any>(null);
     authService = {
       user$: user$,
-    };
+    } as unknown as MockedObject<AuthenticationService>;
 
     TestBed.configureTestingModule({
       providers: [

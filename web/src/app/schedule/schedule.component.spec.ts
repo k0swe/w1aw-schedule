@@ -31,14 +31,14 @@ describe('ScheduleComponent', () => {
     const scheduleServiceMock = {
       findUserShifts: vi.fn().mockName('ScheduleService.findUserShifts'),
       findShift: vi.fn().mockName('ScheduleService.findShift'),
-    };
+    } as unknown as MockedObject<ScheduleService>;
     scheduleServiceMock.findUserShifts.mockReturnValue(of([]));
     scheduleServiceMock.findShift.mockReturnValue(of(undefined));
 
     const authServiceMock = {
       user$: new BehaviorSubject({ uid: 'test-user' }),
       userIsAdmin: vi.fn().mockName('userIsAdmin').mockReturnValue(of(false)),
-    };
+    } as unknown as MockedObject<EventInfoService>;
 
     const userSettingsServiceMock = {
       userSettings$: new BehaviorSubject(null),
@@ -57,7 +57,7 @@ describe('ScheduleComponent', () => {
     eventInfoService = {
       getEventInfo: vi.fn().mockName('EventInfoService.getEventInfo'),
       getEventBySlug: vi.fn().mockName('EventInfoService.getEventBySlug'),
-    };
+    } as unknown as MockedObject<EventInfoService>;
 
     mockEventInfo = {
       id: 'test-event-id',
@@ -181,13 +181,11 @@ describe('ScheduleComponent', () => {
       component = fixture.componentInstance;
       fixture.detectChanges();
 
-      // Allow async operations to complete
-      setTimeout(() => {
-        const expectedDate = new Date('2026-05-29');
-        expect(component.viewDay.toISOString().split('T')[0]).toBe(
-          expectedDate.toISOString().split('T')[0],
-        );
-      }, 100);
+      await fixture.whenStable();
+      const expectedDate = new Date('2026-05-29');
+      expect(component.viewDay.toISOString().split('T')[0]).toBe(
+        expectedDate.toISOString().split('T')[0],
+      );
     });
 
     it('should calculate nearest day when no query param provided', () => {
@@ -256,17 +254,14 @@ describe('ScheduleComponent', () => {
       component = fixture.componentInstance;
       fixture.detectChanges();
 
-      setTimeout(() => {
-        expect(component.googleCalendarLink).toBeDefined();
-        expect(component.googleCalendarLink).toContain(
-          'test-calendar-id@import.calendar.google.com',
-        );
-        expect(component.googleCalendarLink).toContain('ctz=America%2FDenver');
-        expect(component.googleCalendarLink).toContain('mode=WEEK');
-        expect(component.googleCalendarLink).toContain(
-          'dates=20260527%2F20260602',
-        );
-      }, 100);
+      await fixture.whenStable();
+      expect(component.googleCalendarLink).toBeDefined();
+      expect(component.googleCalendarLink).toContain(
+        'test-calendar-id@import.calendar.google.com',
+      );
+      expect(component.googleCalendarLink).toContain('ctz=America%2FDenver');
+      expect(component.googleCalendarLink).toContain('mode=WEEK');
+      expect(component.googleCalendarLink).toContain('dates=20260527%2F20260602');
     });
 
     it('should set googleCalendarLink to undefined when googleCalendarId is missing', async () => {
@@ -282,9 +277,8 @@ describe('ScheduleComponent', () => {
       component = fixture.componentInstance;
       fixture.detectChanges();
 
-      setTimeout(() => {
-        expect(component.googleCalendarLink).toBeUndefined();
-      }, 100);
+      await fixture.whenStable();
+      expect(component.googleCalendarLink).toBeUndefined();
     });
   });
 

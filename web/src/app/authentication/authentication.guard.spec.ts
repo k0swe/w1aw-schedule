@@ -23,7 +23,7 @@ describe('AuthenticationGuard', () => {
     user$ = new BehaviorSubject<User | null>(null);
     router = {
       createUrlTree: vi.fn().mockName('Router.createUrlTree'),
-    };
+    } as unknown as MockedObject<Router>;
 
     TestBed.configureTestingModule({
       providers: [

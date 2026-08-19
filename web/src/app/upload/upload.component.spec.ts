@@ -40,13 +40,13 @@ describe('UploadComponent', () => {
     authService = {
       userIsAdmin: vi.fn().mockName('AuthenticationService.userIsAdmin'),
       user$,
-    } as MockedObject<AuthenticationService> & {
+    } as unknown as MockedObject<AuthenticationService> & {
       user$: BehaviorSubject<any>;
     };
     eventInfoService = {
       getEventBySlug: vi.fn().mockName('EventInfoService.getEventBySlug'),
       getEventInfo: vi.fn().mockName('EventInfoService.getEventInfo'),
-    };
+    } as unknown as MockedObject<EventInfoService>;
     eventInfoService.getEventInfo.mockReturnValue(of({} as any));
     userSettingsService = {
       init: vi.fn().mockName('UserSettingsService.init'),
@@ -57,10 +57,10 @@ describe('UploadComponent', () => {
       getApprovedUsers: vi
         .fn()
         .mockName('UserSettingsService.getApprovedUsers'),
-    };
+    } as unknown as MockedObject<UserSettingsService>;
     snackBar = {
       open: vi.fn().mockName('MatSnackBar.open'),
-    };
+    } as unknown as MockedObject<MatSnackBar>;
 
     eventInfoService.getEventBySlug.mockReturnValue(
       of({
@@ -80,14 +80,14 @@ describe('UploadComponent', () => {
     );
     authService.userIsAdmin.mockReturnValue(of(true));
 
-    vi.spyOn<any>(
-      UploadComponent.prototype,
+    vi.spyOn(
+      UploadComponent.prototype as any,
       'loadUploadedFiles',
-    ).mockResolvedValue();
-    vi.spyOn<any>(
-      UploadComponent.prototype,
+    ).mockResolvedValue(undefined);
+    vi.spyOn(
+      UploadComponent.prototype as any,
       'loadCombinedAdifDownloadUrl',
-    ).mockResolvedValue();
+    ).mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [UploadComponent, NoopAnimationsModule],

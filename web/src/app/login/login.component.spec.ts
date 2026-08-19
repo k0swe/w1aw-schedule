@@ -32,7 +32,7 @@ describe('LoginComponent', () => {
         .fn()
         .mockName('AuthenticationService.sendVerificationEmail'),
       forgotPassword: vi.fn().mockName('AuthenticationService.forgotPassword'),
-    };
+    } as unknown as MockedObject<AuthenticationService>;
     authService.loginGoogle.mockReturnValue(of({} as UserCredential));
     authService.loginFacebook.mockReturnValue(of({} as UserCredential));
     authService.loginEmailPass.mockReturnValue(of({} as UserCredential));
@@ -42,7 +42,7 @@ describe('LoginComponent', () => {
 
     router = {
       navigateByUrl: vi.fn().mockName('Router.navigateByUrl'),
-    };
+    } as unknown as MockedObject<Router>;
     activatedRouteMock = {
       snapshot: { queryParams: {} },
     };

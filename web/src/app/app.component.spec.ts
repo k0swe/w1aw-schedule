@@ -21,7 +21,7 @@ describe('AppComponent', () => {
         .fn()
         .mockName('AuthenticationService.userIsSuperAdmin'),
       user$: of(null),
-    };
+    } as unknown as MockedObject<AuthenticationService>;
     mockAuthService.userIsAdmin.mockReturnValue(of(false));
     mockAuthService.userIsSuperAdmin.mockReturnValue(of(false));
 
@@ -41,7 +41,7 @@ describe('AppComponent', () => {
     mockEventInfoService = {
       getEventBySlug: vi.fn().mockName('EventInfoService.getEventBySlug'),
       getAllEvents: vi.fn().mockName('EventInfoService.getAllEvents'),
-    };
+    } as unknown as MockedObject<EventInfoService>;
     mockEventInfoService.getEventBySlug.mockReturnValue(of(mockEventInfo));
     mockEventInfoService.getAllEvents.mockReturnValue(of([mockEventInfo]));
 
@@ -105,9 +105,7 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(app.selectedEvent$.value?.slug).toBe('current-event-slug');
-    }, 100);
+    expect(app.selectedEvent$.value?.slug).toBe('current-event-slug');
   });
 
   it('should set next future event as default when no current event', async () => {
@@ -146,9 +144,7 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(app.selectedEvent$.value?.slug).toBe('future-event-slug');
-    }, 100);
+    expect(app.selectedEvent$.value?.slug).toBe('future-event-slug');
   });
 
   it('should set last event as default when all events are in the past', async () => {
@@ -187,9 +183,7 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(app.selectedEvent$.value?.slug).toBe('recent-past-event-slug');
-    }, 100);
+    expect(app.selectedEvent$.value?.slug).toBe('recent-past-event-slug');
   });
 
   it('should change selected event when onEventChange is called', () => {
@@ -219,7 +213,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate').mockReturnValue(undefined);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on schedule page
     vi.spyOn(router, 'url', 'get').mockReturnValue('/events/old-slug/schedule');
@@ -250,7 +244,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate').mockReturnValue(undefined);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on agenda page
     vi.spyOn(router, 'url', 'get').mockReturnValue('/events/old-slug/agenda');
@@ -283,7 +277,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate').mockReturnValue(undefined);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on approvals page
     vi.spyOn(router, 'url', 'get').mockReturnValue(
@@ -305,14 +299,12 @@ describe('AppComponent', () => {
 
     app.onEventChange(newEvent);
 
-    setTimeout(() => {
-      expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
-      expect(router.navigate).toHaveBeenCalledWith([
-        '/events',
-        'new-slug',
-        'approvals',
-      ]);
-    }, 100);
+    expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
+    expect(router.navigate).toHaveBeenCalledWith([
+      '/events',
+      'new-slug',
+      'approvals',
+    ]);
   });
 
   it('should navigate to schedule page when switching events on approvals page if user is not admin', async () => {
@@ -321,7 +313,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate').mockReturnValue(undefined);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on approvals page
     vi.spyOn(router, 'url', 'get').mockReturnValue(
@@ -343,14 +335,12 @@ describe('AppComponent', () => {
 
     app.onEventChange(newEvent);
 
-    setTimeout(() => {
-      expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
-      expect(router.navigate).toHaveBeenCalledWith([
-        '/events',
-        'new-slug',
-        'schedule',
-      ]);
-    }, 100);
+    expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
+    expect(router.navigate).toHaveBeenCalledWith([
+      '/events',
+      'new-slug',
+      'schedule',
+    ]);
   });
 
   it('should receive events sorted chronologically from service', async () => {
@@ -389,14 +379,12 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      const events = app.events$.value;
-      expect(events.length).toBe(2);
-      // Verify events are in chronological order
-      expect(events[0].startTime.toMillis()).toBeLessThan(
-        events[1].startTime.toMillis(),
-      );
-    }, 100);
+    const events = app.events$.value;
+    expect(events.length).toBe(2);
+    // Verify events are in chronological order
+    expect(events[0].startTime.toMillis()).toBeLessThan(
+      events[1].startTime.toMillis(),
+    );
   });
 
   it('should update selected event based on route slug when different from current', async () => {
@@ -447,11 +435,8 @@ describe('AppComponent', () => {
     // This will navigate to event-2's route and trigger the router subscription
     app.onEventChange(event2);
 
-    // Give time for the router subscription to process
-    setTimeout(() => {
-      // The router subscription should have updated selectedEvent$ to event2
-      expect(app.selectedEvent$.value?.id).toBe('event-2');
-      expect(app.selectedEvent$.value?.slug).toBe('event-2-slug');
-    }, 100);
+    // The router subscription should have updated selectedEvent$ to event2
+    expect(app.selectedEvent$.value?.id).toBe('event-2');
+    expect(app.selectedEvent$.value?.slug).toBe('event-2-slug');
   });
 });
