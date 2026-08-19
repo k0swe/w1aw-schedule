@@ -37,7 +37,9 @@
     "@angular/compiler-cli": "22.1.2",
     "@trivago/prettier-plugin-sort-imports": "6.0.2",
     "@types/suncalc": "^1.9.2",
+    "@vitest/browser-playwright": "4.1.11",
     "jsdom": "^30.0.1",
+    "playwright": "1.58.0",
     "prettier": "3.9.6",
     "typescript": "6.0.3",
     "vitest": "^4.1.11"
