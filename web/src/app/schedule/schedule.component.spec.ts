@@ -1,15 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { Auth } from 'firebase/auth';
 import { Firestore, Timestamp } from 'firebase/firestore';
 import { Functions } from 'firebase/functions';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
+import type { MockedObject } from 'vitest';
 import { EventInfoWithId } from 'w1aw-schedule-shared';
 
-import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
+import { AUTH, FUNCTIONS } from '../firebase-rxjs';
 import { UserSettingsService } from '../user-settings/user-settings.service';
 import { ScheduleComponent } from './schedule.component';
 import { ScheduleService } from './schedule.service';
@@ -17,7 +18,7 @@ import { ScheduleService } from './schedule.service';
 describe('ScheduleComponent', () => {
   let component: ScheduleComponent;
   let fixture: ComponentFixture<ScheduleComponent>;
-  let eventInfoService: jasmine.SpyObj<EventInfoService>;
+  let eventInfoService: MockedObject<EventInfoService>;
   let mockEventInfo: EventInfoWithId;
 
   beforeEach(async () => {
@@ -27,34 +28,36 @@ describe('ScheduleComponent', () => {
     const authMock = {} as Auth;
     const firestoreMock = {} as Firestore;
     const functionsMock = {} as Functions;
-    const scheduleServiceMock = jasmine.createSpyObj('ScheduleService', [
-      'findUserShifts',
-      'findShift',
-    ]);
-    scheduleServiceMock.findUserShifts.and.returnValue(of([]));
-    scheduleServiceMock.findShift.and.returnValue(of(undefined));
+    const scheduleServiceMock = {
+      findUserShifts: vi.fn().mockName('ScheduleService.findUserShifts'),
+      findShift: vi.fn().mockName('ScheduleService.findShift'),
+    } as unknown as MockedObject<ScheduleService>;
+    scheduleServiceMock.findUserShifts.mockReturnValue(of([]));
+    scheduleServiceMock.findShift.mockReturnValue(of(undefined));
 
     const authServiceMock = {
       user$: new BehaviorSubject({ uid: 'test-user' }),
-      userIsAdmin: jasmine.createSpy('userIsAdmin').and.returnValue(of(false)),
-    };
+      userIsAdmin: vi.fn().mockName('userIsAdmin').mockReturnValue(of(false)),
+    } as unknown as MockedObject<AuthenticationService>;
 
     const userSettingsServiceMock = {
       userSettings$: new BehaviorSubject(null),
       settings$: new BehaviorSubject(null),
-      init: jasmine.createSpy('init'),
-      getApprovedUsers: jasmine
-        .createSpy('getApprovedUsers')
-        .and.returnValue(of([])),
-      getUserEventApproval: jasmine
-        .createSpy('getUserEventApproval')
-        .and.returnValue(of(null)),
+      init: vi.fn().mockName('init'),
+      getApprovedUsers: vi
+        .fn()
+        .mockName('getApprovedUsers')
+        .mockReturnValue(of([])),
+      getUserEventApproval: vi
+        .fn()
+        .mockName('getUserEventApproval')
+        .mockReturnValue(of(null)),
     };
 
-    eventInfoService = jasmine.createSpyObj('EventInfoService', [
-      'getEventInfo',
-      'getEventBySlug',
-    ]);
+    eventInfoService = {
+      getEventInfo: vi.fn().mockName('EventInfoService.getEventInfo'),
+      getEventBySlug: vi.fn().mockName('EventInfoService.getEventBySlug'),
+    } as unknown as MockedObject<EventInfoService>;
 
     mockEventInfo = {
       id: 'test-event-id',
@@ -69,8 +72,8 @@ describe('ScheduleComponent', () => {
       timeZoneId: 'America/Denver',
       googleCalendarId: 'test-calendar-id',
     };
-    eventInfoService.getEventInfo.and.returnValue(of(mockEventInfo));
-    eventInfoService.getEventBySlug.and.returnValue(of(mockEventInfo));
+    eventInfoService.getEventInfo.mockReturnValue(of(mockEventInfo));
+    eventInfoService.getEventBySlug.mockReturnValue(of(mockEventInfo));
 
     const activatedRouteMock = {
       paramMap: of(convertToParamMap({ slug: 'test-event' })),
@@ -95,16 +98,13 @@ describe('ScheduleComponent', () => {
     }).compileComponents();
   });
 
-  it('should create', (done) => {
+  it('should create', async () => {
     fixture = TestBed.createComponent(ScheduleComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    // Wait for async initialization
-    setTimeout(() => {
-      expect(component).toBeTruthy();
-      done();
-    }, 100);
+    await fixture.whenStable();
+    expect(component).toBeTruthy();
   });
 
   describe('getNearestDayInEventRange', () => {
@@ -171,7 +171,7 @@ describe('ScheduleComponent', () => {
   });
 
   describe('date navigation with query params', () => {
-    it('should use query param day when provided', (done) => {
+    it('should use query param day when provided', async () => {
       const activatedRoute = TestBed.inject(ActivatedRoute);
       activatedRoute.snapshot.queryParams = { day: '2026-05-29' };
 
@@ -179,21 +179,18 @@ describe('ScheduleComponent', () => {
       component = fixture.componentInstance;
       fixture.detectChanges();
 
-      // Allow async operations to complete
-      setTimeout(() => {
-        const expectedDate = new Date('2026-05-29');
-        expect(component.viewDay.toISOString().split('T')[0]).toBe(
-          expectedDate.toISOString().split('T')[0],
-        );
-        done();
-      }, 100);
+      await fixture.whenStable();
+      const expectedDate = new Date('2026-05-29');
+      expect(component.viewDay.toISOString().split('T')[0]).toBe(
+        expectedDate.toISOString().split('T')[0],
+      );
     });
 
     it('should calculate nearest day when no query param provided', () => {
       // Freeze time to before the event start (2026-05-27) so the component
       // always selects the event start date as the nearest day
-      jasmine.clock().install();
-      jasmine.clock().mockDate(new Date('2026-01-01T00:00:00Z'));
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
 
       try {
         const activatedRoute = TestBed.inject(ActivatedRoute);
@@ -207,7 +204,7 @@ describe('ScheduleComponent', () => {
         const expectedDate = new Date(Date.UTC(2026, 4, 27, 0, 0, 0, 0));
         expect(component.viewDay.getTime()).toBe(expectedDate.getTime());
       } finally {
-        jasmine.clock().uninstall();
+        vi.useRealTimers();
       }
     });
   });
@@ -236,7 +233,7 @@ describe('ScheduleComponent', () => {
         Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
       );
 
-      expect(component.isViewingToday()).toBeTrue();
+      expect(component.isViewingToday()).toBe(true);
     });
 
     it('should report false for isViewingToday when viewDay is not today in UTC', () => {
@@ -245,36 +242,32 @@ describe('ScheduleComponent', () => {
         Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1),
       );
 
-      expect(component.isViewingToday()).toBeFalse();
+      expect(component.isViewingToday()).toBe(false);
     });
   });
 
   describe('Google Calendar link', () => {
-    it('should construct Google Calendar link when googleCalendarId is provided', (done) => {
+    it('should construct Google Calendar link when googleCalendarId is provided', async () => {
       fixture = TestBed.createComponent(ScheduleComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
 
-      setTimeout(() => {
-        expect(component.googleCalendarLink).toBeDefined();
-        expect(component.googleCalendarLink).toContain(
-          'test-calendar-id@import.calendar.google.com',
-        );
-        expect(component.googleCalendarLink).toContain('ctz=America%2FDenver');
-        expect(component.googleCalendarLink).toContain('mode=WEEK');
-        expect(component.googleCalendarLink).toContain(
-          'dates=20260527%2F20260602',
-        );
-        done();
-      }, 100);
+      await fixture.whenStable();
+      expect(component.googleCalendarLink).toBeDefined();
+      expect(component.googleCalendarLink).toContain(
+        'test-calendar-id@import.calendar.google.com',
+      );
+      expect(component.googleCalendarLink).toContain('ctz=America%2FDenver');
+      expect(component.googleCalendarLink).toContain('mode=WEEK');
+      expect(component.googleCalendarLink).toContain('dates=20260527%2F20260602');
     });
 
-    it('should set googleCalendarLink to undefined when googleCalendarId is missing', (done) => {
+    it('should set googleCalendarLink to undefined when googleCalendarId is missing', async () => {
       const eventInfoWithoutCalendar = {
         ...mockEventInfo,
         googleCalendarId: undefined,
       };
-      eventInfoService.getEventInfo.and.returnValue(
+      eventInfoService.getEventInfo.mockReturnValue(
         of(eventInfoWithoutCalendar),
       );
 
@@ -282,10 +275,8 @@ describe('ScheduleComponent', () => {
       component = fixture.componentInstance;
       fixture.detectChanges();
 
-      setTimeout(() => {
-        expect(component.googleCalendarLink).toBeUndefined();
-        done();
-      }, 100);
+      await fixture.whenStable();
+      expect(component.googleCalendarLink).toBeUndefined();
     });
   });
 

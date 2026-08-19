@@ -12,7 +12,7 @@ describe('ScheduleService', () => {
     const firestoreMock = {} as Firestore;
     const authServiceMock = {
       user$: new BehaviorSubject(null),
-      userIsAdmin: jasmine.createSpy().and.returnValue(of(true)),
+      userIsAdmin: vi.fn().mockReturnValue(of(true)),
     };
 
     TestBed.configureTestingModule({

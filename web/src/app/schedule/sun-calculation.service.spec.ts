@@ -63,13 +63,12 @@ describe('SunCalculationService', () => {
   });
 
   describe('getUserLocation', () => {
-    it('should return an observable', (done) => {
+    it('should return an observable', async () => {
       service.getUserLocation().subscribe((location) => {
         // Location may be undefined if geolocation is not available/denied
         expect(location === undefined || typeof location === 'object').toBe(
           true,
         );
-        done();
       });
     });
   });

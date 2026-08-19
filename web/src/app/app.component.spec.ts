@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Timestamp } from 'firebase/firestore';
 import { of } from 'rxjs';
+import type { MockedObject } from 'vitest';
 import { EventInfoWithId } from 'w1aw-schedule-shared';
 
 import { AppComponent } from './app.component';
@@ -10,19 +11,19 @@ import { AuthenticationService } from './authentication/authentication.service';
 import { EventInfoService } from './event-info/event-info.service';
 
 describe('AppComponent', () => {
-  let mockAuthService: jasmine.SpyObj<AuthenticationService>;
-  let mockEventInfoService: jasmine.SpyObj<EventInfoService>;
+  let mockAuthService: MockedObject<AuthenticationService>;
+  let mockEventInfoService: MockedObject<EventInfoService>;
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj(
-      'AuthenticationService',
-      ['userIsAdmin', 'userIsSuperAdmin'],
-      {
-        user$: of(null),
-      },
-    );
-    mockAuthService.userIsAdmin.and.returnValue(of(false));
-    mockAuthService.userIsSuperAdmin.and.returnValue(of(false));
+    mockAuthService = {
+      userIsAdmin: vi.fn().mockName('AuthenticationService.userIsAdmin'),
+      userIsSuperAdmin: vi
+        .fn()
+        .mockName('AuthenticationService.userIsSuperAdmin'),
+      user$: of(null),
+    } as unknown as MockedObject<AuthenticationService>;
+    mockAuthService.userIsAdmin.mockReturnValue(of(false));
+    mockAuthService.userIsSuperAdmin.mockReturnValue(of(false));
 
     const mockEventInfo: EventInfoWithId = {
       id: 'test-id',
@@ -37,12 +38,12 @@ describe('AppComponent', () => {
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService = jasmine.createSpyObj('EventInfoService', [
-      'getEventBySlug',
-      'getAllEvents',
-    ]);
-    mockEventInfoService.getEventBySlug.and.returnValue(of(mockEventInfo));
-    mockEventInfoService.getAllEvents.and.returnValue(of([mockEventInfo]));
+    mockEventInfoService = {
+      getEventBySlug: vi.fn().mockName('EventInfoService.getEventBySlug'),
+      getAllEvents: vi.fn().mockName('EventInfoService.getAllEvents'),
+    } as unknown as MockedObject<EventInfoService>;
+    mockEventInfoService.getEventBySlug.mockReturnValue(of(mockEventInfo));
+    mockEventInfoService.getAllEvents.mockReturnValue(of([mockEventInfo]));
 
     await TestBed.configureTestingModule({
       imports: [RouterTestingModule, AppComponent],
@@ -68,7 +69,7 @@ describe('AppComponent', () => {
     expect(app.events$.value.length).toBe(1);
   });
 
-  it('should set current event as default when available', (done) => {
+  it('should set current event as default when available', async () => {
     const now = Date.now();
     const pastEvent: EventInfoWithId = {
       id: 'past-event-id',
@@ -96,7 +97,7 @@ describe('AppComponent', () => {
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService.getAllEvents.and.returnValue(
+    mockEventInfoService.getAllEvents.mockReturnValue(
       of([pastEvent, currentEvent]),
     );
 
@@ -104,13 +105,10 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(app.selectedEvent$.value?.slug).toBe('current-event-slug');
-      done();
-    }, 100);
+    expect(app.selectedEvent$.value?.slug).toBe('current-event-slug');
   });
 
-  it('should set next future event as default when no current event', (done) => {
+  it('should set next future event as default when no current event', async () => {
     const now = Date.now();
     const pastEvent: EventInfoWithId = {
       id: 'past-event-id',
@@ -138,7 +136,7 @@ describe('AppComponent', () => {
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService.getAllEvents.and.returnValue(
+    mockEventInfoService.getAllEvents.mockReturnValue(
       of([pastEvent, futureEvent]),
     );
 
@@ -146,13 +144,10 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(app.selectedEvent$.value?.slug).toBe('future-event-slug');
-      done();
-    }, 100);
+    expect(app.selectedEvent$.value?.slug).toBe('future-event-slug');
   });
 
-  it('should set last event as default when all events are in the past', (done) => {
+  it('should set last event as default when all events are in the past', async () => {
     const now = Date.now();
     const olderPastEvent: EventInfoWithId = {
       id: 'older-past-event-id',
@@ -180,7 +175,7 @@ describe('AppComponent', () => {
       timeZoneId: 'America/Denver',
     };
 
-    mockEventInfoService.getAllEvents.and.returnValue(
+    mockEventInfoService.getAllEvents.mockReturnValue(
       of([olderPastEvent, recentPastEvent]),
     );
 
@@ -188,10 +183,7 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(app.selectedEvent$.value?.slug).toBe('recent-past-event-slug');
-      done();
-    }, 100);
+    expect(app.selectedEvent$.value?.slug).toBe('recent-past-event-slug');
   });
 
   it('should change selected event when onEventChange is called', () => {
@@ -221,12 +213,10 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on schedule page
-    spyOnProperty(router, 'url', 'get').and.returnValue(
-      '/events/old-slug/schedule',
-    );
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/events/old-slug/schedule');
 
     const newEvent: EventInfoWithId = {
       id: 'new-id',
@@ -254,12 +244,10 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on agenda page
-    spyOnProperty(router, 'url', 'get').and.returnValue(
-      '/events/old-slug/agenda',
-    );
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/events/old-slug/agenda');
 
     const newEvent: EventInfoWithId = {
       id: 'new-id',
@@ -283,16 +271,16 @@ describe('AppComponent', () => {
     ]);
   });
 
-  it('should navigate to approvals page when switching events on approvals page if user is admin', (done) => {
-    mockAuthService.userIsAdmin.and.returnValue(of(true));
+  it('should navigate to approvals page when switching events on approvals page if user is admin', async () => {
+    mockAuthService.userIsAdmin.mockReturnValue(of(true));
 
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on approvals page
-    spyOnProperty(router, 'url', 'get').and.returnValue(
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
       '/events/old-slug/approvals',
     );
 
@@ -311,27 +299,24 @@ describe('AppComponent', () => {
 
     app.onEventChange(newEvent);
 
-    setTimeout(() => {
-      expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
-      expect(router.navigate).toHaveBeenCalledWith([
-        '/events',
-        'new-slug',
-        'approvals',
-      ]);
-      done();
-    }, 100);
+    expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
+    expect(router.navigate).toHaveBeenCalledWith([
+      '/events',
+      'new-slug',
+      'approvals',
+    ]);
   });
 
-  it('should navigate to schedule page when switching events on approvals page if user is not admin', (done) => {
-    mockAuthService.userIsAdmin.and.returnValue(of(false));
+  it('should navigate to schedule page when switching events on approvals page if user is not admin', async () => {
+    mockAuthService.userIsAdmin.mockReturnValue(of(false));
 
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     // Simulate being on approvals page
-    spyOnProperty(router, 'url', 'get').and.returnValue(
+    vi.spyOn(router, 'url', 'get').mockReturnValue(
       '/events/old-slug/approvals',
     );
 
@@ -350,18 +335,15 @@ describe('AppComponent', () => {
 
     app.onEventChange(newEvent);
 
-    setTimeout(() => {
-      expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
-      expect(router.navigate).toHaveBeenCalledWith([
-        '/events',
-        'new-slug',
-        'schedule',
-      ]);
-      done();
-    }, 100);
+    expect(mockAuthService.userIsAdmin).toHaveBeenCalledWith('new-id');
+    expect(router.navigate).toHaveBeenCalledWith([
+      '/events',
+      'new-slug',
+      'schedule',
+    ]);
   });
 
-  it('should receive events sorted chronologically from service', (done) => {
+  it('should receive events sorted chronologically from service', async () => {
     // Create events with different start times
     const now = Date.now();
     const event1: EventInfoWithId = {
@@ -391,24 +373,21 @@ describe('AppComponent', () => {
     };
 
     // Return events already sorted by startTime (as getAllEvents should do)
-    mockEventInfoService.getAllEvents.and.returnValue(of([event1, event2]));
+    mockEventInfoService.getAllEvents.mockReturnValue(of([event1, event2]));
 
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     fixture.detectChanges();
 
-    setTimeout(() => {
-      const events = app.events$.value;
-      expect(events.length).toBe(2);
-      // Verify events are in chronological order
-      expect(events[0].startTime.toMillis()).toBeLessThan(
-        events[1].startTime.toMillis(),
-      );
-      done();
-    }, 100);
+    const events = app.events$.value;
+    expect(events.length).toBe(2);
+    // Verify events are in chronological order
+    expect(events[0].startTime.toMillis()).toBeLessThan(
+      events[1].startTime.toMillis(),
+    );
   });
 
-  it('should update selected event based on route slug when different from current', (done) => {
+  it('should update selected event based on route slug when different from current', async () => {
     const now = Date.now();
     const event1: EventInfoWithId = {
       id: 'event-1',
@@ -437,8 +416,8 @@ describe('AppComponent', () => {
     };
 
     // Set up service mocks
-    mockEventInfoService.getAllEvents.and.returnValue(of([event1, event2]));
-    mockEventInfoService.getEventBySlug.and.callFake((slug: string) => {
+    mockEventInfoService.getAllEvents.mockReturnValue(of([event1, event2]));
+    mockEventInfoService.getEventBySlug.mockImplementation((slug: string) => {
       if (slug === 'event-2-slug') {
         return of(event2);
       }
@@ -456,12 +435,8 @@ describe('AppComponent', () => {
     // This will navigate to event-2's route and trigger the router subscription
     app.onEventChange(event2);
 
-    // Give time for the router subscription to process
-    setTimeout(() => {
-      // The router subscription should have updated selectedEvent$ to event2
-      expect(app.selectedEvent$.value?.id).toBe('event-2');
-      expect(app.selectedEvent$.value?.slug).toBe('event-2-slug');
-      done();
-    }, 100);
+    // The router subscription should have updated selectedEvent$ to event2
+    expect(app.selectedEvent$.value?.id).toBe('event-2');
+    expect(app.selectedEvent$.value?.slug).toBe('event-2-slug');
   });
 });

@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { convertToParamMap, ActivatedRoute } from '@angular/router';
-import { Auth } from 'firebase/auth';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { Auth } from 'firebase/auth';
 import { BehaviorSubject, of } from 'rxjs';
+import type { Mock, MockedObject } from 'vitest';
 
 import { AuthenticationService } from '../authentication/authentication.service';
 import { EventInfoService } from '../event-info/event-info.service';
@@ -15,12 +16,12 @@ import { UploadComponent } from './upload.component';
 describe('UploadComponent', () => {
   let fixture: ComponentFixture<UploadComponent>;
   let component: UploadComponent;
-  let authService: jasmine.SpyObj<AuthenticationService> & {
+  let authService: MockedObject<AuthenticationService> & {
     user$: BehaviorSubject<any>;
   };
-  let eventInfoService: jasmine.SpyObj<EventInfoService>;
-  let userSettingsService: jasmine.SpyObj<UserSettingsService>;
-  let snackBar: jasmine.SpyObj<MatSnackBar>;
+  let eventInfoService: MockedObject<EventInfoService>;
+  let userSettingsService: MockedObject<UserSettingsService>;
+  let snackBar: MockedObject<MatSnackBar>;
   const createTimestamp = (millis: number) => ({
     toMillis: () => millis,
     toDate: () => new Date(millis),
@@ -36,41 +37,57 @@ describe('UploadComponent', () => {
 
   beforeEach(async () => {
     const user$ = new BehaviorSubject<any>({ uid: 'admin-1' });
-    authService = jasmine.createSpyObj<AuthenticationService>(
-      'AuthenticationService',
-      ['userIsAdmin'],
-      { user$ },
-    ) as jasmine.SpyObj<AuthenticationService> & { user$: BehaviorSubject<any> };
-    eventInfoService = jasmine.createSpyObj('EventInfoService', ['getEventBySlug', 'getEventInfo']);
-    eventInfoService.getEventInfo.and.returnValue(of({} as any));
-    userSettingsService = jasmine.createSpyObj('UserSettingsService', [
-      'init',
-      'getUserEventApproval',
-      'settings',
-      'getApprovedUsers',
-    ]);
-    snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    authService = {
+      userIsAdmin: vi.fn().mockName('AuthenticationService.userIsAdmin'),
+      user$,
+    } as unknown as MockedObject<AuthenticationService> & {
+      user$: BehaviorSubject<any>;
+    };
+    eventInfoService = {
+      getEventBySlug: vi.fn().mockName('EventInfoService.getEventBySlug'),
+      getEventInfo: vi.fn().mockName('EventInfoService.getEventInfo'),
+    } as unknown as MockedObject<EventInfoService>;
+    eventInfoService.getEventInfo.mockReturnValue(of({} as any));
+    userSettingsService = {
+      init: vi.fn().mockName('UserSettingsService.init'),
+      getUserEventApproval: vi
+        .fn()
+        .mockName('UserSettingsService.getUserEventApproval'),
+      settings: vi.fn().mockName('UserSettingsService.settings'),
+      getApprovedUsers: vi
+        .fn()
+        .mockName('UserSettingsService.getApprovedUsers'),
+    } as unknown as MockedObject<UserSettingsService>;
+    snackBar = {
+      open: vi.fn().mockName('MatSnackBar.open'),
+    } as unknown as MockedObject<MatSnackBar>;
 
-    eventInfoService.getEventBySlug.and.returnValue(
+    eventInfoService.getEventBySlug.mockReturnValue(
       of({
         id: 'event-1',
         name: 'Spring Event',
         eventCallsign: 'W1AW',
-        startTime: createTimestamp(Date.now() - 60_000),
-        endTime: createTimestamp(Date.now() + 60_000),
+        startTime: createTimestamp(Date.now() - 60000),
+        endTime: createTimestamp(Date.now() + 60000),
       } as any),
     );
-    userSettingsService.getUserEventApproval.and.returnValue(
+    userSettingsService.getUserEventApproval.mockReturnValue(
       of({ status: 'Declined' } as any),
     );
-    userSettingsService.settings.and.returnValue(of({ callsign: 'ADMIN1' }));
-    userSettingsService.getApprovedUsers.and.returnValue(
+    userSettingsService.settings.mockReturnValue(of({ callsign: 'ADMIN1' }));
+    userSettingsService.getApprovedUsers.mockReturnValue(
       of([{ id: 'user-1', callsign: 'K1ABC' }] as any),
     );
-    authService.userIsAdmin.and.returnValue(of(true));
+    authService.userIsAdmin.mockReturnValue(of(true));
 
-    spyOn<any>(UploadComponent.prototype, 'loadUploadedFiles').and.resolveTo();
-    spyOn<any>(UploadComponent.prototype, 'loadCombinedAdifDownloadUrl').and.resolveTo();
+    vi.spyOn(
+      UploadComponent.prototype as any,
+      'loadUploadedFiles',
+    ).mockResolvedValue(undefined);
+    vi.spyOn(
+      UploadComponent.prototype as any,
+      'loadCombinedAdifDownloadUrl',
+    ).mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       imports: [UploadComponent, NoopAnimationsModule],
@@ -84,8 +101,18 @@ describe('UploadComponent', () => {
             paramMap: of(convertToParamMap({ slug: 'test-event' })),
           },
         },
-        { provide: HttpClient, useValue: jasmine.createSpyObj('HttpClient', ['get']) },
-        { provide: AUTH, useValue: jasmine.createSpyObj<Auth>('Auth', [], { currentUser: null }) },
+        {
+          provide: HttpClient,
+          useValue: {
+            get: vi.fn().mockName('HttpClient.get'),
+          },
+        },
+        {
+          provide: AUTH,
+          useValue: {
+            currentUser: null,
+          },
+        },
         { provide: STORAGE, useValue: {} },
         { provide: MatSnackBar, useValue: snackBar },
       ],
@@ -99,17 +126,17 @@ describe('UploadComponent', () => {
       { userId: 'user-1', callsign: 'K1ABC' },
     ]);
     expect(component.selectedUploadUserId()).toBe('user-1');
-    expect(component.canUploadTarget()).toBeTrue();
+    expect(component.canUploadTarget()).toBe(true);
     expect(fixture.nativeElement.querySelector('mat-select')).not.toBeNull();
   });
 
   it('should hide the callsign dropdown for non-admins', async () => {
-    authService.userIsAdmin.and.returnValue(of(false));
+    authService.userIsAdmin.mockReturnValue(of(false));
 
     await createComponent();
 
     expect(component.uploadOperators()).toEqual([]);
-    expect(component.canUploadTarget()).toBeFalse();
+    expect(component.canUploadTarget()).toBe(false);
     expect(fixture.nativeElement.querySelector('mat-select')).toBeNull();
   });
 
@@ -185,9 +212,8 @@ describe('UploadComponent', () => {
   it('should update the selected upload user and reload files when the admin changes operator', async () => {
     await createComponent();
 
-    const loadUploadedFilesSpy = (component as any)
-      .loadUploadedFiles as jasmine.Spy;
-    loadUploadedFilesSpy.calls.reset();
+    const loadUploadedFilesSpy = (component as any).loadUploadedFiles as Mock;
+    loadUploadedFilesSpy.mockClear();
 
     component.onUploadOperatorChange('user-2');
 
@@ -209,45 +235,43 @@ describe('UploadComponent', () => {
 
   it('should show a warning when the event has not started yet', async () => {
     const now = Date.now();
-    eventInfoService.getEventBySlug.and.returnValue(
+    eventInfoService.getEventBySlug.mockReturnValue(
       of({
         id: 'event-1',
         name: 'Early Event',
         eventCallsign: 'W1AW',
-        startTime: createTimestamp(now + 60_000),
-        endTime: createTimestamp(now + 120_000),
+        startTime: createTimestamp(now + 60000),
+        endTime: createTimestamp(now + 120000),
       } as any),
     );
 
     await createComponent();
 
-    expect(component.shouldShowEventSelectionWarning()).toBeTrue();
+    expect(component.shouldShowEventSelectionWarning()).toBe(true);
     const warningElement = fixture.nativeElement.querySelector(
       '.event-selection-warning',
     ) as HTMLElement | null;
     expect(warningElement).not.toBeNull();
     expect(warningElement?.textContent).toContain('Early Event');
-    expect(warningElement?.textContent).toContain(
-      'left navigation menu',
-    );
+    expect(warningElement?.textContent).toContain('left navigation menu');
   });
 
   it('should show a warning when the event ended more than a week ago', async () => {
     const now = Date.now();
     const eightDaysInMs = 8 * 24 * 60 * 60 * 1000;
-    eventInfoService.getEventBySlug.and.returnValue(
+    eventInfoService.getEventBySlug.mockReturnValue(
       of({
         id: 'event-1',
         name: 'Past Event',
         eventCallsign: 'W1AW',
-        startTime: createTimestamp(now - (eightDaysInMs + 60_000)),
+        startTime: createTimestamp(now - (eightDaysInMs + 60000)),
         endTime: createTimestamp(now - eightDaysInMs),
       } as any),
     );
 
     await createComponent();
 
-    expect(component.shouldShowEventSelectionWarning()).toBeTrue();
+    expect(component.shouldShowEventSelectionWarning()).toBe(true);
     const warningElement = fixture.nativeElement.querySelector(
       '.event-selection-warning',
     ) as HTMLElement | null;
@@ -257,67 +281,73 @@ describe('UploadComponent', () => {
 
   it('should not show a warning during the event window', async () => {
     const now = Date.now();
-    eventInfoService.getEventBySlug.and.returnValue(
+    eventInfoService.getEventBySlug.mockReturnValue(
       of({
         id: 'event-1',
         name: 'Current Event',
         eventCallsign: 'W1AW',
-        startTime: createTimestamp(now - 60_000),
-        endTime: createTimestamp(now + 60_000),
+        startTime: createTimestamp(now - 60000),
+        endTime: createTimestamp(now + 60000),
       } as any),
     );
 
     await createComponent();
 
-    expect(component.shouldShowEventSelectionWarning()).toBeFalse();
-    expect(fixture.nativeElement.querySelector('.event-selection-warning')).toBeNull();
+    expect(component.shouldShowEventSelectionWarning()).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('.event-selection-warning'),
+    ).toBeNull();
   });
 
   it('should show regeneration in progress when rerunStartedAt is recent', async () => {
-    const recentTimestamp = createTimestamp(Date.now() - 5_000);
-    eventInfoService.getEventInfo.and.returnValue(
+    const recentTimestamp = createTimestamp(Date.now() - 5000);
+    eventInfoService.getEventInfo.mockReturnValue(
       of({ rerunStartedAt: recentTimestamp } as any),
     );
 
     await createComponent();
 
-    expect(component.rerunInProgress()).toBeTrue();
-    const statusEl = fixture.nativeElement.querySelector('.rerun-in-progress') as HTMLElement | null;
+    expect(component.rerunInProgress()).toBe(true);
+    const statusEl = fixture.nativeElement.querySelector(
+      '.rerun-in-progress',
+    ) as HTMLElement | null;
     expect(statusEl).not.toBeNull();
     expect(statusEl?.textContent).toContain('Regeneration in progress');
   });
 
   it('should not show regeneration in progress when rerunStartedAt is absent', async () => {
-    eventInfoService.getEventInfo.and.returnValue(of({} as any));
+    eventInfoService.getEventInfo.mockReturnValue(of({} as any));
 
     await createComponent();
 
-    expect(component.rerunInProgress()).toBeFalse();
-    expect(fixture.nativeElement.querySelector('.rerun-in-progress')).toBeNull();
+    expect(component.rerunInProgress()).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('.rerun-in-progress'),
+    ).toBeNull();
   });
 
   it('should not show regeneration in progress when rerunStartedAt is stale', async () => {
     const staleTimestamp = createTimestamp(Date.now() - 31 * 60 * 1000);
-    eventInfoService.getEventInfo.and.returnValue(
+    eventInfoService.getEventInfo.mockReturnValue(
       of({ rerunStartedAt: staleTimestamp } as any),
     );
 
     await createComponent();
 
-    expect(component.rerunInProgress()).toBeFalse();
+    expect(component.rerunInProgress()).toBe(false);
   });
 
   it('should load the combined ADIF URL when the rerun lock clears', async () => {
-    const rerunSubject = new BehaviorSubject<any>(
-      { rerunStartedAt: createTimestamp(Date.now() - 5_000) },
-    );
-    eventInfoService.getEventInfo.and.returnValue(rerunSubject.asObservable());
+    const rerunSubject = new BehaviorSubject<any>({
+      rerunStartedAt: createTimestamp(Date.now() - 5000),
+    });
+    eventInfoService.getEventInfo.mockReturnValue(rerunSubject.asObservable());
 
     await createComponent();
 
     // Reset the call count captured during initialization (rerun was active, so no call)
-    const loadUrlSpy = (component as any).loadCombinedAdifDownloadUrl as jasmine.Spy;
-    loadUrlSpy.calls.reset();
+    const loadUrlSpy = (component as any).loadCombinedAdifDownloadUrl as Mock;
+    loadUrlSpy.mockClear();
 
     // Simulate the rerun completing (lock cleared)
     rerunSubject.next({});
