@@ -38,7 +38,7 @@ describe('ScheduleComponent', () => {
     const authServiceMock = {
       user$: new BehaviorSubject({ uid: 'test-user' }),
       userIsAdmin: vi.fn().mockName('userIsAdmin').mockReturnValue(of(false)),
-    } as unknown as MockedObject<EventInfoService>;
+    } as unknown as MockedObject<AuthenticationService>;
 
     const userSettingsServiceMock = {
       userSettings$: new BehaviorSubject(null),
@@ -103,10 +103,8 @@ describe('ScheduleComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    // Wait for async initialization
-    setTimeout(() => {
-      expect(component).toBeTruthy();
-    }, 100);
+    await fixture.whenStable();
+    expect(component).toBeTruthy();
   });
 
   describe('getNearestDayInEventRange', () => {
