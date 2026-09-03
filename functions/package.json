@@ -33,7 +33,7 @@
     "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.69.0",
     "@typescript-eslint/parser": "^8.69.0",
-    "eslint": "^10.0.0",
+    "eslint": "^10.9.1",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^10.1.8",
     "firebase-functions-test": "^3.5.0",
