@@ -18,18 +18,28 @@ let testEnv;
 
 const testEventId = "test-event-123";
 
-before(async () => {
+before(async function () {
+  this.timeout(60000);
+
   // Silence expected rules rejections from Firestore SDK. Unexpected rejections
   // will still bubble up and will be thrown as an error (failing the tests).
   setLogLevel("error");
 
   testEnv = await initializeTestEnvironment({
     projectId: "firestore-test",
-    firestore: { rules: readFileSync("firestore.rules", "utf8") },
+    firestore: {
+      rules: readFileSync("firestore.rules", "utf8"),
+      host: "127.0.0.1",
+      port: 8080,
+    },
   });
 });
 
 after(async () => {
+  if (!testEnv) {
+    return;
+  }
+
   // Delete all the FirebaseApp instances created during testing.
   // Note: this does not affect or clear any data.
   await testEnv.cleanup();
