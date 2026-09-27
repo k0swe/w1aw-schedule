@@ -1,3 +1,4 @@
+import firebaseFunctionsTest from 'firebase-functions-test';
 import admin from 'firebase-admin';
 import * as assert from 'assert';
 import { deleteCollection } from './helpers';
@@ -7,6 +8,7 @@ import { deleteCollection } from './helpers';
 import { newUser } from '../src/newUser';
 
 describe('newUser', () => {
+  let test: ReturnType<typeof firebaseFunctionsTest>;
   const userId = '12345';
   const userEmail = 'test@example.com';
 
@@ -15,6 +17,10 @@ describe('newUser', () => {
     if (!admin.apps.length) {
       admin.initializeApp({ projectId: 'w1aw-test' });
     }
+    
+    // Initialize firebase-functions-test without a credentials file so the tests can run
+    // against the local emulators. They are started automatically by the test script.
+    test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
     
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
@@ -25,10 +31,12 @@ describe('newUser', () => {
       email: userEmail,
     });
     
-    await newUser.run({
+    // Wrap the function and invoke it with partial CloudEvent data
+    const wrapped = test.wrap(newUser);
+    await wrapped({
       params: { userId },
       data: await userDocRef.get(),
-    } as Parameters<typeof newUser.run>[0]);
+    });
   });
 
   it('should update the user document with emailVerified status', async () => {
@@ -40,8 +48,7 @@ describe('newUser', () => {
     
     assert.equal(userDoc.exists, true);
     assert.equal(userDoc.data()?.email, userEmail);
-    // The function tries to call admin.auth().getUser() which will fail in the emulator
-    // without auth emulator running, so emailVerified won't be set.
+    // The Auth emulator has no matching user, so emailVerified won't be set.
     // In production, this would work and set emailVerified.
     // For now, we just verify the document exists with the email.
   });
@@ -61,6 +68,8 @@ describe('newUser', () => {
   });
 
   after(async () => {
+    // Do cleanup tasks.
+    test.cleanup();
     // Reset the database.
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
