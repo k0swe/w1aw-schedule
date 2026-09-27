@@ -1,4 +1,3 @@
-import firebaseFunctionsTest from 'firebase-functions-test';
 import admin from 'firebase-admin';
 import * as assert from 'assert';
 import { deleteCollection } from './helpers';
@@ -8,7 +7,6 @@ import { deleteCollection } from './helpers';
 import { newUser } from '../src/newUser';
 
 describe('newUser', () => {
-  let test: ReturnType<typeof firebaseFunctionsTest>;
   const userId = '12345';
   const userEmail = 'test@example.com';
 
@@ -17,10 +15,6 @@ describe('newUser', () => {
     if (!admin.apps.length) {
       admin.initializeApp({ projectId: 'w1aw-test' });
     }
-    
-    // Initialize firebase-functions-test without a credentials file so the tests can run
-    // against the local Firestore emulator. The emulator is started automatically by the test script.
-    test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
     
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
@@ -31,12 +25,10 @@ describe('newUser', () => {
       email: userEmail,
     });
     
-    // Wrap the function and invoke it with partial CloudEvent data
-    const wrapped = test.wrap(newUser);
-    await wrapped({
+    await newUser.run({
       params: { userId },
       data: await userDocRef.get(),
-    });
+    } as Parameters<typeof newUser.run>[0]);
   });
 
   it('should update the user document with emailVerified status', async () => {
@@ -69,8 +61,6 @@ describe('newUser', () => {
   });
 
   after(async () => {
-    // Do cleanup tasks.
-    test.cleanup();
     // Reset the database.
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
