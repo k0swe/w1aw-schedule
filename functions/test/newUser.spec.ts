@@ -77,6 +77,12 @@ describe('newUser', () => {
     // Reset the database.
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
-    await admin.auth().deleteUser(userId);
+    try {
+      await admin.auth().deleteUser(userId);
+    } catch (error) {
+      if ((error as { code?: string }).code !== 'auth/user-not-found') {
+        throw error;
+      }
+    }
   });
 });
