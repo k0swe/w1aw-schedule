@@ -17,7 +17,13 @@ describe('newUser', () => {
     if (!admin.apps.length) {
       admin.initializeApp({ projectId: 'w1aw-test' });
     }
-    
+
+    await admin.auth().createUser({
+      uid: userId,
+      email: userEmail,
+      emailVerified: true,
+    });
+
     // Initialize firebase-functions-test without a credentials file so the tests can run
     // against the local emulators. They are started automatically by the test script.
     test = firebaseFunctionsTest({ projectId: 'w1aw-test' });
@@ -48,9 +54,7 @@ describe('newUser', () => {
     
     assert.equal(userDoc.exists, true);
     assert.equal(userDoc.data()?.email, userEmail);
-    // The Auth emulator has no matching user, so emailVerified won't be set.
-    // In production, this would work and set emailVerified.
-    // For now, we just verify the document exists with the email.
+    assert.equal(userDoc.data()?.emailVerified, true);
   });
 
   it('should post a welcome email', async () => {
@@ -73,5 +77,6 @@ describe('newUser', () => {
     // Reset the database.
     await deleteCollection(admin.firestore().collection('users'));
     await deleteCollection(admin.firestore().collection('mail'));
+    await admin.auth().deleteUser(userId);
   });
 });
