@@ -9,7 +9,7 @@
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "test": "firebase emulators:exec --only firestore 'npm run test:unit'",
+    "test": "firebase emulators:exec --only firestore,auth 'npm run test:unit'",
     "test:unit": "npm run build && mocha --reporter spec ./build/ --recursive"
   },
   "engines": {
@@ -42,5 +42,8 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "uuid": "^11.1.0"
+  }
 }
