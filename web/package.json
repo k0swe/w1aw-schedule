@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@angular/build": "^22.2.0",
-    "@angular/cli": "22.2.1",
+    "@angular/cli": "22.2.2",
     "@angular/compiler-cli": "22.2.1",
     "@trivago/prettier-plugin-sort-imports": "6.0.2",
     "@types/suncalc": "^1.9.2",
