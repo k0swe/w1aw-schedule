@@ -30,6 +30,12 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
+      - name: Build shared module
+        working-directory: shared
+        run: |
+          npm ci
+          npm run build
+
       - name: Cache node deps
         uses: actions/cache@v6
         with:
@@ -41,6 +47,10 @@ jobs:
         run: |
           npm ci
           npm install --no-save vite@8.1.5
+
+      - name: Build web app
+        working-directory: web
+        run: npm run build
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -62,5 +72,3 @@ jobs:
           projectId: w1aw-schedule-76a82
           expires: 7d
           channelId: pr-${{ github.event.pull_request.number }}
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks

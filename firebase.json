@@ -1,10 +1,16 @@
 {
   "hosting": {
-    "source": "web",
+    "public": "web/dist/w1aw-schedule/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   },
   "firestore": {

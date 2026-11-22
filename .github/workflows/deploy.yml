@@ -41,6 +41,10 @@ jobs:
           npm ci
           npm install --no-save vite@8.1.5
 
+      - name: Build web app
+        working-directory: web
+        run: npm run build
+
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v3
@@ -60,6 +64,4 @@ jobs:
           firebase --version
 
       - name: Deploy to Firebase
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
         run: firebase deploy --only hosting,firestore,functions,storage --project w1aw-schedule-76a82
